@@ -28,6 +28,15 @@ import {
   HoverCardTrigger,
   HoverCardContent,
 } from "@/components/ui/hover-card";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function Home() {
   const [brands, setBrands] = useState(brandsData);
@@ -79,6 +88,23 @@ export default function Home() {
     console.log(brandName);
     router.push(`/brands/${brandName}`);
   };
+
+  const months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+  const salesData = months.map((month) => {
+    const data = { month };
+    brands.forEach((brand) => {
+      const monthData = brand.salesDetails.monthWise.find(
+        (m) => m.month === month
+      );
+      data[brand.brandName] = parseFloat(
+        monthData.sales.replace(/[^0-9.-]+/g, "")
+      );
+    });
+    return data;
+  });
 
   return (
     <div>
@@ -156,7 +182,7 @@ export default function Home() {
           {brands.map((brand, index) => (
             <Card
               key={index}
-              className="mb-4 cursor-pointer hover:shadow-lg hover:scale-105"
+              className="mb-4 cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
               onClick={() => handleCardClick(brand.brandName)}
             >
               <CardHeader>
@@ -276,12 +302,19 @@ export default function Home() {
                     </HoverCardTrigger>
                     <HoverCardContent>
                       <div className="flex flex-col">
-                        <p className="text-center">Quarter Wise Achieved/Targets:</p>
+                        <p className="text-center">
+                          Quarter Wise Achieved/Targets:
+                        </p>
                         <ul className="flex flex-col gap-1">
                           {brand.targetsAndAchieved.quarterWise.map((q, i) => (
-                            <li key={i} className="flex items-center justify-between">
-                              {q.quarter}: 
-                              <span className="text-xs">{q.achieved} / {q.target}</span>
+                            <li
+                              key={i}
+                              className="flex items-center justify-between"
+                            >
+                              {q.quarter}:
+                              <span className="text-xs">
+                                {q.achieved} / {q.target}
+                              </span>
                             </li>
                           ))}
                         </ul>
@@ -293,6 +326,35 @@ export default function Home() {
             </Card>
           ))}
         </div>
+
+        <h1 className="text-xl font-bold my-6">
+          Monthly Brand Sales Performance
+        </h1>
+        <ResponsiveContainer width="100%" height={400}>
+          <LineChart
+            data={salesData}
+            margin={{
+              top: 5,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            {brands.map((brand) => (
+              <Line
+                key={brand.brandName}
+                type="monotone"
+                dataKey={brand.brandName}
+                stroke="black"
+                activeDot={{ r: 8 }}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

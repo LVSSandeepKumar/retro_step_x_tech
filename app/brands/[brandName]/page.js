@@ -36,6 +36,10 @@ export default function BrandPage() {
     (brand) => brand.brandName === brandName
   );
 
+  if (!brandData) {
+    return <div>Brand not found</div>;
+  }
+
   const [locations, setLocations] = useState(brandData.locations);
   const [newLocation, setNewLocation] = useState({
     locationName: "",
@@ -84,10 +88,6 @@ export default function BrandPage() {
   const handleCardClick = (locationName) => {
     router.push(`/brands/${brandName}/locations/${locationName}`);
   };
-
-  if (!brandData) {
-    return <div>Brand not found</div>;
-  }
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-4">
@@ -176,7 +176,7 @@ export default function BrandPage() {
         {locations.map((location, index) => (
           <Card
             key={index}
-            className="mb-4 cursor-pointer hover:shadow-lg hover:scale-105"
+            className="mb-4 cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
             onClick={() => handleCardClick(location.locationName)}
           >
             <CardHeader>
