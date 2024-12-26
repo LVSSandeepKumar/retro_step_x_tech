@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mockLocations } from "@/lib/constants";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -28,6 +28,9 @@ import {
   HoverCardTrigger,
   HoverCardContent,
 } from "@/components/ui/hover-card";
+import StoreVisitsChart from "./_components/StoreVisitsChart";
+import SalesByLocationCard from "./_components/SalesByLocationCard";
+import StockByLocationCard from "./_components/StockByLocationCard";
 
 export default function BrandPage() {
   const { brandName } = useParams();
@@ -36,20 +39,23 @@ export default function BrandPage() {
     (brand) => brand.brandName === brandName
   );
 
-  if (!brandData) {
-    return <div>Brand not found</div>;
-  }
-
-  const [locations, setLocations] = useState(brandData.locations);
+  const [locations, setLocations] = useState([]);
   const [newLocation, setNewLocation] = useState({
     locationName: "",
     serviceDivisions: [],
     salesDetails: { totalSales: "" },
+    storeVisits: "",
     inventoryReport: { totalStock: "" },
     operationalExpenses: { annual: "" },
     targetsAndAchieved: { annualTarget: "", achieved: "" },
     headOfBrand: "",
   });
+
+  useEffect(() => {
+    if (brandData) {
+      setLocations(brandData.locations);
+    }
+  }, [brandData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -78,6 +84,7 @@ export default function BrandPage() {
       locationName: "",
       serviceDivisions: [],
       salesDetails: { totalSales: "" },
+      storeVisits: "",
       inventoryReport: { totalStock: "" },
       operationalExpenses: { annual: "" },
       targetsAndAchieved: { annualTarget: "", achieved: "" },
@@ -131,6 +138,12 @@ export default function BrandPage() {
                 name="salesDetails.totalSales"
                 placeholder="Total Sales"
                 value={newLocation.salesDetails.totalSales}
+                onChange={handleInputChange}
+              />
+              <Input
+                name="storeVisits"
+                placeholder="Store Visits"
+                value={newLocation.storeVisits}
                 onChange={handleInputChange}
               />
               <Input
@@ -322,6 +335,13 @@ export default function BrandPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+      <div className="flex gap-8">
+        <StoreVisitsChart locations={locations} />
+        <div className="flex flex-col w-full space-y-4">
+          <SalesByLocationCard locations={locations} />
+          <StockByLocationCard locations={locations} />
+        </div>
       </div>
     </div>
   );

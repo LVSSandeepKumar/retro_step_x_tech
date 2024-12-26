@@ -16,8 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export default function BrandLayout({ children }) {
-    const pathName = usePathname();
-    const brandName = pathName.split("/").pop() || "Brand Page";
+  const pathName = usePathname();
+  const brandName = pathName.split("/")[2] || "Brand Page";
+
   return (
     <html lang="en">
       <body
