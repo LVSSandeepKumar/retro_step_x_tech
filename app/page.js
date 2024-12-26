@@ -161,7 +161,7 @@ export default function Home() {
             >
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
-                  <img src={brand.logo} width={100} height={80}/>
+                  <img src={brand.logo} width={100} height={10}/>
                   <p>{brand.brandName}</p>
                   <Badge className={"text-xs"}>{brand.headOfBrand}</Badge>
                 </CardTitle>
