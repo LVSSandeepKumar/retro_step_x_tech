@@ -1,37 +1,20 @@
 "use client";
-import { Geist, Geist_Mono } from "next/font/google";
 import Header from "@/components/header";
 import "@/app/globals.css";
 import { usePathname } from "next/navigation";
-import Sidebar from "@/components/sidebar";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export default function BrandLayout({ children }) {
   const pathName = usePathname();
   const brandName = pathName.split("/")[2] || "Brand Page";
 
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <div className="flex">
-          <Sidebar />
-          <div className="flex-1">
-            <Header heading={brandName} />
-            {children}
-          </div>
+    <section>
+      <div className="flex">
+        <div className="flex-1">
+          <Header heading={brandName} />
+          {children}
         </div>
-      </body>
-    </html>
+      </div>
+    </section>
   );
 }

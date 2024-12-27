@@ -37,6 +37,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import Header from "@/components/header";
 
 export default function Home() {
   const [brands, setBrands] = useState(brandsData);
@@ -118,6 +119,7 @@ export default function Home() {
 
   return (
     <div>
+      <Header heading={"Retro"} />
       <div className="p-4 md:p-6 lg:p-8 space-y-4">
         <div className="flex justify-between items-center">
           <h1 className="text-xl font-bold">Brands</h1>

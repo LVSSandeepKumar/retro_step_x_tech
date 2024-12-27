@@ -27,7 +27,6 @@ export default function RootLayout({ children }) {
         <div className="flex">
           <Sidebar />
           <div className="flex-1">
-            <Header heading="Retro" />
             {children}
           </div>
         </div>
