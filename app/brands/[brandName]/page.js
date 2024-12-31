@@ -1,15 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { mockLocations } from "@/lib/constants";
-import { useParams, useRouter } from "next/navigation";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { brandsData, mockLocations } from "@/lib/constants";
+import { useParams } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import {
@@ -23,21 +16,19 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  HoverCard,
-  HoverCardTrigger,
-  HoverCardContent,
-} from "@/components/ui/hover-card";
 import StoreVisitsChart from "./_components/StoreVisitsChart";
-import SalesByLocationCard from "./_components/SalesByLocationCard";
-import StockByLocationCard from "./_components/StockByLocationCard";
+import SalesAndExpensesCards from "./_components/SalesAndExpensesCard";
+import LocationDetailsTable from "./_components/LocationDetailsTable";
+import AnnouncementDashboard from "@/app/_components/AnnouncementDashboard";
 
 export default function BrandPage() {
   const { brandName } = useParams();
-  const router = useRouter();
   const brandData = mockLocations.find(
     (brand) => brand.brandName === brandName
   );
+
+  const BrandName = brandsData.find((brand) => brand.brandName === brandName);
+  const brandCEO = BrandName.headOfBrand;
 
   const [locations, setLocations] = useState([]);
   const [newLocation, setNewLocation] = useState({
@@ -92,14 +83,11 @@ export default function BrandPage() {
     });
   };
 
-  const handleCardClick = (locationName) => {
-    router.push(`/brands/${brandName}/locations/${locationName}`);
-  };
-
+  
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-bold">{brandName} Locations</h1>
+        <h1 className="text-2xl font-bold">{brandName} CEO : {brandCEO}</h1>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
@@ -115,67 +103,78 @@ export default function BrandPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <Input
-                name="locationName"
-                placeholder="Location Name"
-                value={newLocation.locationName}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="serviceDivisions"
-                placeholder="Service Divisions"
-                value={newLocation.serviceDivisions}
-                onChange={(e) =>
-                  setNewLocation((prev) => ({
-                    ...prev,
-                    serviceDivisions: e.target.value
-                      .split(",")
-                      .map((s) => s.trim()),
-                  }))
-                }
-              />
-              <Input
-                name="salesDetails.totalSales"
-                placeholder="Total Sales"
-                value={newLocation.salesDetails.totalSales}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="storeVisits"
-                placeholder="Store Visits"
-                value={newLocation.storeVisits}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="inventoryReport.totalStock"
-                placeholder="Total Stock"
-                value={newLocation.inventoryReport.totalStock}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="operationalExpenses.annual"
-                placeholder="Annual Expenses"
-                value={newLocation.operationalExpenses.annual}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="targetsAndAchieved.annualTarget"
-                placeholder="Annual Target"
-                value={newLocation.targetsAndAchieved.annualTarget}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="targetsAndAchieved.achieved"
-                placeholder="Achieved"
-                value={newLocation.targetsAndAchieved.achieved}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="headOfBrand"
-                placeholder="Head of Brand"
-                value={newLocation.headOfBrand}
-                onChange={handleInputChange}
-              />
+              {
+                [
+                  {
+                    name: "locationName",
+                    label: "Location Name",
+                    value: newLocation.locationName,
+                    onChange: handleInputChange,
+                  },
+                  {
+                    name: "serviceDivisions",
+                    label: "Service Divisions",
+                    value: newLocation.serviceDivisions,
+                    onChange: (e) =>
+                      setNewLocation((prev) => ({
+                        ...prev,
+                        serviceDivisions: e.target.value
+                          .split(",")
+                          .map((s) => s.trim()),
+                    }))
+                  },
+                  {
+                    name: "salesDetails.totalSales",
+                    label: "Total Sales",
+                    value: newLocation.salesDetails.totalSales,
+                    onChange: handleInputChange,
+                  },
+                  {
+                    name: "storeVisits",
+                    label: "Store Visits",
+                    value: newLocation.storeVisits,
+                    onChange: handleInputChange,
+                  },
+                  {
+                    name: "inventoryReport.totalStock",
+                    label: "Total Stock",
+                    value: newLocation.inventoryReport.totalStock,
+                    onChange: handleInputChange,
+                  },
+                  {
+                    name: "operationalExpenses.annual",
+                    label: "Annual Expenses",
+                    value: newLocation.operationalExpenses.annual,
+                    onChange: handleInputChange,
+                  },
+                  {
+                    name: "targetsAndAchieved.annualTarget",
+                    label: "Annual Target",
+                    value: newLocation.targetsAndAchieved.annualTarget,
+                    onChange: handleInputChange,
+                  },
+                  {
+                    name: "targetsAndAchieved.achieved",
+                    label: "Achieved",
+                    value: newLocation.targetsAndAchieved.achieved,
+                    onChange: handleInputChange,
+                  },
+                  {
+                    name: "headOfBrand",
+                    label: "Head of Brand",
+                    value: newLocation.headOfBrand,
+                    onChange: handleInputChange,
+                  },
+                ].map((input) => (
+                  <Input 
+                    key={input.name}
+                    name={input.name}
+                    placeholder={input.label}
+                    value={input.value}
+                    onChange={input.onChange}
+                  />
+                ))
+              }
             </div>
             <DialogFooter>
               <DialogClose asChild>
@@ -185,163 +184,20 @@ export default function BrandPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {locations.map((location, index) => (
-          <Card
-            key={index}
-            className="mb-4 cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
-            onClick={() => handleCardClick(location.locationName)}
-          >
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <p>{location.locationName}</p>
-                <Badge className={"text-xs"}>{location.headOfBrand}</Badge>
-              </CardTitle>
-              <div className="flex space-x-2 my-2">
-                {location.serviceDivisions.map((service, index) => (
-                  <Badge key={index} className={"text-xs"} variant="outline">
-                    {service}
-                  </Badge>
-                ))}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <CardDescription className="flex justify-between items-center">
-                      <p className="font-bold">Total Sales:</p>
-                      <span>{location.salesDetails.totalSales}</span>
-                    </CardDescription>
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    <div className="flex items-center justify-between">
-                      <p>Total Sales:</p>
-                      <span>{location.salesDetails.totalSales}</span>
-                    </div>
+      
 
-                    <div className="flex items-center justify-between">
-                      <p>Top Product</p>
-                      <span className="text-xs">
-                        {location.salesDetails.topProduct}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <p>Growth Rate</p>
-                      <span className="text-xs">
-                        {location.salesDetails.growthRate}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col items-center justify-between">
-                      <p>Quarter Wise Sales:</p>
-                      <ul>
-                        {location.salesDetails.quarterWise.map((q, i) => (
-                          <li key={i} className="flex items-center gap-2">
-                            {q.quarter}:
-                            <span className="text-xs">{q.sales}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </HoverCardContent>
-                </HoverCard>
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <CardDescription className="flex justify-between items-center">
-                      <p className="font-bold">Total Stock:</p>
-                      <span>{location.inventoryReport.totalStock}</span>
-                    </CardDescription>
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    <div className="flex items-center justify-between">
-                      <p>Damaged Units:</p>
-                      <span className="text-xs">
-                        {location.inventoryReport.damagedUnits}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <p>Last Audit:</p>
-                      <span className="text-xs">
-                        {location.inventoryReport.lastAudit}
-                      </span>
-                    </div>
-                  </HoverCardContent>
-                </HoverCard>
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <CardDescription className="flex justify-between items-center">
-                      <p className="font-bold">Annual Expenses:</p>
-                      <span>{location.operationalExpenses.annual}</span>
-                    </CardDescription>
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    <div className="flex items-center justify-between">
-                      <p>Marketing:</p>
-                      <span className="text-xs">
-                        {location.operationalExpenses.marketing}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <p>R&D:</p>
-                      <span className="text-xs">
-                        {location.operationalExpenses.RnD}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <p>Logistics:</p>
-                      <span className="text-xs">
-                        {location.operationalExpenses.logistics}
-                      </span>
-                    </div>
-                  </HoverCardContent>
-                </HoverCard>
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <CardDescription className="flex justify-between items-center">
-                      <p className="font-bold">Annual Targets:</p>
-                      <span>
-                        {location.targetsAndAchieved.achieved} /{" "}
-                        {location.targetsAndAchieved.annualTarget}
-                      </span>
-                    </CardDescription>
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    <div className="flex flex-col">
-                      <p className="text-center">
-                        Quarter Wise Achieved/Targets:
-                      </p>
-                      <ul className="flex flex-col gap-1">
-                        {location.targetsAndAchieved.quarterWise.map((q, i) => (
-                          <li
-                            key={i}
-                            className="flex items-center justify-between"
-                          >
-                            {q.quarter}:
-                            <span className="text-xs">
-                              {q.achieved} / {q.target}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </HoverCardContent>
-                </HoverCard>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="flex flex-col items-start gap-4">
+        <h1 className="text-xl font-bold">{brandName} Overall Analytics:</h1>
+        <SalesAndExpensesCards />
       </div>
+
       <div className="flex gap-8">
         <StoreVisitsChart locations={locations} />
-        <div className="flex flex-col w-full space-y-4">
-          <SalesByLocationCard locations={locations} />
-          <StockByLocationCard locations={locations} />
-        </div>
+        <AnnouncementDashboard />
+      </div>
+
+      <div>
+        <LocationDetailsTable brandName={brandName}/>
       </div>
     </div>
   );

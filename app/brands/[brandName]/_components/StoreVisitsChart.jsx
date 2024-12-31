@@ -37,7 +37,7 @@ const StoreVisitsChart = ({ locations }) => {
 
   const options = {
     maintainAspectRatio: true, // Allows custom height and width
-    aspectRatio: 1.2,
+    aspectRatio: 1.3,
     plugins: {
       legend: {
         position: "bottom",
