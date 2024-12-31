@@ -1,35 +1,28 @@
-import { useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Table,
+  TableBody,
+  TableCell,
   TableHeader,
   TableRow,
-  TableCell,
-  TableBody,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+import { pickAProduct } from "@/lib/utils";
 import { ArrowDownUp } from "lucide-react";
 import { useParams } from "next/navigation";
-import { PickAccessories, PickAColor, PickAName, pickAProduct } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { Tab } from "@mui/icons-material";
+import { useEffect, useState } from "react";
 
 const InventoryOverviewCard = ({ title }) => {
   const { brandName } = useParams();
