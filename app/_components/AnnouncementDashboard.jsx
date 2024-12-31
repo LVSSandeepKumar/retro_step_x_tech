@@ -29,17 +29,24 @@ const announcements = [
       "The server will be upgraded to the latest version on January 1st, 2025.",
     date: "December 24, 2024",
   },
+  {
+    id: 5,
+    title: "New Launch",
+    description:
+      "The Vehicle will be launched on January 1st, 2025.",
+    date: "December 24, 2024",
+  },
 ];
 
 const AnnouncementDashboard = () => {
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-4xl mx-auto">
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle>Latest Announcements</CardTitle>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-64">
+          <ScrollArea className="h-96">
             <ul className="list-disc list-inside space-y-3">
               {announcements.map((announcement) => (
                 <li key={announcement.id}>

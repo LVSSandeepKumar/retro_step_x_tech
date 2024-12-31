@@ -37,7 +37,12 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { Bar } from "react-chartjs-2";
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip as ChartTooltip, Legend as ChartLegend } from 'chart.js';
 import Header from "@/components/header";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ChartTooltip, ChartLegend);
 
 export default function Home() {
   const [brands, setBrands] = useState(brandsData);
@@ -49,6 +54,7 @@ export default function Home() {
     targetsAndAchieved: { annualTarget: "", achieved: "" },
     headOfBrand: "",
   });
+  const [timePeriod, setTimePeriod] = useState("monthly");
 
   const router = useRouter();
 
@@ -104,18 +110,87 @@ export default function Home() {
     "Nov",
     "Dec",
   ];
-  const salesData = months.map((month) => {
-    const data = { month };
-    brands.forEach((brand) => {
-      const monthData = brand.salesDetails.monthWise.find(
-        (m) => m.month === month
-      );
-      data[brand.brandName] = parseFloat(
-        monthData.sales.replace(/[^0-9.-]+/g, "")
-      );
-    });
-    return data;
-  });
+
+  const quarters = ["Q1", "Q2", "Q3", "Q4"];
+  const halfYears = ["H1", "H2"];
+  const years = ["2021", "2022", "2023"];
+
+  const getData = () => {
+    switch (timePeriod) {
+      case "quarterly":
+        return quarters.map((quarter) => {
+          const data = { quarter };
+          brands.forEach((brand) => {
+            const quarterData = brand.salesDetails.quarterWise?.find(
+              (q) => q.quarter === quarter
+            );
+            data[brand.brandName] = quarterData
+              ? parseFloat(quarterData.sales.replace(/[^0-9.-]+/g, ""))
+              : 0;
+          });
+          return data;
+        });
+      case "half-yearly":
+        return halfYears.map((halfYear) => {
+          const data = { halfYear };
+          brands.forEach((brand) => {
+            const halfYearData = brand.salesDetails.halfYearly?.find(
+              (h) => h.halfYear === halfYear
+            );
+            data[brand.brandName] = halfYearData
+              ? parseFloat(halfYearData.sales.replace(/[^0-9.-]+/g, ""))
+              : 0;
+          });
+          return data;
+        });
+      case "yearly":
+        return years.map((year) => {
+          const data = { year };
+          brands.forEach((brand) => {
+            const yearData = brand.salesDetails.yearly?.find(
+              (y) => y.year === year
+            );
+            data[brand.brandName] = yearData
+              ? parseFloat(yearData.sales.replace(/[^0-9.-]+/g, ""))
+              : 0;
+          });
+          return data;
+        });
+      default:
+        return months.map((month) => {
+          const data = { month };
+          brands.forEach((brand) => {
+            const monthData = brand.salesDetails.monthWise?.find(
+              (m) => m.month === month
+            );
+            data[brand.brandName] = monthData
+              ? parseFloat(monthData.sales.replace(/[^0-9.-]+/g, ""))
+              : 0;
+          });
+          return data;
+        });
+    }
+  };
+
+  const salesData = getData();
+
+  const barChartData = {
+    labels: brands.map((brand) => brand.brandName),
+    datasets: [
+      {
+        label: 'Achieved',
+        data: brands.map((brand) => parseFloat(brand.targetsAndAchieved.achieved.replace(/[^0-9.-]+/g, ""))),
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+      },
+      {
+        label: 'Target',
+        data: brands.map((brand) => parseFloat(brand.targetsAndAchieved.annualTarget.replace(/[^0-9.-]+/g, ""))),
+        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+      },
+    ],
+  };
+
+  const lineColors = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300"];
 
   return (
     <div>
@@ -229,7 +304,7 @@ export default function Home() {
                       <div className="flex flex-col items-center justify-between">
                         <p>Quarter Wise Sales:</p>
                         <ul>
-                          {brand.salesDetails.quarterWise.map((q, i) => (
+                          {brand.salesDetails.quarterWise?.map((q, i) => (
                             <li key={i} className="flex items-center gap-2">
                               {q.quarter}:
                               <span className="text-xs">{q.sales}</span>
@@ -250,7 +325,7 @@ export default function Home() {
                       <div className="flex items-center flex-col">
                         <p>Warehouses: </p>
                         <ul className="flex flex-col gap-1 items-center">
-                          {brand.inventoryReport.warehouses.map((w, i) => (
+                          {brand.inventoryReport.warehouses?.map((w, i) => (
                             <li key={i} className="text-xs">
                               {w}
                             </li>
@@ -319,7 +394,7 @@ export default function Home() {
                           Quarter Wise Achieved/Targets:
                         </p>
                         <ul className="flex flex-col gap-1">
-                          {brand.targetsAndAchieved.quarterWise.map((q, i) => (
+                          {brand.targetsAndAchieved.quarterWise?.map((q, i) => (
                             <li
                               key={i}
                               className="flex items-center justify-between"
@@ -341,7 +416,18 @@ export default function Home() {
         </div>
 
         <h1 className="text-xl font-bold my-6">
-          Monthly Brand Sales Performance
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <span className="cursor-pointer hover:underline">{timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)}</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setTimePeriod("monthly")}>Monthly</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTimePeriod("quarterly")}>Quarterly</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTimePeriod("half-yearly")}>Half-Yearly</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTimePeriod("yearly")}>Yearly</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <span className="ml-2">Brand Sales Performance</span>
         </h1>
         <ResponsiveContainer width="100%" height={400}>
           <LineChart
@@ -353,20 +439,25 @@ export default function Home() {
               bottom: 5,
             }}
           >
-            <XAxis dataKey="month" />
+            <XAxis dataKey={timePeriod === "monthly" ? "month" : timePeriod === "quarterly" ? "quarter" : timePeriod === "half-yearly" ? "halfYear" : "year"} />
             <YAxis />
             <Tooltip />
             <Legend />
-            {brands.map((brand) => (
+            {brands.map((brand, index) => (
               <Line
                 key={brand.brandName}
                 type="monotone"
                 dataKey={brand.brandName}
-                stroke="black"
+                stroke={lineColors[index % lineColors.length]}
                 activeDot={{ r: 8 }}
               />
             ))}
           </LineChart>
+        </ResponsiveContainer>
+
+        <h1 className="text-xl font-bold my-6">Achieved vs Targets</h1>
+        <ResponsiveContainer width="100%" height={400}>
+          <Bar data={barChartData} options={{ responsive: true, maintainAspectRatio: false }} />
         </ResponsiveContainer>
       </div>
     </div>

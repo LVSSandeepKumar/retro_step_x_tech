@@ -20,6 +20,7 @@ import StoreVisitsChart from "./_components/StoreVisitsChart";
 import SalesAndExpensesCards from "./_components/SalesAndExpensesCard";
 import LocationDetailsTable from "./_components/LocationDetailsTable";
 import AnnouncementDashboard from "@/app/_components/AnnouncementDashboard";
+import PendingAlertsCard from "./_components/PendingAlertsCard";
 
 export default function BrandPage() {
   const { brandName } = useParams();
@@ -83,11 +84,12 @@ export default function BrandPage() {
     });
   };
 
-  
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">{brandName} CEO : {brandCEO}</h1>
+        <h1 className="text-2xl font-bold">
+          {brandName} CEO : {brandCEO}
+        </h1>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
@@ -103,78 +105,76 @@ export default function BrandPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              {
-                [
-                  {
-                    name: "locationName",
-                    label: "Location Name",
-                    value: newLocation.locationName,
-                    onChange: handleInputChange,
-                  },
-                  {
-                    name: "serviceDivisions",
-                    label: "Service Divisions",
-                    value: newLocation.serviceDivisions,
-                    onChange: (e) =>
-                      setNewLocation((prev) => ({
-                        ...prev,
-                        serviceDivisions: e.target.value
-                          .split(",")
-                          .map((s) => s.trim()),
-                    }))
-                  },
-                  {
-                    name: "salesDetails.totalSales",
-                    label: "Total Sales",
-                    value: newLocation.salesDetails.totalSales,
-                    onChange: handleInputChange,
-                  },
-                  {
-                    name: "storeVisits",
-                    label: "Store Visits",
-                    value: newLocation.storeVisits,
-                    onChange: handleInputChange,
-                  },
-                  {
-                    name: "inventoryReport.totalStock",
-                    label: "Total Stock",
-                    value: newLocation.inventoryReport.totalStock,
-                    onChange: handleInputChange,
-                  },
-                  {
-                    name: "operationalExpenses.annual",
-                    label: "Annual Expenses",
-                    value: newLocation.operationalExpenses.annual,
-                    onChange: handleInputChange,
-                  },
-                  {
-                    name: "targetsAndAchieved.annualTarget",
-                    label: "Annual Target",
-                    value: newLocation.targetsAndAchieved.annualTarget,
-                    onChange: handleInputChange,
-                  },
-                  {
-                    name: "targetsAndAchieved.achieved",
-                    label: "Achieved",
-                    value: newLocation.targetsAndAchieved.achieved,
-                    onChange: handleInputChange,
-                  },
-                  {
-                    name: "headOfBrand",
-                    label: "Head of Brand",
-                    value: newLocation.headOfBrand,
-                    onChange: handleInputChange,
-                  },
-                ].map((input) => (
-                  <Input 
-                    key={input.name}
-                    name={input.name}
-                    placeholder={input.label}
-                    value={input.value}
-                    onChange={input.onChange}
-                  />
-                ))
-              }
+              {[
+                {
+                  name: "locationName",
+                  label: "Location Name",
+                  value: newLocation.locationName,
+                  onChange: handleInputChange,
+                },
+                {
+                  name: "serviceDivisions",
+                  label: "Service Divisions",
+                  value: newLocation.serviceDivisions,
+                  onChange: (e) =>
+                    setNewLocation((prev) => ({
+                      ...prev,
+                      serviceDivisions: e.target.value
+                        .split(",")
+                        .map((s) => s.trim()),
+                    })),
+                },
+                {
+                  name: "salesDetails.totalSales",
+                  label: "Total Sales",
+                  value: newLocation.salesDetails.totalSales,
+                  onChange: handleInputChange,
+                },
+                {
+                  name: "storeVisits",
+                  label: "Store Visits",
+                  value: newLocation.storeVisits,
+                  onChange: handleInputChange,
+                },
+                {
+                  name: "inventoryReport.totalStock",
+                  label: "Total Stock",
+                  value: newLocation.inventoryReport.totalStock,
+                  onChange: handleInputChange,
+                },
+                {
+                  name: "operationalExpenses.annual",
+                  label: "Annual Expenses",
+                  value: newLocation.operationalExpenses.annual,
+                  onChange: handleInputChange,
+                },
+                {
+                  name: "targetsAndAchieved.annualTarget",
+                  label: "Annual Target",
+                  value: newLocation.targetsAndAchieved.annualTarget,
+                  onChange: handleInputChange,
+                },
+                {
+                  name: "targetsAndAchieved.achieved",
+                  label: "Achieved",
+                  value: newLocation.targetsAndAchieved.achieved,
+                  onChange: handleInputChange,
+                },
+                {
+                  name: "headOfBrand",
+                  label: "Head of Brand",
+                  value: newLocation.headOfBrand,
+                  onChange: handleInputChange,
+                },
+              ].map((input) => (
+                <Input
+                  key={input.name}
+                  name={input.name}
+                  placeholder={input.label}
+                  value={input.value}
+                  onChange={input.onChange}
+                />
+              ))}
             </div>
             <DialogFooter>
               <DialogClose asChild>
@@ -184,20 +184,20 @@ export default function BrandPage() {
           </DialogContent>
         </Dialog>
       </div>
-      
 
       <div className="flex flex-col items-start gap-4">
         <h1 className="text-xl font-bold">{brandName} Overall Analytics:</h1>
         <SalesAndExpensesCards />
       </div>
 
-      <div className="flex gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <StoreVisitsChart locations={locations} />
-        <AnnouncementDashboard />
+        <AnnouncementDashboard className="h-full" />
+        <PendingAlertsCard />
       </div>
 
       <div>
-        <LocationDetailsTable brandName={brandName}/>
+        <LocationDetailsTable brandName={brandName} />
       </div>
     </div>
   );
