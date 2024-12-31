@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Table,
   TableHeader,
@@ -11,16 +11,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { ArrowDownUp, Download, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
 import { PickAName } from "@/lib/utils";
 
 const VouchersPage = () => {
@@ -30,7 +20,7 @@ const VouchersPage = () => {
     direction: "descending",
   });
   const [data, setData] = useState([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const generateRandomNumber = (min, max) => {
@@ -104,10 +94,18 @@ const VouchersPage = () => {
     setSortConfig({ key, direction });
   };
 
-  const handleCreateSubmit = (e) => {
-    e.preventDefault();
-    setIsDialogOpen(false);
-    // Add the new voucher data here
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Handle the file upload logic here
+      console.log("File uploaded:", file.name);
+      // Reset the file input
+      fileInputRef.current.value = null;
+    }
+  };
+
+  const handleButtonClick = () => {
+    fileInputRef.current.click();
   };
 
   return (
@@ -125,120 +123,17 @@ const VouchersPage = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                Add Voucher
-                <Plus className="size-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Voucher</DialogTitle>
-                <DialogDescription>
-                  Fill in the details to add a new voucher.
-                </DialogDescription>
-              </DialogHeader>
-              <form className="space-y-4" onSubmit={handleCreateSubmit}>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Created On
-                  </label>
-                  <Input
-                    type="date"
-                    name="createdOn"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Category
-                  </label>
-                  <Input
-                    type="text"
-                    name="category"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Requested Budget
-                  </label>
-                  <Input
-                    type="text"
-                    name="requestedBudget"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Approved Budget
-                  </label>
-                  <Input
-                    type="text"
-                    name="approvedBudget"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Approved By
-                  </label>
-                  <Input
-                    type="text"
-                    name="approvedBy"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Rejected By
-                  </label>
-                  <Input
-                    type="text"
-                    name="rejectedBy"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Approved/Rejected On
-                  </label>
-                  <Input
-                    type="date"
-                    name="approvedRejectedOn"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Status
-                  </label>
-                  <Input
-                    type="text"
-                    name="status"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Reason
-                  </label>
-                  <Input
-                    type="text"
-                    name="reason"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button type="submit">Add</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+            <Button onClick={handleButtonClick}>
+              Add vouchers
+            </Button>
+          </div>
           <Button className="flex items-center gap-2">
             Export
             <Download className="size-4" />
