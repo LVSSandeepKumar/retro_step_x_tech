@@ -64,11 +64,11 @@ const InventoryOverviewCard = ({ title }) => {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     };
 
-    setSold(generateRandomNumber(50, 85));
-    setTotal(100 - sold);
     setPercentage((Math.random() * 100).toFixed(2));
 
     if (title === "Low Stock") {
+      setSold(generateRandomNumber(80, 90));
+      setTotal(100 - sold);  
       const lowStockData = [
         {
           productID: 1,
@@ -121,6 +121,8 @@ const InventoryOverviewCard = ({ title }) => {
       ];
       setData(lowStockData);
     } else if (title === "Fast Moving") {
+      setSold(generateRandomNumber(80, 90));
+      setTotal(100 - sold);
       const fastMovingData = [
         {
           productID: 1,
@@ -173,6 +175,8 @@ const InventoryOverviewCard = ({ title }) => {
       ];
       setData(fastMovingData);
     } else if (title === "Dead Stock") {
+      setSold(generateRandomNumber(20, 30));
+      setTotal(100 - sold);
       const deadStockData = [
         {
           productID: 1,
@@ -271,13 +275,13 @@ const InventoryOverviewCard = ({ title }) => {
           <div className="">
             <div className="flex justify-between">
               <div className="flex flex-col">
-                <span className="text-md mb-2 text-gray-600">{title}</span>
+                <span className="text-md mb-2 text-gray-600">Sales</span>
                 <span className="text-lg font-bold text-gray-800 mb-2">
                   {sold}%
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-md mb-2 text-gray-600">Visits</span>
+                <span className="text-md mb-2 text-gray-600">Inwards</span>
                 <span className="text-lg font-bold text-gray-800 mb-2">
                   {total - sold}%
                 </span>

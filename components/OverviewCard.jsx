@@ -1,42 +1,42 @@
-import { useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import {
   Table,
+  TableBody,
+  TableCell,
   TableHeader,
   TableRow,
-  TableCell,
-  TableBody,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { ArrowDownUp } from "lucide-react";
-import { useParams } from "next/navigation";
 import {
   PickAccessories,
   PickAColor,
   PickAName,
   pickAProduct,
 } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { ArrowDownUp } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const OverviewCard = ({ title }) => {
-  const { brandName } = useParams();
   const [sold, setSold] = useState(0);
   const [total, setTotal] = useState(0);
   const [percentage, setPercentage] = useState(0);
@@ -48,20 +48,10 @@ const OverviewCard = ({ title }) => {
   });
   const [data, setData] = useState([]);
 
-  const productNameArray =
-    brandName === "Bajaj"
-      ? ["Bajaj Pulsar 150", "Bajaj Avenger 150", "Bajaj Dominar 250"]
-      : brandName === "Vespa"
-      ? ["Vespa 125", "Vespa 125XT"]
-      : brandName === "Tata"
-      ? ["Tata Nexon", "Tata Nexon 2.0", "Tata Nexon 2.0 XZ"]
-      : brandName === "Triumph"
-      ? [
-          "Triumph Street Triple",
-          "Triumph Street Triple 125",
-          "Triumph Street Triple 150",
-        ]
-      : [];
+  const pathName = usePathname();
+  const brandName = pathName.split("/")[2];
+  const locationName = pathName.split("/")[4];
+  const subLocationName = pathName.split("/")[6];
 
   const accesoriesNameArray =
     brandName === "Bajaj"
@@ -308,7 +298,9 @@ const OverviewCard = ({ title }) => {
                 </span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-md mb-2 text-gray-600">Visits</span>
+                <span className="text-md mb-2 text-gray-600">
+                  <Link href={`/brands/${brandName}/locations/${locationName}/sublocations/${subLocationName}/visits`}>Visits</Link>
+                </span>
                 <span className="text-lg font-bold text-gray-800 mb-2">
                   {100 - sold}%
                 </span>

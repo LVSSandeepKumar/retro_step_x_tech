@@ -54,13 +54,17 @@ const Sidebar = () => {
                 className="block w-full text-left p-2 rounded hover:bg-gray-700"
                 onClick={() => setIsBillsOpen(!isBillsOpen)}
               >
-                <span className="flex items-center justify-between gap-2">Bills <ArrowDown className="size-4"/></span>
+                <span className="flex items-center justify-between gap-2">
+                  Bills <ArrowDown className="size-4" />
+                </span>
               </button>
               {isBillsOpen && (
                 <ul className="pl-4 space-y-2">
                   <li
                     className={`block p-2 rounded ${
-                      currentPage === "vouchers" ? "bg-gray-600" : "hover:bg-gray-700"
+                      currentPage === "vouchers"
+                        ? "bg-gray-600"
+                        : "hover:bg-gray-700"
                     }`}
                   >
                     <Link
@@ -71,7 +75,9 @@ const Sidebar = () => {
                   </li>
                   <li
                     className={`block p-2 rounded ${
-                      currentPage === "marketing" ? "bg-gray-600" : "hover:bg-gray-700"
+                      currentPage === "marketing"
+                        ? "bg-gray-600"
+                        : "hover:bg-gray-700"
                     }`}
                   >
                     <Link
@@ -85,13 +91,26 @@ const Sidebar = () => {
             </li>
             <li
               className={`block p-2 rounded ${
-                currentPage === "employees" ? "bg-gray-600" : "hover:bg-gray-700"
+                currentPage === "employees"
+                  ? "bg-gray-600"
+                  : "hover:bg-gray-700"
               }`}
             >
               <Link
                 href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/employees`}
               >
                 Employees
+              </Link>
+            </li>
+            <li
+              className={`block p-2 rounded ${
+                currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
+              }`}
+            >
+              <Link
+                href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/visits`}
+              >
+                Visits
               </Link>
             </li>
           </ul>
