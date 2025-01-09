@@ -3,8 +3,8 @@ import { totals, enrichedParent } from "../../lib/relations";
 import VaryingLine from "./VaryingLine";
 
 const SelectionGrid = ({ onCardSelect }) => {
-  // Initialize selectedCard with "sales"
-  const [selectedCard, setSelectedCard] = useState("sales");
+  // Add prop for selection handling
+  const [selectedCard, setSelectedCard] = useState(null);
   const [cardData, setCardData] = useState([]);
 
   useEffect(() => {
@@ -36,9 +36,7 @@ const SelectionGrid = ({ onCardSelect }) => {
         ),
       },
     ]);
-    // Notify parent of initial selection
-    onCardSelect("sales");
-  }, [onCardSelect]);
+  }, []);
 
   const handleCardClick = (cardId) => {
     setSelectedCard(cardId);
@@ -57,7 +55,7 @@ const SelectionGrid = ({ onCardSelect }) => {
   };
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-8">
       {cardData.map((card) => (
         <div
           key={card.id}
@@ -68,7 +66,7 @@ const SelectionGrid = ({ onCardSelect }) => {
               : "border border-transparent hover:bg-gray-50"
           }`}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-8">
             <div>
               <h3 className="text-2xl font-semibold mb-2">{card.title}</h3>
               <p className="text-3xl font-bold mb-2">{card.value}</p>

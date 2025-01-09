@@ -62,7 +62,7 @@ export default function Home() {
   const [timePeriod, setTimePeriod] = useState("monthly");
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedOverview, setSelectedOverview] = useState(null);
+  const [selectedOverview, setSelectedOverview] = useState("sales");
   const [periodValues, setPeriodValues] = useState({
     period: "WEEKLY",
     cash: Math.random() * 1000000,
@@ -436,7 +436,7 @@ export default function Home() {
                 <Line
                   type="monotone"
                   dataKey="Total"
-                  stroke="#8fcbff"
+                  stroke="#000000"
                   strokeWidth={2}
                   dot={false}
                 />
