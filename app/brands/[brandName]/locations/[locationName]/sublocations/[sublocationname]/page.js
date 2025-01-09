@@ -25,9 +25,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "react-hot-toast";
+import Link from "next/link";
 
 const SubLocationPage = () => {
-  const { brandName, locationName } = useParams();
+  const { brandName, locationName, sublocationname } = useParams();
   const brandData = mockLocations.find(
     (brand) => brand.brandName === brandName
   );
@@ -94,13 +95,20 @@ const SubLocationPage = () => {
             ))}
           </TabsList>
 
+          {/*Create sale button */}
+            <Button asChild>
+          <Link
+            href={`/brands/${brandName}/locations/${locationName}/sublocations/${sublocationname}/create_sale`}
+            className="flex items-center gap-2"
+          >
+              Create Sale
+              <Plus className="size-4 ml-2" />
+          </Link>
+            </Button>
+
+            {/*Create Sale dialog */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                Create Sale
-                <Plus className="size-4 ml-2" />
-              </Button>
-            </DialogTrigger>
+            <DialogTrigger asChild></DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Create Sale</DialogTitle>

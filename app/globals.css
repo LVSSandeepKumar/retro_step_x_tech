@@ -70,3 +70,16 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Add these styles for the tabs */
+.tabs-container {
+  @apply w-full border-b;
+}
+
+.tabs-list {
+  @apply container mx-auto flex justify-between;
+}
+
+.tab-trigger[data-state='active'] {
+  @apply bg-primary/5 border-b-2 border-primary;
+}

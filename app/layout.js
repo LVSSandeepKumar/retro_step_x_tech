@@ -1,7 +1,11 @@
+"use client";
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { HeaderProvider } from "@/context/HeaderContext";
 import { SidebarProvider } from "@/context/SidebarContext";
+import ChatBot from "./_components/ChatBot";
+import LayoutWrapper from "./_components/LayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,20 +17,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: "Retro App",
-  description: "By StepXTech",
-};
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <HeaderProvider>
           <SidebarProvider>
-            {children}
+            <LayoutWrapper>
+              {children}
+              <ChatBot />
+            </LayoutWrapper>
           </SidebarProvider>
         </HeaderProvider>
       </body>
