@@ -57,12 +57,12 @@ const SelectionGrid = ({ onCardSelect }) => {
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-10">
       {cardData.map((card) => (
         <div
           key={card.id}
           onClick={() => handleCardClick(card.id)}
-          className={`cursor-pointer p-6 py-10 rounded-lg shadow-md transition-colors duration-200 ${
+          className={`cursor-pointer p-6 rounded-lg shadow-md transition-colors duration-200 ${
             selectedCard === card.id
               ? "border-2 border-blue-500"
               : "border border-transparent hover:bg-gray-50"

@@ -187,7 +187,7 @@ const Sidebar = () => {
       {showSidebar && !isCollapsed && (
         <div className="mt-4">
           <h2 className="text-lg font-semibold my-4">
-            {decodedSubLocationName} Details
+            {decodedSubLocationName === "undefined" ? "": decodedSubLocationName} Details
           </h2>
           <ul className="space-y-2">
             <li>
