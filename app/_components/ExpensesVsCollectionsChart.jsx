@@ -9,13 +9,6 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDownIcon } from "lucide-react";
 
 ChartJS.register(
   CategoryScale,
@@ -33,7 +26,7 @@ const PERIODS = {
   YTD: "Year to Date",
 };
 
-const ExpensesVsCollectionsChart = ({ periodValues, onPeriodChange }) => {
+const ExpensesVsCollectionsChart = ({ periodValues }) => {
   const data = {
     labels: ['Collections vs Expenses'],
     datasets: [
@@ -84,23 +77,9 @@ const ExpensesVsCollectionsChart = ({ periodValues, onPeriodChange }) => {
     <div className="p-6 bg-white rounded-lg shadow-lg">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-bold text-gray-700">Collections vs Expenses</h2>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center px-2 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-              {periodValues.period} <ChevronDownIcon className="size-4 ml-1" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-white shadow-lg rounded-md">
-            {Object.values(PERIODS).map((period) => (
-              <DropdownMenuItem 
-                key={period}
-                onSelect={() => onPeriodChange(period)}
-              >
-                {period}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <span className="text-sm font-medium text-gray-700">
+          {periodValues.period}
+        </span>
       </div>
 
       <div className="h-[300px]">

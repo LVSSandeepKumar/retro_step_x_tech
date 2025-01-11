@@ -7,7 +7,7 @@ const VaryingLine = ({ dataKey, color = "#4f46e5" }) => {
   useEffect(() => {
     // Generate 8 random data points between 80000 and 150000
     const generateRandomData = () => {
-      return Array.from({ length: 8 }, (_, index) => ({
+      return Array.from({ length: 12 }, (_, index) => ({
         name: index,
         value: Math.floor(Math.random() * (150000 - 80000) + 80000)
       }));

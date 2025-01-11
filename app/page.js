@@ -46,7 +46,16 @@ import SelectionGrid from "./_components/SelectionGrid";
 import SubOwnOverviewChart from "./_components/SubOwnOverviewChart";
 import VerifiedUnverifiedChart from "./_components/VerifiedUnverifiedChart";
 import { ExpensesDivisionChart } from "./_components/ExpensesDivisionChart";
-import ServicesDetailsChart from "./_components/SalesAndServicesDetailsChart";
+import SalesAndServicesDetailsChart from "./_components/SalesAndServicesDetailsChart";
+import LocationSalesDetails from "./_components/LocationSalesDetails";
+import LocationCashAnalysisDetails from "./_components/LocationCashAnalysisDetails";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 ChartJS.register(
   CategoryScale,
@@ -62,13 +71,26 @@ export default function Home() {
   const [timePeriod, setTimePeriod] = useState("monthly");
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedOverview, setSelectedOverview] = useState("sales");
+  const [selectedOverview, setSelectedOverview] = useState(null);
   const [periodValues, setPeriodValues] = useState({
-    period: "WEEKLY",
+    period: "YESTERDAY",
     cash: Math.random() * 1000000,
     upi: Math.random() * 1000000,
     expenses: Math.random() * 1000000,
   });
+  const [revenueValues, setRevenueValues] = useState({
+    period: "YESTERDAY",
+    sales: Math.random() * 1000000,
+    services: Math.random() * 700000,
+    others: Math.random() * 400000,
+  });
+
+  const PERIODS = {
+    YESTERDAY: "Yesterday",
+    WEEKLY: "Weekly",
+    MONTHLY: "This Month",
+    YTD: "Year to Date",
+  };
 
   const router = useRouter();
 
@@ -333,6 +355,28 @@ export default function Home() {
     });
   };
 
+  const generateRevenueValues = (period) => {
+    const baseValues = {
+      YESTERDAY: Math.random() * (99999 - 10000) + 10000,
+      WEEKLY: Math.random() * (999999 - 100000) + 100000,
+      MONTHLY: Math.random() * (999999 - 500000) + 500000,
+      YTD: Math.random() * (9999999 - 1000000) + 1000000,
+    };
+
+    const baseValue = baseValues[period];
+
+    setRevenueValues({
+      period,
+      sales: baseValue,
+      services: baseValue * (0.6 + Math.random() * 0.2),
+      others: baseValue * (0.3 + Math.random() * 0.2),
+    });
+  };
+
+  const handleCardSelect = (cardId) => {
+    setSelectedOverview(cardId);
+  };
+
   return (
     <div className="flex">
       <Sidebar />
@@ -364,24 +408,65 @@ export default function Home() {
           </TabsList>
 
           <TabsContent value="revenue" className="p-4 md:p-6 lg:p-8 space-y-4">
-            {/* Grid of analysis */}
+            <div className="flex justify-end mb-4">
+              <Select
+                value={revenueValues.period}
+                onValueChange={generateRevenueValues}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select period" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(PERIODS).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="h-[432px]"> {/* Fixed height container */}
+              <div className="flex flex-col gap-4">
                 <SelectionGrid
-                  onCardSelect={(cardId) => setSelectedOverview(cardId)}
+                  onCardSelect={handleCardSelect}
+                  selectedCard="sales"
+                  periodValues={revenueValues}
                 />
               </div>
-              <div className="h-[432px]"> {/* Fixed height container */}
-                <SubOwnOverviewChart selectedCard={selectedOverview} />
+              <div className="flex flex-col gap-4">
+                <SelectionGrid
+                  onCardSelect={handleCardSelect}
+                  selectedCard="services"
+                  periodValues={revenueValues}
+                />
               </div>
-              <div className="h-[432px]"> {/* Fixed height container */}
-                <ServicesDetailsChart selectedCard={selectedOverview} />
+              <div className="flex flex-col gap-4">
+                <SelectionGrid
+                  onCardSelect={handleCardSelect}
+                  selectedCard="others"
+                  periodValues={revenueValues}
+                />
               </div>
             </div>
 
+            {/*Dynamic Data rendering based on selectedOverview */}
+            <div className="pt-4">
+              {selectedOverview && (
+                <>
+                  <SalesAndServicesDetailsChart
+                    selectedCard={selectedOverview}
+                    period={revenueValues.period}
+                  />
+                  {selectedOverview === "sales" && (
+                    <LocationSalesDetails period={revenueValues.period} />
+                  )}
+                </>
+              )}
+            </div>
 
             {/* Sales Performance Chart */}
-            <h1 className="text-xl font-bold my-6">
+            {/* <h1 className="text-xl font-bold my-6">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <span className="cursor-pointer hover:underline">
@@ -406,10 +491,10 @@ export default function Home() {
                 </DropdownMenuContent>
               </DropdownMenu>
               <span className="ml-2">Brand Sales Performance</span>
-            </h1>
+            </h1> */}
 
             {/*Sales Performance chart based on timeline */}
-            <ResponsiveContainer width="100%" height={400}>
+            {/* <ResponsiveContainer width="100%" height={400}>
               <LineChart
                 data={salesData}
                 margin={{
@@ -450,24 +535,37 @@ export default function Home() {
                   />
                 ))}
               </LineChart>
-            </ResponsiveContainer>
+            </ResponsiveContainer> */}
           </TabsContent>
 
           <TabsContent value="finances" className="p-4 md:p-6 lg:p-8 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/*Finance Summary card */}
-              <FinanceSummary
-                periodValues={periodValues}
-                onPeriodChange={generateValuesForPeriod}
-              />
-              {/* Doughnut chart for verified vs unverified cash collections */}
-              <VerifiedUnverifiedChart cashCollections={periodValues.cash} />
-              {/*Expenses vs Collections Bar Chart */}
-              <ExpensesVsCollectionsChart
-                periodValues={periodValues}
-                onPeriodChange={generateValuesForPeriod}
-              />
+            <div className="flex justify-end mb-4">
+              <Select
+                value={periodValues.period}
+                onValueChange={(newPeriod) =>
+                  generateValuesForPeriod(newPeriod)
+                }
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select period" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(PERIODS).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <FinanceSummary periodValues={periodValues} />
+              <VerifiedUnverifiedChart cashCollections={periodValues.cash} />
+              <ExpensesVsCollectionsChart periodValues={periodValues} />
+            </div>
+
+            <LocationCashAnalysisDetails />
             {/* Ageing Analysis Heatmap */}
             <AgeingAnalysisHeatmap />
 

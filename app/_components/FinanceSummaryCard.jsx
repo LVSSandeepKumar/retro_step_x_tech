@@ -1,11 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDownIcon, RefreshCwIcon, ChartBarIcon } from "lucide-react";
+import { RefreshCwIcon, ChartBarIcon } from "lucide-react";
 
 const PERIODS = {
   WEEKLY: "Weekly",
@@ -14,11 +8,7 @@ const PERIODS = {
   YTD: "Year to Date",
 };
 
-export default function FinanceSummary({ periodValues, onPeriodChange }) {
-  const handlePeriodChange = (newPeriod) => {
-    onPeriodChange(newPeriod);
-  };
-
+export default function FinanceSummary({ periodValues }) {
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg max-w-lg">
       <div className="flex flex-col gap-2 mb-4">
@@ -34,20 +24,9 @@ export default function FinanceSummary({ periodValues, onPeriodChange }) {
           <div className="p-2 bg-gray-100 rounded-full">
             <RefreshCwIcon className="size-5 text-gray-500" />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center px-2 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                {periodValues.period} <ChevronDownIcon className="size-4 ml-1" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {Object.values(PERIODS).map((period) => (
-                <DropdownMenuItem key={period} onSelect={() => handlePeriodChange(period)}>
-                  {period}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <span className="text-sm font-medium text-gray-700">
+            {periodValues.period}
+          </span>
         </div>
         <div>
           <h1 className="text-md font-medium text-gray-900">
@@ -70,20 +49,9 @@ export default function FinanceSummary({ periodValues, onPeriodChange }) {
           <div className="p-2 bg-gray-100 rounded-full">
             <RefreshCwIcon className="size-5 text-gray-500" />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center px-2 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                {periodValues.period} <ChevronDownIcon className="size-4 ml-1" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {Object.values(PERIODS).map((period) => (
-                <DropdownMenuItem key={period} onSelect={() => handlePeriodChange(period)}>
-                  {period}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <span className="text-sm font-medium text-gray-700">
+            {periodValues.period}
+          </span>
         </div>
         <div>
           <h1 className="text-md font-medium text-gray-900">UPI Collections</h1>
