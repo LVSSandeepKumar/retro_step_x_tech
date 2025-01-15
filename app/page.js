@@ -2,12 +2,6 @@
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -24,31 +18,11 @@ import {
   Title,
 } from "chart.js";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import {
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { useState, useEffect } from "react";
 
 // Add to existing imports
 
 import Sidebar from "@/components/sidebar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AgeingAnalysisHeatmap from "./_components/AgeingAnalysis";
-import ExpensesVsCollectionsChart from "./_components/ExpensesVsCollectionsChart";
-import FinanceSummary from "./_components/FinanceSummaryCard";
-import SelectionGrid from "./_components/SelectionGrid";
-import SubOwnOverviewChart from "./_components/SubOwnOverviewChart";
-import VerifiedUnverifiedChart from "./_components/VerifiedUnverifiedChart";
-import { ExpensesDivisionChart } from "./_components/ExpensesDivisionChart";
-import SalesAndServicesDetailsChart from "./_components/SalesAndServicesDetailsChart";
-import LocationSalesDetails from "./_components/LocationSalesDetails";
-import LocationCashAnalysisDetails from "./_components/LocationCashAnalysisDetails";
 import {
   Select,
   SelectContent,
@@ -56,6 +30,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AgeingAnalysisHeatmap from "./_components/AgeingAnalysis";
+import ChatBot from "./_components/ChatBot";
+import { ExpensesDivisionChart } from "./_components/ExpensesDivisionChart";
+import ExpensesVsCollectionsChart from "./_components/ExpensesVsCollectionsChart";
+import FinanceSummary from "./_components/FinanceSummaryCard";
+import LocationCashAnalysisDetails from "./_components/LocationCashAnalysisDetails";
+import LocationRevenueDetails from "./_components/LocationRevenueDetails";
+import LocationStockAnalysisDetails from "./_components/LocationStockAnalysisDetails";
+import SalesAndServicesDetailsChart from "./_components/SalesAndServicesDetailsChart";
+import SelectionGrid from "./_components/SelectionGrid";
+import VerifiedUnverifiedChart from "./_components/VerifiedUnverifiedChart";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown, ChevronUp } from "lucide-react"; // Add this import
 
 ChartJS.register(
   CategoryScale,
@@ -66,6 +58,47 @@ ChartJS.register(
   ChartLegend
 );
 
+// Constants for data ranges
+const AMOUNT_RANGES = {
+  YESTERDAY: { min: 10000, max: 100000 },
+  WEEKLY: { min: 100001, max: 1000000 },
+  MONTHLY: { min: 1000001, max: 10000000 },
+  YTD: { min: 10000001, max: 100000000 }
+};
+
+const COUNT_RANGES = {
+  YESTERDAY: { min: 1, max: 10 },
+  WEEKLY: { min: 11, max: 100 },
+  MONTHLY: { min: 101, max: 1000 },
+  YTD: { min: 10001, max: 20000 }
+};
+
+// Single random generator function
+const generateRandomInRange = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+};
+
+// Data generation function
+const generatePeriodData = (period) => {
+  const amountRange = AMOUNT_RANGES[period];
+  const countRange = COUNT_RANGES[period];
+  
+  const baseSales = generateRandomInRange(amountRange.min, amountRange.max);
+  const baseCount = generateRandomInRange(countRange.min, countRange.max);
+  
+  return {
+    period,
+    sales: baseSales,
+    services: Math.round(baseSales * 0.7),
+    others: Math.round(baseSales * 0.4),
+    counts: {
+      sales: baseCount,
+      services: Math.round(baseCount * 0.7),
+      others: Math.round(baseCount * 0.4)
+    }
+  };
+};
+
 export default function Home() {
   const [brands, setBrands] = useState(brandsData);
   const [timePeriod, setTimePeriod] = useState("monthly");
@@ -74,16 +107,14 @@ export default function Home() {
   const [selectedOverview, setSelectedOverview] = useState(null);
   const [periodValues, setPeriodValues] = useState({
     period: "YESTERDAY",
-    cash: Math.random() * 1000000,
-    upi: Math.random() * 1000000,
-    expenses: Math.random() * 1000000,
+    cash: 200000,     // Fixed initial value
+    upi: 160000,      // 80% of cash
+    expenses: 288000  // 80% of total collections
   });
-  const [revenueValues, setRevenueValues] = useState({
-    period: "YESTERDAY",
-    sales: Math.random() * 1000000,
-    services: Math.random() * 700000,
-    others: Math.random() * 400000,
-  });
+  // Update initial state to null to trigger useEffect
+  const [revenueValues, setRevenueValues] = useState(null);
+  const [openCash, setOpenCash] = useState(false);
+  const [openAgeing, setOpenAgeing] = useState(false);
 
   const PERIODS = {
     YESTERDAY: "Yesterday",
@@ -327,58 +358,45 @@ export default function Home() {
   };
 
   const generateValuesForPeriod = (period) => {
-    // Base values in respective digits
-    const baseValues = {
-      YESTERDAY: Math.random() * (99999 - 10000) + 10000, // 5 digits (10k-99k)
-      WEEKLY: Math.random() * (999999 - 100000) + 100000, // 6 digits (100k-999k)
-      MONTHLY: Math.random() * (999999 - 500000) + 500000, // 6 digits (500k-999k)
-      YTD: Math.random() * (9999999 - 1000000) + 1000000, // 7 digits (1M-9.9M)
+    const multipliers = {
+      YESTERDAY: 10,
+      WEEKLY: 100,
+      MONTHLY: 1000,
+      YTD: 10000
     };
-
-    const baseValue = baseValues[period] || baseValues["WEEKLY"];
-
-    // Ensure UPI is slightly less than cash (80-90% of cash)
-    const upiPercentage = Math.random() * (0.9 - 0.8) + 0.8;
-
-    // Ensure expenses are 70-85% of total collections
-    const expensePercentage = Math.random() * (0.85 - 0.7) + 0.7;
-
-    const cash = baseValue;
-    const upi = baseValue * upiPercentage;
-    const expenses = (cash + upi) * expensePercentage;
-
+    
+    const baseValue = 200000 * multipliers[period];
     setPeriodValues({
       period,
-      cash,
-      upi,
-      expenses,
+      cash: baseValue,
+      upi: Math.round(baseValue * 0.8),
+      expenses: Math.round(baseValue * 1.6 * 0.8)
     });
   };
 
+  // Add useEffect for initial data generation
+  useEffect(() => {
+    if (!revenueValues) {
+      setRevenueValues(generatePeriodData("YESTERDAY"));
+    }
+  }, []);
+
+  // Simplified generateRevenueValues function
   const generateRevenueValues = (period) => {
-    const baseValues = {
-      YESTERDAY: Math.random() * (99999 - 10000) + 10000,
-      WEEKLY: Math.random() * (999999 - 100000) + 100000,
-      MONTHLY: Math.random() * (999999 - 500000) + 500000,
-      YTD: Math.random() * (9999999 - 1000000) + 1000000,
-    };
-
-    const baseValue = baseValues[period];
-
-    setRevenueValues({
-      period,
-      sales: baseValue,
-      services: baseValue * (0.6 + Math.random() * 0.2),
-      others: baseValue * (0.3 + Math.random() * 0.2),
-    });
+    setRevenueValues(generatePeriodData(period));
   };
 
   const handleCardSelect = (cardId) => {
     setSelectedOverview(cardId);
   };
 
+  // Add loading state handling in the return
+  if (!revenueValues) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="flex">
+    <div className="flex bg-slate-100">
       <Sidebar />
       <div className="flex-1">
         <Header heading={"Retro"} />
@@ -445,13 +463,13 @@ export default function Home() {
                 <SelectionGrid
                   onCardSelect={handleCardSelect}
                   selectedCard="others"
-                  periodValues={revenueValues}
+                  periodValues={revenueValues} // Fix: Pass the entire revenueValues object
                 />
               </div>
             </div>
 
             {/*Dynamic Data rendering based on selectedOverview */}
-            <div className="pt-4">
+            <div className="pt-4 flex flex-col gap-4">
               {selectedOverview && (
                 <>
                   <SalesAndServicesDetailsChart
@@ -459,7 +477,13 @@ export default function Home() {
                     period={revenueValues.period}
                   />
                   {selectedOverview === "sales" && (
-                    <LocationSalesDetails period={revenueValues.period} />
+                    <LocationRevenueDetails period={revenueValues.period} type="sales"/>
+                  )}
+                  {selectedOverview === "services" && (
+                    <LocationRevenueDetails period={revenueValues.period} type="services"/>
+                  )}
+                  {selectedOverview === "others" && (
+                    <LocationRevenueDetails period={revenueValues.period} type="others"/>
                   )}
                 </>
               )}
@@ -565,9 +589,33 @@ export default function Home() {
               <ExpensesVsCollectionsChart periodValues={periodValues} />
             </div>
 
-            <LocationCashAnalysisDetails />
-            {/* Ageing Analysis Heatmap */}
-            <AgeingAnalysisHeatmap />
+            <Collapsible
+              open={openCash}
+              onOpenChange={setOpenCash}
+              className="bg-white rounded-lg shadow-lg"
+            >
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-gray-50">
+                <h2 className="text-lg font-bold text-gray-700">Location-wise Closing Balance Analysis</h2>
+                {openCash ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <LocationCashAnalysisDetails />
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Collapsible
+              open={openAgeing}
+              onOpenChange={setOpenAgeing}
+              className="bg-white rounded-lg shadow-lg"
+            >
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-gray-50">
+                <h2 className="text-lg font-bold text-gray-700">Claims Ageing Analysis</h2>
+                {openAgeing ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <AgeingAnalysisHeatmap />
+              </CollapsibleContent>
+            </Collapsible>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="col-span-2">
@@ -593,10 +641,16 @@ export default function Home() {
           >
             <h1 className="text-xl font-bold">Inventory Management</h1>
             {/* Add inventory specific components here */}
+            <LocationStockAnalysisDetails />
           </TabsContent>
         </Tabs>
 
         {selectedBrand && <BrandSheet brand={selectedBrand} />}
+        <ChatBot 
+          revenueData={revenueValues}
+          financeData={periodValues}
+          selectedOverview={selectedOverview}
+        />
       </div>
     </div>
   );

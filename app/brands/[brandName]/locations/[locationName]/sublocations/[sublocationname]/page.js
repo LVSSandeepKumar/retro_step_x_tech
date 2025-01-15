@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { mockLocations, subLocationsData } from "@/lib/constants";
+import { subLocationsData } from "@/lib/constants";
 import ServiceCard from "@/app/brands/[brandName]/locations/[locationName]/_components/ServiceCard";
 import BestSellingProductsTable from "@/app/brands/[brandName]/locations/[locationName]/_components/BestSellingProductsTable";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -27,45 +27,57 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 
+const generateRandomSubLocationData = () => {
+  const serviceDivisions = ["Bike", "Auto", "Commercial", "Electric"].sort(() => Math.random() - 0.5).slice(0, 2);
+  
+  return {
+    serviceDivisions,
+    salesMetrics: {
+      visits: Math.floor(Math.random() * 50) + 50,
+      orders: Math.floor(Math.random() * 40) + 30,
+      conversionRate: Math.floor(Math.random() * 30) + 40,
+    },
+    inventory: {
+      lowStock: Array(5).fill().map(() => ({
+        name: `Product ${Math.floor(Math.random() * 100)}`,
+        quantity: Math.floor(Math.random() * 10),
+        reorderPoint: Math.floor(Math.random() * 20) + 10
+      })),
+      fastMoving: Array(5).fill().map(() => ({
+        name: `Product ${Math.floor(Math.random() * 100)}`,
+        soldCount: Math.floor(Math.random() * 100) + 50,
+        revenue: Math.floor(Math.random() * 100000)
+      })),
+      deadStock: Array(5).fill().map(() => ({
+        name: `Product ${Math.floor(Math.random() * 100)}`,
+        daysInStock: Math.floor(Math.random() * 100) + 60,
+        value: Math.floor(Math.random() * 50000)
+      }))
+    },
+    bestSalesPerson: {
+      name: `${['John', 'Jane', 'Mike', 'Sarah'][Math.floor(Math.random() * 4)]} ${['Smith', 'Doe', 'Johnson', 'Williams'][Math.floor(Math.random() * 4)]}`,
+      sales: Math.floor(Math.random() * 4000) + 1000,
+      target: Math.floor(Math.random() * 5000) + 5000,
+      performance: Math.floor(Math.random() * 30) + 70
+    },
+    accessories: {
+      totalSold: Math.floor(Math.random() * 1000),
+      revenue: Math.floor(Math.random() * 500000),
+      topSelling: ['Helmets', 'Phone Holders', 'Seat Covers'][Math.floor(Math.random() * 3)]
+    },
+    insurance: {
+      policies: Math.floor(Math.random() * 100),
+      premium: Math.floor(Math.random() * 200000),
+      claims: Math.floor(Math.random() * 20)
+    }
+  };
+};
+
 const SubLocationPage = () => {
   const { brandName, locationName, sublocationname } = useParams();
-  const brandData = mockLocations.find(
-    (brand) => brand.brandName === brandName
-  );
-  const decodedLocationName = decodeURIComponent(locationName);
-  const locationData = brandData?.locations.find(
-    (location) => location.locationName === decodedLocationName
-  );
-
-  if (!locationData) {
-    return <p>No data available for this location.</p>;
-  }
-
-  const locationNameWithoutCountry = decodedLocationName.replace(", India", "");
-  const subLocationNames =
-    subLocationsData.find(
-      (loc) => loc.locationName === locationNameWithoutCountry
-    )?.subLocations || [];
-
-  const [randomData, setRandomData] = useState(null);
+  const [subLocationData, setSubLocationData] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  useEffect(() => {
-    const generateRandomNumber = (min, max) => {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    };
-
-    const visits = generateRandomNumber(50, 100);
-    const orders = generateRandomNumber(30, 70);
-    const conversionRate = Math.floor((orders / visits) * 100);
-    const bestSalesPerson = {
-      name: "John Doe",
-      sales: generateRandomNumber(1000, 5000),
-      target: generateRandomNumber(5000, 10000),
-    };
-
-    setRandomData({ visits, orders, conversionRate, bestSalesPerson });
-  }, []);
+  const [randomData, setRandomData] = useState(null);
 
   const inputFields = [
     { label: "Product Type", type: "text", name: "productType" },
@@ -83,12 +95,29 @@ const SubLocationPage = () => {
     toast.success("New Sale created successfully");
   };
 
+  useEffect(() => {
+    // Generate random data on mount
+    setSubLocationData(generateRandomSubLocationData());
+    setRandomData({
+      visits: Math.floor(Math.random() * 50) + 50,
+      orders: Math.floor(Math.random() * 40) + 30,
+      conversionRate: Math.floor(Math.random() * 30) + 40,
+    });
+  }, []);
+
+  if (!subLocationData) return null;
+
+  const locationNameWithoutCountry = decodeURIComponent(locationName).replace(", India", "");
+  const subLocationNames = subLocationsData.find(
+    (loc) => loc.locationName === locationNameWithoutCountry
+  )?.subLocations || [];
+
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6">
-      <Tabs defaultValue={locationData.serviceDivisions[0]}>
+      <Tabs defaultValue={subLocationData.serviceDivisions[0]}>
         <div className="flex justify-between items-center">
           <TabsList className="mb-2">
-            {locationData.serviceDivisions.map((division, index) => (
+            {subLocationData.serviceDivisions.map((division, index) => (
               <TabsTrigger key={index} value={division}>
                 {division}
               </TabsTrigger>
@@ -134,7 +163,7 @@ const SubLocationPage = () => {
                     Service Divisions
                   </label>
                   <div className="mt-2 space-y-2">
-                    {locationData.serviceDivisions.map((division, index) => (
+                    {subLocationData.serviceDivisions.map((division, index) => (
                       <div key={index} className="flex items-center">
                         <Checkbox id={`division-${index}`} />
                         <label
@@ -157,7 +186,7 @@ const SubLocationPage = () => {
             </DialogContent>
           </Dialog>
         </div>
-        {locationData.serviceDivisions.map((division, index) => (
+        {subLocationData.serviceDivisions.map((division, index) => (
           <TabsContent key={index} value={division}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 mb-4">
               <InventoryOverviewCard title="Low Stock" />

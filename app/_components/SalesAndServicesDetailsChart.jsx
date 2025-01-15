@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { PieChart, Pie, Sector, ResponsiveContainer } from "recharts";
 import {
   Table,
-  TableHeader,
   TableBody,
-  TableHead,
-  TableRow,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+import React, { useEffect, useMemo, useState } from "react";
+import { Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
 
 const SERVICE_TYPES = [
   "Part Sales",
@@ -26,6 +26,24 @@ const PERIODS = [
   { label: "Monthly", value: "MONTHLY" },
   { label: "Year to Date", value: "YTD" },
 ];
+
+const COUNT_RANGES = {
+  YESTERDAY: { min: 1, max: 10 },
+  WEEKLY: { min: 11, max: 100 },
+  MONTHLY: { min: 101, max: 1000 },
+  YTD: { min: 10001, max: 20000 }
+};
+
+const AMOUNT_RANGES = {
+  YESTERDAY: { min: 10000, max: 100000 },
+  WEEKLY: { min: 100001, max: 1000000 },
+  MONTHLY: { min: 1000001, max: 10000000 },
+  YTD: { min: 10000001, max: 100000000 }
+};
+
+const generateRandomInRange = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+};
 
 const renderActiveShape =
   ({ selectedCard }) =>
@@ -94,57 +112,62 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period }) => {
   const [data, setData] = useState([]);
   const [totalValue, setTotalValue] = useState(0);
 
-  useEffect(() => {
-    if (selectedCard) {
-      setData(generateData(period));
-    }
-  }, [period, selectedCard]);
+  const generateData = useMemo(() => {
+    if (!period || !selectedCard) return [];
 
-  const generateData = (period) => {
-    // Base value based on period (matching SelectionGrid scale)
-    const baseValues = {
-      YESTERDAY: Math.random() * (99999 - 10000) + 100000,
-      WEEKLY: Math.random() * (999999 - 100000) + 1000000,
-      MONTHLY: Math.random() * (999999 - 500000) + 5000000,
-      YTD: Math.random() * (9999999 - 1000000) + 10000000,
+    const amountRange = AMOUNT_RANGES[period];
+    const countRange = COUNT_RANGES[period];
+    
+    const distributions = {
+      sales: [0.4, 0.3, 0.2, 0.1],
+      services: [0.4, 0.3, 0.2, 0.1],
+      others: [0.35, 0.3, 0.2, 0.15]
     };
 
-    const total = baseValues[period];
-    setTotalValue(total);
-    let remaining = total;
-    const items = selectedCard === "sales" ? BRANDS : selectedCard === "services" ? SERVICE_TYPES : selectedCard === "others" ? OTHER_TYPES : [];
+    const items = selectedCard === "sales" ? BRANDS 
+                : selectedCard === "services" ? SERVICE_TYPES 
+                : OTHER_TYPES;
+    
     const colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300"];
+    const distribution = distributions[selectedCard];
 
-    // Distribution ratios
-    const percentages =
-      selectedCard === "sales"
-        ? [0.37, 0.31, 0.26, 0.2] // For brands
-        : [0.4, 0.3, 0.2, 0.1]; // For services
+    let remainingValue = generateRandomInRange(amountRange.min, amountRange.max);
+    let remainingCount = generateRandomInRange(countRange.min, countRange.max);
 
     return items.map((item, index) => {
-      const isLast = index === items.length - 1;
-      const value = isLast ? remaining : Math.round(total * percentages[index]);
-      remaining -= value;
+      const ratio = distribution[index];
+      const value = index === items.length - 1 
+        ? remainingValue 
+        : Math.round(remainingValue * ratio);
+      
+      const count = index === items.length - 1
+        ? remainingCount
+        : Math.round(remainingCount * ratio);
 
-      // Generate random count based on value
-      const count = Math.floor(
-        value / (Math.random() * (20000 - 10000) + 10000) + 1
-      );
+      remainingValue -= value;
+      remainingCount -= count;
 
       return {
         name: item,
-        value: value,
-        count: count,
+        value,
+        count,
         fill: colors[index],
       };
     });
-  };
+  }, [period, selectedCard]);
+
+  useEffect(() => {
+    if (generateData.length > 0) {
+      setData(generateData);
+      setTotalValue(generateData.reduce((sum, item) => sum + item.value, 0));
+    }
+  }, [generateData]);
 
   const onPieEnter = (_, index) => {
     setActiveIndex(index);
   };
 
-  if (!selectedCard) {
+  if (!selectedCard || !period) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-6 flex items-center justify-center h-[400px]">
         <p className="text-gray-500">Select a card to view details</p>
@@ -153,9 +176,7 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 h-[404px]">
-      {" "}
-      {/* Fixed height to match other cards */}
+    <div className="bg-white rounded-lg shadow-md p-4 h-[504px]">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-bold text-gray-700">
           {selectedCard === "sales"
@@ -166,29 +187,43 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period }) => {
             ? "Other Revenue"
             : "Unknown"}
         </h2>
-        <span className="text-sm font-medium text-gray-700">
+        <span className="text-sm font-medium text-gray-600">
           {PERIODS.find(p => p.value === period)?.label || period}
         </span>
       </div>
 
-      <div className="flex items-center gap-4 justify-start">
-        {/* Chart Section */}
-        <div className="w-1/2 h-[300px]">
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie
-                activeIndex={activeIndex}
-                activeShape={renderActiveShape({ selectedCard })}
-                data={data}
-                innerRadius={100}
-                outerRadius={140}
-                cx="50%"
-                cy="50%"
-                dataKey="value"
-                onMouseEnter={onPieEnter}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+      <div className="flex items-center">
+        {/* Pie Chart Section */}
+        <div className="w-1/2">
+          <div className="h-[380px]">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  activeIndex={activeIndex}
+                  activeShape={renderActiveShape({ selectedCard })}
+                  data={data}
+                  innerRadius={110}
+                  outerRadius={150}
+                  cx="50%"
+                  cy="50%"
+                  dataKey="value"
+                  onMouseEnter={onPieEnter}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          {/* Color Labels */}
+          <div className="flex flex-wrap justify-center gap-4 mt-2">
+            {data.map((item, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: item.fill }}
+                />
+                <span className="text-sm">{item.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Table Section */}
@@ -197,43 +232,43 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period }) => {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
+                <TableHead>Count</TableHead>
                 <TableHead className="text-right">Value</TableHead>
-                <TableHead className="text-right">Count</TableHead>
+                <TableHead className="text-right">%</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {data.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell className="text-right">
-                    ₹{Math.round(item.value).toLocaleString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {item.count.toLocaleString()}
-                  </TableCell>
-                </TableRow>
-              ))}
+            <TableBody className="text-sm">
+              {data.map((item, index) => {
+                const total = data.reduce((sum, d) => sum + d.value, 0);
+                const percentage = Math.round((item.value / total) * 100); // Rounded to nearest integer
+                
+                return (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium py-1">{item.name}</TableCell>
+                    <TableCell className="py-1">{item.count.toLocaleString()}</TableCell>
+                    <TableCell className="text-right py-1">
+                      ₹{item.value.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right py-1">{percentage}%</TableCell>
+                  </TableRow>
+                );
+              })}
+              <TableRow className="font-semibold bg-muted/50">
+                <TableCell>Total</TableCell>
+                <TableCell>
+                  {data.reduce((sum, item) => sum + item.count, 0).toLocaleString()}
+                </TableCell>
+                <TableCell className="text-right">
+                  ₹{data.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
+                </TableCell>
+                <TableCell className="text-right">100%</TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </div>
-      </div>
-
-      {/* Color Legend Section */}
-      <div className="flex flex-wrap gap-4 justify-center mt-4 pb-2">
-        {data.map((item, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <div 
-              className="w-4 h-4 rounded"
-              style={{ backgroundColor: item.fill }}
-            />
-            <span className="text-sm text-gray-600">
-              {item.name} ({(item.value / totalValue * 100).toFixed(1)}%)
-            </span>
-          </div>
-        ))}
       </div>
     </div>
   );
 };
 
-export default SalesAndServicesDetailsChart;
+export default React.memo(SalesAndServicesDetailsChart);

@@ -16,7 +16,7 @@ const PERIODS = [
   { label: "Year to Date", value: "YTD" }
 ];
 
-const LocationCashAnalysisDetails = () => {
+const LocationStockAnalysisDetails = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('WEEKLY');
   const [chartData, setChartData] = useState(null);
 
@@ -29,25 +29,31 @@ const LocationCashAnalysisDetails = () => {
       'YTD': 8
     };
 
-    const baseAmount = 100000; // Base amount for cash
+    const baseCount = 100; // Base count for bikes
+    const baseValue = 100000; // Base value for bikes
     const multiplier = baseMultipliers[period];
     
     const data = locationList.map(city => {
-      const currentBalance = Math.round(baseAmount * multiplier * (0.8 + Math.random() * 0.4));
-      const lastDayBalance = Math.round(currentBalance * (0.85 + Math.random() * 0.3));
-      // Generate a small number of pending verifications (between 1 and 15)
-      const pendingVerifications = -Math.floor(Math.random() * 15 + 1);
+      // Generate new bikes data
+      const newBikesCount = Math.round(baseCount * multiplier * (0.6 + Math.random() * 0.4));
+      const newBikesValue = Math.round(baseValue * multiplier * (0.8 + Math.random() * 0.4));
+      
+      // Generate old/exchange bikes data
+      const oldBikesCount = Math.round(baseCount * multiplier * (0.3 + Math.random() * 0.2));
+      const oldBikesValue = Math.round(baseValue * multiplier * (0.4 + Math.random() * 0.2));
       
       return {
         city,
-        currentBalance,
-        lastDayBalance,
-        difference: currentBalance - lastDayBalance,
-        pendingVerifications
+        newBikesCount,
+        newBikesValue,
+        oldBikesCount,
+        oldBikesValue,
+        totalCount: newBikesCount + oldBikesCount,
+        totalValue: newBikesValue + oldBikesValue
       };
     });
 
-    return data.sort((a, b) => b.currentBalance - a.currentBalance);
+    return data.sort((a, b) => b.totalCount - a.totalCount);
   };
 
   useEffect(() => {
@@ -57,8 +63,8 @@ const LocationCashAnalysisDetails = () => {
       labels: data.map(item => item.city),
       datasets: [
         {
-          label: 'Current Balance',
-          data: data.map(item => item.currentBalance),
+          label: 'New Bikes',
+          data: data.map(item => item.newBikesCount),
           backgroundColor: 'rgba(54, 162, 235, 0.8)',
           borderColor: 'rgba(54, 162, 235, 1)',
           borderWidth: 1,
@@ -66,21 +72,13 @@ const LocationCashAnalysisDetails = () => {
           stack: 'Stack 0',
         },
         {
-          label: 'Last Day Balance',
-          data: data.map(item => item.lastDayBalance),
+          label: 'Old/Exchange Bikes',
+          data: data.map(item => item.oldBikesCount),
           backgroundColor: 'rgba(75, 192, 192, 0.8)',
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1,
           borderRadius: 5,
           stack: 'Stack 1',
-        },
-        {
-          label: 'Pending Verifications',
-          data: data.map(item => item.pendingVerifications),
-          backgroundColor: 'rgba(255, 99, 132, 0.8)',
-          borderColor: 'rgba(255, 99, 132, 1)',
-          borderWidth: 1,
-          borderRadius: 5,
         }
       ],
       _custom: data,
@@ -99,17 +97,8 @@ const LocationCashAnalysisDetails = () => {
       },
       y: {
         beginAtZero: true,
-        suggestedMin: -20, // Show up to -20 on negative axis
-        suggestedMax: Math.max(...(chartData?.datasets[0]?.data || [])) * 1.1,
         ticks: {
-          stepSize: 5, // Fixed step size instead of a function
-          callback: (value) => {
-            if (value >= 0) {
-              return `₹${(value/1000).toFixed(0)}K`;
-            } else {
-              return Math.abs(value) + ' pending';
-            }
-          }
+          callback: (value) => `${value} units`
         }
       }
     },
@@ -120,17 +109,19 @@ const LocationCashAnalysisDetails = () => {
           label: () => '',
           afterBody: (context) => {
             const locationData = chartData._custom[context[0].dataIndex];
-            const difference = locationData.difference;
-            const changeIndicator = difference >= 0 ? '▲' : '▼';
             
             return [
-              `Current Balance: ₹${locationData.currentBalance.toLocaleString()}`,
-              `Last Day Balance: ₹${locationData.lastDayBalance.toLocaleString()}`,
+              `New Bikes:`,
+              `  • Count: ${locationData.newBikesCount} units`,
+              `  • Value: ₹${locationData.newBikesValue.toLocaleString()}`,
               '',
-              `Change: ${changeIndicator} ₹${Math.abs(difference).toLocaleString()}`,
-              `Percentage: ${((difference / locationData.lastDayBalance) * 100).toFixed(1)}%`,
+              `Old/Exchange Bikes:`,
+              `  • Count: ${locationData.oldBikesCount} units`,
+              `  • Value: ₹${locationData.oldBikesValue.toLocaleString()}`,
               '',
-              `Pending Verifications: ${Math.abs(locationData.pendingVerifications)}`
+              `Total Stock:`,
+              `  • Count: ${locationData.totalCount} units`,
+              `  • Value: ₹${locationData.totalValue.toLocaleString()}`
             ];
           }
         },
@@ -141,8 +132,9 @@ const LocationCashAnalysisDetails = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-end mb-6">
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-bold text-gray-700">Location-wise Stock Analysis</h2>
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select period" />
@@ -164,4 +156,4 @@ const LocationCashAnalysisDetails = () => {
   );
 };
 
-export default LocationCashAnalysisDetails;
+export default LocationStockAnalysisDetails;

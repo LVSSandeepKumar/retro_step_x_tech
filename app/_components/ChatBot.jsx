@@ -1,9 +1,8 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Minimize2 } from "lucide-react";
-import { enrichedParent } from "@/lib/relations";
+import { MessageCircle, Minimize2, Send } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-const ChatBot = () => {
+const ChatBot = ({ revenueData, financeData, selectedOverview }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { text: "Hello! How can I help you today?", type: "bot" },
@@ -33,255 +32,112 @@ const ChatBot = () => {
     }
   }, [messages]);
 
-  const formatValue = (value) => {
-    return `₹${(value / 1000).toFixed(0)}K`;
-  };
-
-  const getTimeBasedAnswer = (data, timeframe, type, brandName = '') => {
-    const prefix = brandName ? `${brandName}'s` : 'Overall';
-    
-    if (timeframe === 'monthly') {
-        const monthlyData = data.monthly.map(m => ({
-            month: m.month,
-            value: formatValue(m.value)
-        }));
-        
-        return `${prefix} ${type} by Month:\n${monthlyData.map(m => 
-            `${m.month}: ${m.value}`
-        ).join('\n')}`;
-    }
-    
-    if (timeframe === 'quarterly') {
-        const quarterlyData = data.quarterly.map(q => ({
-            quarter: q.quarter,
-            value: formatValue(q.value)
-        }));
-        
-        return `${prefix} ${type} by Quarter:\n${quarterlyData.map(q => 
-            `${q.quarter}: ${q.value}`
-        ).join('\n')}`;
-    }
-  };
-
-  const getBrandSpecificAnswer = (brand, question) => {
-    const lowercaseQuestion = question.toLowerCase();
-    
-    // Handle time-based queries
-    if (lowercaseQuestion.includes('monthly') || lowercaseQuestion.includes('quarterly')) {
-        const timeframe = lowercaseQuestion.includes('monthly') ? 'monthly' : 'quarterly';
-        
-        if (lowercaseQuestion.includes('sales')) {
-            const salesData = brand.sales.find(s => s.type === "Own");
-            return getTimeBasedAnswer(salesData, timeframe, 'Sales', brand.brandName);
-        }
-        
-        if (lowercaseQuestion.includes('services')) {
-            const servicesData = brand.services.find(s => s.type === "Own");
-            return getTimeBasedAnswer(servicesData, timeframe, 'Services', brand.brandName);
-        }
-        
-        if (lowercaseQuestion.includes('expenses')) {
-            const expensesData = brand.expenses.find(e => e.type === "Own");
-            return getTimeBasedAnswer(expensesData, timeframe, 'Expenses', brand.brandName);
-        }
-    }
-
-    // Get brand data from enriched source
-    const brandData = brand;
-
-    if (lowercaseQuestion.includes("sales")) {
-      const ownSales = brandData.sales.find((s) => s.type === "Own");
-      const subSales = brandData.sales.find((s) => s.type === "Sub");
-
-      if (lowercaseQuestion.includes("own")) {
-        return `${brand.brandName} Own Sales: ${formatValue(
-          ownSales.salesValue
-        )} with ${ownSales.salesCount} units`;
-      } else if (lowercaseQuestion.includes("sub")) {
-        return `${brand.brandName} Sub Sales: ${formatValue(
-          subSales.salesValue
-        )} with ${subSales.salesCount} units`;
+  const formatValue = (value, period) => {
+    const formatIndianNumber = (num) => {
+      const numStr = Math.round(num).toString();
+      if (numStr.length > 3) {
+        const lastThree = numStr.substring(numStr.length - 3);
+        const otherNumbers = numStr.substring(0, numStr.length - 3);
+        return (
+          otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + "," + lastThree
+        );
       }
+      return numStr;
+    };
 
-      return `${brand.brandName} Sales:\nOwn: ${formatValue(
-        ownSales.salesValue
-      )} (${ownSales.salesCount} units)\nSub: ${formatValue(
-        subSales.salesValue
-      )} (${subSales.salesCount} units)`;
+    let scaledValue = value;
+    switch (period) {
+      case "YESTERDAY":
+        scaledValue = value / 10;
+        break;
+      case "WEEKLY":
+        scaledValue = value;
+        break;
+      case "MONTHLY":
+        scaledValue = value * 10;
+        break;
+      case "YTD":
+        scaledValue = value * 100;
+        break;
     }
-
-    if (lowercaseQuestion.includes("inventory")) {
-      const ownInventory = brandData.inventory.find((i) => i.type === "Own");
-      const subInventory = brandData.inventory.find((i) => i.type === "Sub");
-
-      if (lowercaseQuestion.includes("own")) {
-        return `${brand.brandName} Own Inventory: ${formatValue(
-          ownInventory.stockValue
-        )} with ${ownInventory.stockCount} units`;
-      } else if (lowercaseQuestion.includes("sub")) {
-        return `${brand.brandName} Sub Inventory: ${formatValue(
-          subInventory.stockValue
-        )} with ${subInventory.stockCount} units`;
-      }
-
-      return `${brand.brandName} Inventory:\nOwn: ${formatValue(
-        ownInventory.stockValue
-      )} (${ownInventory.stockCount} units)\nSub: ${formatValue(
-        subInventory.stockValue
-      )} (${subInventory.stockCount} units)`;
-    }
-
-    if (lowercaseQuestion.includes("expenses")) {
-      const expenses = brandData.expenses.find((e) => e.type === "Own");
-      return `${brand.brandName} Expenses: ${formatValue(
-        expenses.expensesValue
-      )}`;
-    }
-
-    if (lowercaseQuestion.includes("services")) {
-      const services = brandData.services.find((s) => s.type === "Own");
-      return `${brand.brandName} Services: ${formatValue(
-        services.servicesValue
-      )} with ${services.servicesCount} services`;
-    }
-
-    if (
-      lowercaseQuestion.includes("payment") ||
-      lowercaseQuestion.includes("collections")
-    ) {
-      const paymentData = brandData.payments[0].paymentType;
-      return `${brand.brandName} Collections:\nUPI: ${formatValue(
-        paymentData.find((p) => p.mode === "UPI").collections
-      )}\nCash: ${formatValue(
-        paymentData.find((p) => p.mode === "Cash").collections
-      )}`;
-    }
-
-    return `I can provide information about ${brand.brandName}'s sales, inventory, expenses, services, and payments.`;
+    return `₹${formatIndianNumber(scaledValue)}`;
   };
 
   const getAnswerFromData = (question) => {
     const lowercaseQuestion = question.toLowerCase();
-    const overallData = enrichedParent[0];
 
-    // Add help message for time-based queries
-    if (lowercaseQuestion.includes('help')) {
+    if (lowercaseQuestion.includes("help")) {
       return `You can ask me about:
-1. Overall metrics (sales, expenses, inventory, services)
-2. Brand specific details (Bajaj, Triumph, Vespa, Tata)
-3. Monthly or Quarterly data (e.g., "Show monthly sales for Bajaj")
-4. Own/Sub type metrics
+1. Revenue metrics (sales, services, others)
+2. Financial metrics (cash, UPI, expenses)
+3. Current period: ${revenueData.period}
 Try questions like:
-- "What are the monthly sales for Bajaj?"
-- "Show quarterly expenses for Triumph"
-- "What is the overall monthly revenue?"`;
+- "What are the current sales?"
+- "Show me services revenue"
+- "How much is the cash collection?"
+- "What are the total expenses?"`;
     }
 
-    // Check if question is about a specific brand
-    const brandNames = overallData.brands.map((b) => b.brandName.toLowerCase());
-    const mentionedBrand = brandNames.find((name) =>
-      lowercaseQuestion.includes(name)
-    );
-
-    if (mentionedBrand) {
-      const brand = overallData.brands.find(
-        (b) => b.brandName.toLowerCase() === mentionedBrand
-      );
-      return getBrandSpecificAnswer(brand, question);
+    // Handle revenue questions
+    if (lowercaseQuestion.includes("sales")) {
+      return `Sales for ${PERIODS[revenueData.period]}: ${formatValue(
+        revenueData.sales,
+        revenueData.period
+      )}`;
     }
 
-    // Handle overall metrics
+    if (lowercaseQuestion.includes("service")) {
+      return `Services revenue for ${
+        PERIODS[revenueData.period]
+      }: ${formatValue(revenueData.services, revenueData.period)}`;
+    }
+
+    if (lowercaseQuestion.includes("other")) {
+      return `Other revenue for ${PERIODS[revenueData.period]}: ${formatValue(
+        revenueData.others,
+        revenueData.period
+      )}`;
+    }
+
+    // Handle finance questions
+    if (lowercaseQuestion.includes("cash")) {
+      return `Cash collections for ${
+        PERIODS[financeData.period]
+      }: ${formatValue(financeData.cash, financeData.period)}`;
+    }
+
+    if (lowercaseQuestion.includes("upi")) {
+      return `UPI collections for ${PERIODS[financeData.period]}: ${formatValue(
+        financeData.upi,
+        financeData.period
+      )}`;
+    }
+
+    if (lowercaseQuestion.includes("expense")) {
+      return `Total expenses for ${PERIODS[financeData.period]}: ${formatValue(
+        financeData.expenses,
+        financeData.period
+      )}`;
+    }
+
+    if (lowercaseQuestion.includes("collection")) {
+      const total = financeData.cash + financeData.upi;
+      return `Total collections for ${PERIODS[financeData.period]}:
+Cash: ${formatValue(financeData.cash, financeData.period)}
+UPI: ${formatValue(financeData.upi, financeData.period)}
+Total: ${formatValue(total, financeData.period)}`;
+    }
+
     if (
-      lowercaseQuestion.includes("total") ||
-      lowercaseQuestion.includes("overall")
+      lowercaseQuestion.includes("period") ||
+      lowercaseQuestion.includes("timeframe")
     ) {
-      // Handle overall metrics without brand name
-      if (
-        !lowercaseQuestion.includes("bajaj") &&
-        !lowercaseQuestion.includes("triumph") &&
-        !lowercaseQuestion.includes("vespa") &&
-        !lowercaseQuestion.includes("tata")
-      ) {
-        // Total sales query
-        if (lowercaseQuestion.includes("total sales")) {
-          const salesData = overallData.sales;
-          const ownSales = salesData.find((s) => s.type === "Own");
-          const subSales = salesData.find((s) => s.type === "Sub");
-
-          if (lowercaseQuestion.includes("own")) {
-            return `Overall Own Sales: ${formatValue(
-              ownSales.salesValue
-            )} with ${ownSales.salesCount} units`;
-          } else if (lowercaseQuestion.includes("sub")) {
-            return `Overall Sub Sales: ${formatValue(
-              subSales.salesValue
-            )} with ${subSales.salesCount} units`;
-          }
-
-          return `Overall Sales:\nOwn: ${formatValue(ownSales.salesValue)} (${
-            ownSales.salesCount
-          } units)\nSub: ${formatValue(subSales.salesValue)} (${
-            subSales.salesCount
-          } units)`;
-        }
-
-        // Total expenses query
-        if (lowercaseQuestion.includes("expenses")) {
-          const expensesData = overallData.expenses;
-          const ownExpenses = expensesData.find((e) => e.type === "Own");
-          return `Overall Expenses: ${formatValue(ownExpenses.expensesValue)}`;
-        }
-
-        // Total inventory query
-        if (lowercaseQuestion.includes("inventory")) {
-          const inventoryData = overallData.inventory;
-          const ownInventory = inventoryData.find((i) => i.type === "Own");
-          const subInventory = inventoryData.find((i) => i.type === "Sub");
-
-          if (lowercaseQuestion.includes("own")) {
-            return `Overall Own Inventory: ${formatValue(
-              ownInventory.stockValue
-            )} with ${ownInventory.stockCount} units`;
-          } else if (lowercaseQuestion.includes("sub")) {
-            return `Overall Sub Inventory: ${formatValue(
-              subInventory.stockValue
-            )} with ${subInventory.stockCount} units`;
-          }
-
-          return `Overall Inventory:\nOwn: ${formatValue(
-            ownInventory.stockValue
-          )} (${ownInventory.stockCount} units)\nSub: ${formatValue(
-            subInventory.stockValue
-          )} (${subInventory.stockCount} units)`;
-        }
-
-        // Services query
-        if (lowercaseQuestion.includes("services")) {
-          const servicesData = overallData.services;
-          const ownServices = servicesData.find((s) => s.type === "Own");
-          return `Overall Services: ${formatValue(
-            ownServices.servicesValue
-          )} with ${ownServices.servicesCount} service count`;
-        }
-
-        // Payments query
-        if (
-          lowercaseQuestion.includes("payment") ||
-          lowercaseQuestion.includes("collections")
-        ) {
-          const paymentData = overallData.payments[0].paymentType;
-          const upiPayments = paymentData.find((p) => p.mode === "UPI");
-          const cashPayments = paymentData.find((p) => p.mode === "Cash");
-          return `Overall Collections:\nUPI: ${formatValue(
-            upiPayments.collections
-          )}\nCash: ${formatValue(cashPayments.collections)}`;
-        }
-
-        return "I can help you with overall information about sales, expenses, inventory, services, and payments. You can also ask about specific brands or specify 'Own' or 'Sub' type.";
-      }
+      return `Current period settings:
+Revenue data: ${PERIODS[revenueData.period]}
+Finance data: ${PERIODS[financeData.period]}`;
     }
 
-    return "You can ask me about overall metrics or specific brands (Bajaj, Triumph, Vespa, Tata). Try asking about their sales, expenses, inventory, services, or payments.";
+    return "You can ask about sales, services, other revenue, cash collections, UPI payments, or expenses. Try asking 'help' for more information.";
   };
 
   const handleSend = () => {

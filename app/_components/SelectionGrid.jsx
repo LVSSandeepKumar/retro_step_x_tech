@@ -1,90 +1,94 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import VaryingLine from "./VaryingLine";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const SelectionGrid = ({ onCardSelect, selectedCard, periodValues }) => {
-  const [cardData, setCardData] = useState(null);
-  const [chartData, setChartData] = useState(null);
+const CARD_CONFIGS = {
+  sales: {
+    colors: {
+      primary: '#4f46e5',
+      secondary: '#818cf8',
+      line: '#4f46e5'
+    },
+    ownRatio: 0.65,
+    subRatio: 0.35
+  },
+  services: {
+    colors: {
+      primary: '#10b981',
+      secondary: '#34d399',
+      line: '#10b981'
+    },
+    ownRatio: 1.0,
+    subRatio: 0.0
+  },
+  others: {
+    colors: {
+      primary: '#f59e0b',
+      secondary: '#fcd34d',
+      line: '#f59e0b'
+    },
+    ownRatio: 1.0,
+    subRatio: 0.0
+  }
+};
 
-  useEffect(() => {
+const formatCurrency = (amount) => {
+  // Format number with Indian comma system (eg: 1,00,000)
+  const numStr = Math.round(amount).toString();
+  if (numStr.length > 3) {
+    const lastThree = numStr.substring(numStr.length - 3);
+    const otherNumbers = numStr.substring(0, numStr.length - 3);
+    return otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + lastThree;
+  }
+  return numStr;
+};
+
+const SelectionGrid = ({ onCardSelect, selectedCard, periodValues }) => {
+  // Defensive check for periodValues
+  if (!periodValues || typeof periodValues !== 'object') {
+    return null;
+  }
+
+  const config = CARD_CONFIGS[selectedCard];
+  const value = useMemo(() => {
     const baseValue = selectedCard === 'sales' 
       ? periodValues.sales
       : selectedCard === 'services' 
         ? periodValues.services 
         : periodValues.others;
-
-    let data = {
-      id: selectedCard,
-      title: selectedCard === 'sales' 
-        ? 'Total Sales'
-        : selectedCard === 'services' 
-          ? 'Total Services' 
-          : 'Other Revenue',
-      value: baseValue.toLocaleString("en-US", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0,
-      }),
-      change: (Math.random() * 10 * (Math.random() > 0.5 ? 1 : -1)).toFixed(1),
-    };
-
-    setCardData(data);
-    setChartData(generateChartData(baseValue));
+    
+    return baseValue || 0; // Ensure we always have a number
   }, [selectedCard, periodValues]);
 
-  const generateChartData = (baseValue) => {
-    if (selectedCard === "sales") {
-      const ownValue = baseValue * (0.6 + Math.random() * 0.1);
-      const subValue = baseValue * (0.3 + Math.random() * 0.1);
-      return {
-        labels: ["Own Sales", "Sub Sales"],
-        datasets: [
-          {
-            data: [ownValue, subValue],
-            backgroundColor: ["#4f46e5", "#818cf8"],
-            borderColor: ["#4338ca", "#6366f1"],
-            borderWidth: 1,
-            hoverOffset: 4,
-          },
-        ],
-        _counts: [Math.floor(ownValue / 10000), Math.floor(subValue / 10000)],
-      };
-    } else if (selectedCard === "services") {
-      const ownValue = baseValue * (0.8 + Math.random() * 0.2);
-      return {
-        labels: ["Own Services"],
-        datasets: [
-          {
-            data: [ownValue],
-            backgroundColor: ["#4f46e5"],
-            borderColor: ["#4338ca"],
-            borderWidth: 1,
-            hoverOffset: 4,
-          },
-        ],
-        _counts: [Math.floor(ownValue / 5000)],
-      };
-    } else if (selectedCard === "others") {
-      const ownValue = baseValue * (0.4 + Math.random() * 0.1);
-      return {
-        labels: ["Own Other Revenue"],
-        datasets: [
-          {
-            data: [ownValue],
-            backgroundColor: ["#4f46e5"],
-            borderColor: ["#4338ca"],
-            borderWidth: 1,
-            hoverOffset: 4,
-          },
-        ],
-        _counts: [Math.floor(ownValue / 15000)],
-      };
-    }
-    return null;
-  };
+  const count = useMemo(() => {
+    if (!periodValues.counts) return 0;
+    return selectedCard === 'sales' 
+      ? periodValues.counts.sales
+      : selectedCard === 'services' 
+        ? periodValues.counts.services 
+        : periodValues.counts.others;
+  }, [selectedCard, periodValues]);
+
+  const ownValue = Math.round(value * config.ownRatio);
+  const subValue = Math.round(value * config.subRatio);
+  const ownCount = Math.round(count * config.ownRatio);
+  const subCount = Math.round(count * config.subRatio);
+  const totalCount = ownCount + subCount; // Add this line to calculate totalCount
+
+  const chartData = useMemo(() => ({
+    labels: [`Own ${selectedCard}`, `Sub ${selectedCard}`],
+    datasets: [{
+      data: [ownValue, subValue],
+      backgroundColor: [config.colors.primary, config.colors.secondary],
+      borderColor: [config.colors.primary, config.colors.secondary],
+      borderWidth: 1,
+      hoverOffset: 4,
+    }],
+    _counts: [ownCount, subCount]
+  }), [ownValue, subValue, ownCount, subCount, selectedCard, config]);
 
   const chartOptions = {
     cutout: "85%",
@@ -93,14 +97,17 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues }) => {
     plugins: {
       legend: {
         position: "bottom",
+        labels: {
+          color: config.colors.primary
+        }
       },
       tooltip: {
         callbacks: {
-          label: function (context) {
+          label: function(context) {
             const value = context.raw;
             const count = chartData._counts[context.dataIndex];
             return [
-              `Value: ₹${Math.round(value).toLocaleString("en-IN")}`,
+              `Value: ₹${formatCurrency(value)}`,
               `Count: ${count}`,
             ];
           },
@@ -109,7 +116,12 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues }) => {
     },
   };
 
-  if (!cardData) return null;
+  // Fixed change values based on card type
+  const change = useMemo(() => (
+    selectedCard === 'sales' ? 5.2 
+    : selectedCard === 'services' ? -3.4 
+    : 2.8
+  ), [selectedCard]);
 
   return (
     <div className="space-y-6">
@@ -117,20 +129,21 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues }) => {
         className="p-4 rounded-lg shadow-md border-2 border-blue-500 cursor-pointer hover:border-blue-600 transition-colors"
         onClick={() => onCardSelect && onCardSelect(selectedCard)}
       >
-        <div className="flex items-center gap-2"></div>
-        <h3 className="text-lg font-semibold mb-2">{cardData.title}</h3>
+        <h3 className="text-lg font-semibold mb-2">
+          {selectedCard === 'sales' 
+            ? 'Total Sales'
+            : selectedCard === 'services' 
+              ? 'Total Services' 
+              : 'Other Revenue'}
+        </h3>
         <div className="flex items-center gap-8">
           <div>
-            <p className="text-xl font-bold mb-2">{cardData.value}</p>
-            <p
-              className={`text-sm flex items-center ${
-                parseFloat(cardData.change) >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
-              }`}
-            >
-              {parseFloat(cardData.change) >= 0 ? "↑" : "↓"}{" "}
-              {Math.abs(parseFloat(cardData.change))}% since last year
+            <p className="text-xl font-bold mb-2">₹{formatCurrency(value)}</p>
+            <p className={`text-sm flex items-center ${
+              parseFloat(change) >= 0 ? "text-green-600" : "text-red-600"
+            }`}>
+              {parseFloat(change) >= 0 ? "↑" : "↓"}{" "}
+              {Math.abs(parseFloat(change))}% since last year
             </p>
           </div>
         </div>
@@ -141,12 +154,12 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues }) => {
           </div>
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="flex flex-col items-center">
-            <div className="w-48">
-              <VaryingLine color="#4f46e5" />
-            </div>
+              <div className="w-48">
+                <VaryingLine color={config.colors.line} />
+              </div>
               <div className="text-center">
-                <div className="text-xl font-bold">
-                  {chartData._counts.reduce((a, b) => a + b, 0)}
+                <div className="text-xl font-bold" style={{ color: config.colors.primary }}>
+                  {totalCount}
                 </div>
                 <div className="text-sm text-gray-500">Total Count</div>
               </div>
@@ -158,4 +171,4 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues }) => {
   );
 };
 
-export default SelectionGrid;
+export default React.memo(SelectionGrid);

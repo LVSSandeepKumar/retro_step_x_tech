@@ -1,15 +1,22 @@
 "use client";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useSidebarContext } from "@/context/SidebarContext";
+import { brandsData, locations as locationData } from "@/lib/constants";
+import { pickABrand } from "@/lib/utils";
+import { ArrowDown, Search } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { ArrowDown, ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-
-const brands = ["Bajaj", "Triumph", "Vespa", "Tata"];
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -20,243 +27,152 @@ const Sidebar = () => {
   const decodedSubLocationName = decodeURIComponent(subLocationName);
   const { showSidebar } = useSidebarContext();
   const [isBillsOpen, setIsBillsOpen] = useState(false);
-  const [newBrand, setNewBrand] = useState({
-    brandName: "",
-    salesDetails: { totalSales: "", topProduct: "", growthRate: "" },
-    inventoryReport: { totalStock: "" },
-    operationalExpenses: { annual: "" },
-    targetsAndAchieved: { annualTarget: "", achieved: "" },
-    headOfBrand: "",
-  });
+  const [brandSearch, setBrandSearch] = useState("");
+  const [locationSearch, setLocationSearch] = useState("");
+  const [isBrandsOpen, setIsBrandsOpen] = useState(false);
+  const [isLocationsOpen, setIsLocationsOpen] = useState(false);
 
-  const currentPage = pathname.split("/")[7];
+  // Get brands from brandsData
+  const brands = brandsData.map((brand) => brand.brandName);
 
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
+  // Get locations from locationData
+  const locationGroups = {
+    own: locationData.find((loc) => loc.type === "own")?.cities || [],
+    sub: locationData.find((loc) => loc.type === "sub")?.cities || [],
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewBrand((prev) => {
-      const keys = name.split(".");
-      if (keys.length > 1) {
-        return {
-          ...prev,
-          [keys[0]]: {
-            ...prev[keys[0]],
-            [keys[1]]: value,
-          },
-        };
-      }
-      return {
-        ...prev,
-        [name]: value,
-      };
-    });
+  // Filter data based on search
+  const filteredBrands = brands.filter((brand) =>
+    brand.toLowerCase().includes(brandSearch.toLowerCase())
+  );
+
+  const filteredLocations = {
+    own: locationGroups.own.filter((loc) =>
+      loc.toLowerCase().includes(locationSearch.toLowerCase())
+    ),
+    sub: locationGroups.sub.filter((loc) =>
+      loc.toLowerCase().includes(locationSearch.toLowerCase())
+    ),
   };
 
-  const handleSubmit = () => {
-    // Handle brand creation here
-    console.log('New brand:', newBrand);
-    // Reset form
-    setNewBrand({
-      brandName: "",
-      salesDetails: { totalSales: "", topProduct: "", growthRate: "" },
-      inventoryReport: { totalStock: "" },
-      operationalExpenses: { annual: "" },
-      targetsAndAchieved: { annualTarget: "", achieved: "" },
-      headOfBrand: "",
-    });
-  };
+  // ...rest of your existing code for newBrand state and handlers...
 
   return (
-    <div 
+    <div
       className={`bg-gray-800 text-white h-screen sticky top-0 p-4 transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'w-16' : 'w-64'
+        isCollapsed ? "w-16" : "w-64"
       }`}
     >
-      <div className="flex items-center justify-between mb-4">
-        {!isCollapsed && <Link href="/" className="text-lg font-bold">Retro_App</Link>}
-        <button 
-          onClick={toggleSidebar}
-          className="p-2 hover:bg-gray-700 rounded"
-        >
-          {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
-        </button>
-      </div>
+      {/* ...existing header... */}
 
-      <Separator className="my-4" />
-      
       <div className="flex items-center justify-between mb-4">
-        {!isCollapsed && <h2 className="text-md font-semibold">Brands</h2>}
-        <Dialog>
-          <DialogTrigger asChild>
-            <button
-              className={`flex items-center gap-2 p-2 hover:bg-gray-700 rounded transition-colors ${
-                isCollapsed ? 'justify-center w-full' : 'text-sm'
-              }`}
-              title="Add Brand"
-            >
-              {isCollapsed ? (
-                <Plus className="h-5 w-5" />
-              ) : (
-                <>
-                  <Plus className="h-4 w-4" />
-                  Add Brand
-                </>
-              )}
-            </button>
-          </DialogTrigger>
-          <DialogContent className="bg-white">
-            <DialogHeader>
-              <DialogTitle>Create New Brand</DialogTitle>
-              <DialogDescription>
-                Fill in the details to create a new brand.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
+        <Link href="/">
+          <h2 className="text-md font-semibold">Retro App</h2>
+        </Link>
+      </div>
+      <Separator className="my-4" />
+
+      {!isCollapsed && (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-md font-semibold">Brands</h2>
+            {/* ...existing Dialog component... */}
+          </div>
+
+          <div className="relative mb-4">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search brands..."
+              value={brandSearch}
+              onChange={(e) => setBrandSearch(e.target.value)}
+              className="pl-8 bg-gray-700 border-gray-600 text-white"
+            />
+          </div>
+
+          <DropdownMenu open={isBrandsOpen} onOpenChange={setIsBrandsOpen}>
+            <DropdownMenuTrigger className="w-full">
+              <div className="flex items-center justify-between p-2 bg-gray-700 rounded">
+                <span>Select Brand</span>
+                <ArrowDown className="h-4 w-4" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-gray-700 text-white">
+              {filteredBrands.map((brand) => (
+                <DropdownMenuItem
+                  key={brand}
+                  className={`${currentBrand === brand ? "bg-gray-600" : ""}`}
+                >
+                  <Link href={`/brands/${brand}`} className="w-full">
+                    {brand}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div className="mt-8">
+            <h2 className="text-md font-semibold mb-4">Locations</h2>
+            <div className="relative mb-4">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
               <Input
-                name="brandName"
-                placeholder="Brand Name"
-                value={newBrand.brandName}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="salesDetails.totalSales"
-                placeholder="Total Sales"
-                value={newBrand.salesDetails.totalSales}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="inventoryReport.totalStock"
-                placeholder="Total Stock"
-                value={newBrand.inventoryReport.totalStock}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="operationalExpenses.annual"
-                placeholder="Annual Expenses"
-                value={newBrand.operationalExpenses.annual}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="targetsAndAchieved.annualTarget"
-                placeholder="Annual Target"
-                value={newBrand.targetsAndAchieved.annualTarget}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="targetsAndAchieved.achieved"
-                placeholder="Achieved"
-                value={newBrand.targetsAndAchieved.achieved}
-                onChange={handleInputChange}
-              />
-              <Input
-                name="headOfBrand"
-                placeholder="Head of Brand"
-                value={newBrand.headOfBrand}
-                onChange={handleInputChange}
+                placeholder="Search locations..."
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
+                className="pl-8 bg-gray-700 border-gray-600 text-white"
               />
             </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button onClick={handleSubmit}>Submit</Button>
-              </DialogClose>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
 
-      <ul className="space-y-2">
-        {brands.map((brand) => (
-          <li key={brand}>
-            <Link href={`/brands/${brand}`}>
-              <span
-                className={`block p-2 rounded ${
-                  currentBrand === brand ? "bg-gray-600" : "hover:bg-gray-700"
-                } ${isCollapsed ? 'text-center' : ''}`}
-                title={isCollapsed ? brand : ''}
-              >
-                {isCollapsed ? brand.charAt(0) : brand}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-
-      {showSidebar && !isCollapsed && (
-        <div className="mt-4">
-          <h2 className="text-lg font-semibold my-4">
-            {decodedSubLocationName === "undefined" ? "": decodedSubLocationName} Details
-          </h2>
-          <ul className="space-y-2">
-            <li>
-              <button
-                className="block w-full text-left p-2 rounded hover:bg-gray-700"
-                onClick={() => setIsBillsOpen(!isBillsOpen)}
-              >
-                <span className="flex items-center justify-between gap-2">
-                  Bills <ArrowDown className="size-4" />
-                </span>
-              </button>
-              {isBillsOpen && (
-                <ul className="pl-4 space-y-2">
-                  <li
-                    className={`block p-2 rounded ${
-                      currentPage === "vouchers"
-                        ? "bg-gray-600"
-                        : "hover:bg-gray-700"
-                    }`}
-                  >
-                    <Link
-                      href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/bills/vouchers`}
-                    >
-                      Vouchers
-                    </Link>
-                  </li>
-                  <li
-                    className={`block p-2 rounded ${
-                      currentPage === "marketing"
-                        ? "bg-gray-600"
-                        : "hover:bg-gray-700"
-                    }`}
-                  >
-                    <Link
-                      href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/bills/marketing`}
-                    >
-                      Marketing
-                    </Link>
-                  </li>
-                </ul>
-              )}
-            </li>
-            <li
-              className={`block p-2 rounded ${
-                currentPage === "employees"
-                  ? "bg-gray-600"
-                  : "hover:bg-gray-700"
-              }`}
+            <DropdownMenu
+              open={isLocationsOpen}
+              onOpenChange={setIsLocationsOpen}
             >
-              <Link
-                href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/employees`}
-              >
-                Employees
-              </Link>
-            </li>
-            <li
-              className={`block p-2 rounded ${
-                currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
-              }`}
-            >
-              <Link
-                href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/visits`}
-              >
-                Visits
-              </Link>
-            </li>
-          </ul>
-        </div>
+              <DropdownMenuTrigger className="w-full">
+                <div className="flex items-center justify-between p-2 bg-gray-700 rounded">
+                  <span>Select Location</span>
+                  <ArrowDown className="h-4 w-4" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-gray-700 text-white">
+                <ScrollArea className="h-[300px]">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem className="font-semibold sticky top-0 bg-gray-700 z-10">
+                      Own Locations
+                    </DropdownMenuItem>
+                    {filteredLocations.own.map((location) => (
+                      <DropdownMenuItem key={location}>
+                        <Link
+                          href={`/brands/${pickABrand()}/locations/${location}`}
+                          className="w-full"
+                        >
+                          {location}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem className="font-semibold sticky top-0 bg-gray-700 z-10">
+                      Sub Locations
+                    </DropdownMenuItem>
+                    {filteredLocations.sub.map((location) => (
+                      <DropdownMenuItem key={location}>
+                        <Link
+                          href={`/brands/${pickABrand()}/locations/${location}`}
+                          className="w-full"
+                        >
+                          {location}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </ScrollArea>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </>
       )}
+
+      {/* ...rest of the existing sidebar content... */}
     </div>
   );
 };

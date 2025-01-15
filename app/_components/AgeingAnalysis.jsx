@@ -231,9 +231,8 @@ const AgeingAnalysisHeatmap = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold text-gray-700">Claims Ageing Analysis</h2>
+    <div className="p-6">
+      <div className="flex justify-end mb-4">
         <div className="text-sm font-medium text-red-500">
           Total Cases: {totalCases}
         </div>
