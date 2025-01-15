@@ -48,6 +48,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp } from "lucide-react"; // Add this import
+import { BRANDS, SERVICE_TYPES, OTHER_TYPES } from './_constants/chartConstants'; // Add import at the top
 
 ChartJS.register(
   CategoryScale,
@@ -89,14 +90,53 @@ const generatePeriodData = (period) => {
   return {
     period,
     sales: baseSales,
-    services: Math.round(baseSales * 0.7),
-    others: Math.round(baseSales * 0.4),
+    services: Math.round(baseSales * 0.9),
+    others: Math.round(baseSales * 0.9),
     counts: {
       sales: baseCount,
-      services: Math.round(baseCount * 0.7),
-      others: Math.round(baseCount * 0.4)
+      services: Math.round(baseCount * 1.1),
+      others: Math.round(baseCount * 2.2)
     }
   };
+};
+
+const generateDetailsData = (period, type, baseValue, baseCount) => {
+  const distributions = {
+    sales: [0.4, 0.3, 0.2, 0.1],
+    services: [0.4, 0.3, 0.2, 0.1],
+    others: [0.35, 0.3, 0.2, 0.15]
+  };
+
+  const items = type === "sales" ? BRANDS 
+              : type === "services" ? SERVICE_TYPES 
+              : OTHER_TYPES;
+  
+  const colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300"];
+  const distribution = distributions[type];
+
+  let remainingValue = baseValue;
+  let remainingCount = baseCount;
+
+  return items.map((item, index) => {
+    const ratio = distribution[index];
+    const value = index === items.length - 1 
+      ? remainingValue 
+      : Math.round(remainingValue * ratio);
+    
+    const count = index === items.length - 1
+      ? remainingCount
+      : Math.round(remainingCount * ratio);
+
+    remainingValue -= value;
+    remainingCount -= count;
+
+    return {
+      name: item,
+      value,
+      count,
+      fill: colors[index],
+    };
+  });
 };
 
 export default function Home() {
@@ -115,6 +155,7 @@ export default function Home() {
   const [revenueValues, setRevenueValues] = useState(null);
   const [openCash, setOpenCash] = useState(false);
   const [openAgeing, setOpenAgeing] = useState(false);
+  const [detailsData, setDetailsData] = useState(null);
 
   const PERIODS = {
     YESTERDAY: "Yesterday",
@@ -377,17 +418,45 @@ export default function Home() {
   // Add useEffect for initial data generation
   useEffect(() => {
     if (!revenueValues) {
-      setRevenueValues(generatePeriodData("YESTERDAY"));
+      const initialRevenue = generatePeriodData("YESTERDAY");
+      setRevenueValues(initialRevenue);
+      // Generate details data using the same values
+      setDetailsData(generateDetailsData(
+        "YESTERDAY",
+        "sales",
+        initialRevenue.sales,
+        initialRevenue.counts.sales
+      ));
     }
   }, []);
 
   // Simplified generateRevenueValues function
   const generateRevenueValues = (period) => {
-    setRevenueValues(generatePeriodData(period));
+    const newRevenueValues = generatePeriodData(period);
+    setRevenueValues(newRevenueValues);
+    
+    // If there's a selected overview, update the details data
+    if (selectedOverview) {
+      const newDetailsData = generateDetailsData(
+        period,
+        selectedOverview,
+        newRevenueValues[selectedOverview],
+        newRevenueValues.counts[selectedOverview]
+      );
+      setDetailsData(newDetailsData);
+    }
   };
 
   const handleCardSelect = (cardId) => {
     setSelectedOverview(cardId);
+    // Use the existing values from revenueValues state
+    const newDetailsData = generateDetailsData(
+      revenueValues.period, 
+      cardId,
+      revenueValues[cardId], // Pass the existing value
+      revenueValues.counts[cardId] // Pass the existing count
+    );
+    setDetailsData(newDetailsData);
   };
 
   // Add loading state handling in the return
@@ -475,15 +544,31 @@ export default function Home() {
                   <SalesAndServicesDetailsChart
                     selectedCard={selectedOverview}
                     period={revenueValues.period}
+                    data={detailsData}
                   />
                   {selectedOverview === "sales" && (
-                    <LocationRevenueDetails period={revenueValues.period} type="sales"/>
+                    <LocationRevenueDetails 
+                      type="sales"
+                      amount={revenueValues.sales}
+                      count={revenueValues.counts.sales}
+                      period={revenueValues.period}
+                    />
                   )}
                   {selectedOverview === "services" && (
-                    <LocationRevenueDetails period={revenueValues.period} type="services"/>
+                    <LocationRevenueDetails 
+                      type="services"
+                      amount={revenueValues.services}
+                      count={revenueValues.counts.services}
+                      period={revenueValues.period}
+                    />
                   )}
                   {selectedOverview === "others" && (
-                    <LocationRevenueDetails period={revenueValues.period} type="others"/>
+                    <LocationRevenueDetails 
+                      type="others"
+                      amount={revenueValues.others}
+                      count={revenueValues.counts.others}
+                      period={revenueValues.period}
+                    />
                   )}
                 </>
               )}

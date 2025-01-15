@@ -6,19 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
-
-const SERVICE_TYPES = [
-  "Part Sales",
-  "Service Sales",
-  "Bajaj Claims Warranty",
-  "Bajaj Claims Free Service",
-];
-
-const OTHER_TYPES = ["Insurance", "Vehicle Finance", "Accessories", "Apparels"];
-
-const BRANDS = ["Vespa", "Tata", "Bajaj", "Triumph"];
+import { BRANDS, SERVICE_TYPES, OTHER_TYPES } from '../_constants/chartConstants';
 
 const PERIODS = [
   { label: "Yesterday", value: "YESTERDAY" },
@@ -107,73 +97,42 @@ const renderActiveShape =
     );
   };
 
-const SalesAndServicesDetailsChart = ({ selectedCard, period }) => {
+const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [data, setData] = useState([]);
-  const [totalValue, setTotalValue] = useState(0);
 
-  const generateData = useMemo(() => {
-    if (!period || !selectedCard) return [];
+  // Process data based on selectedCard type
+  const processedData = useMemo(() => {
+    if (!data) return [];
 
-    const amountRange = AMOUNT_RANGES[period];
-    const countRange = COUNT_RANGES[period];
-    
-    const distributions = {
-      sales: [0.4, 0.3, 0.2, 0.1],
-      services: [0.4, 0.3, 0.2, 0.1],
-      others: [0.35, 0.3, 0.2, 0.15]
-    };
-
-    const items = selectedCard === "sales" ? BRANDS 
-                : selectedCard === "services" ? SERVICE_TYPES 
-                : OTHER_TYPES;
-    
-    const colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300"];
-    const distribution = distributions[selectedCard];
-
-    let remainingValue = generateRandomInRange(amountRange.min, amountRange.max);
-    let remainingCount = generateRandomInRange(countRange.min, countRange.max);
-
-    return items.map((item, index) => {
-      const ratio = distribution[index];
-      const value = index === items.length - 1 
-        ? remainingValue 
-        : Math.round(remainingValue * ratio);
-      
-      const count = index === items.length - 1
-        ? remainingCount
-        : Math.round(remainingCount * ratio);
-
-      remainingValue -= value;
-      remainingCount -= count;
-
-      return {
-        name: item,
-        value,
-        count,
-        fill: colors[index],
-      };
-    });
-  }, [period, selectedCard]);
-
-  useEffect(() => {
-    if (generateData.length > 0) {
-      setData(generateData);
-      setTotalValue(generateData.reduce((sum, item) => sum + item.value, 0));
+    if (selectedCard === 'sales') {
+      // For sales, filter out items with 0 count
+      return data.filter(item => item.count > 0);
+    } else if (selectedCard === 'others') {
+      // For others, ensure minimum count of 1
+      return data.map(item => ({
+        ...item,
+        count: Math.max(1, item.count)
+      }));
     }
-  }, [generateData]);
+    // For services, use data as is
+    return data;
+  }, [data, selectedCard]);
 
   const onPieEnter = (_, index) => {
     setActiveIndex(index);
   };
 
-  if (!selectedCard || !period) {
+  if (!selectedCard || !period || !data) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-6 flex items-center justify-center h-[400px]">
         <p className="text-gray-500">Select a card to view details</p>
       </div>
     );
   }
+
+  // Calculate totals using filtered/processed data
+  const totalValue = Math.round(processedData.reduce((sum, item) => sum + item.value, 0));
+  const totalCount = Math.round(processedData.reduce((sum, item) => sum + item.count, 0));
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 h-[504px]">
@@ -201,7 +160,7 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period }) => {
                 <Pie
                   activeIndex={activeIndex}
                   activeShape={renderActiveShape({ selectedCard })}
-                  data={data}
+                  data={processedData}
                   innerRadius={110}
                   outerRadius={150}
                   cx="50%"
@@ -214,7 +173,7 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period }) => {
           </div>
           {/* Color Labels */}
           <div className="flex flex-wrap justify-center gap-4 mt-2">
-            {data.map((item, index) => (
+            {processedData.map((item, index) => (
               <div key={index} className="flex items-center gap-2">
                 <div 
                   className="w-3 h-3 rounded-full" 
@@ -239,27 +198,29 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period }) => {
             </TableHeader>
             <TableBody className="text-sm">
               {data.map((item, index) => {
-                const total = data.reduce((sum, d) => sum + d.value, 0);
-                const percentage = Math.round((item.value / total) * 100); // Rounded to nearest integer
-                
+                const percentage = Math.round((item.value / totalValue) * 100) || 0;
                 return (
                   <TableRow key={index}>
                     <TableCell className="font-medium py-1">{item.name}</TableCell>
                     <TableCell className="py-1">{item.count.toLocaleString()}</TableCell>
                     <TableCell className="text-right py-1">
-                      ₹{item.value.toLocaleString()}
+                      {item.count > 0 || selectedCard !== 'sales' ? 
+                        `₹${item.value.toLocaleString()}` : 
+                        '-'}
                     </TableCell>
-                    <TableCell className="text-right py-1">{percentage}%</TableCell>
+                    <TableCell className="text-right py-1">
+                      {item.count > 0 || selectedCard !== 'sales' ? 
+                        `${percentage}%` : 
+                        '-'}
+                    </TableCell>
                   </TableRow>
                 );
               })}
               <TableRow className="font-semibold bg-muted/50">
                 <TableCell>Total</TableCell>
-                <TableCell>
-                  {data.reduce((sum, item) => sum + item.count, 0).toLocaleString()}
-                </TableCell>
+                <TableCell>{totalCount.toLocaleString()}</TableCell>
                 <TableCell className="text-right">
-                  ₹{data.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
+                  ₹{totalValue.toLocaleString()}
                 </TableCell>
                 <TableCell className="text-right">100%</TableCell>
               </TableRow>

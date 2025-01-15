@@ -60,16 +60,18 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues }) => {
         ? periodValues.services 
         : periodValues.others;
     
-    return baseValue || 0; // Ensure we always have a number
+    return Math.round(baseValue) || 0; // Ensure we always have a rounded number
   }, [selectedCard, periodValues]);
 
   const count = useMemo(() => {
     if (!periodValues.counts) return 0;
-    return selectedCard === 'sales' 
+    const baseCount = selectedCard === 'sales' 
       ? periodValues.counts.sales
       : selectedCard === 'services' 
         ? periodValues.counts.services 
         : periodValues.counts.others;
+    
+    return Math.round(baseCount) || 0; // Ensure we always have a rounded number
   }, [selectedCard, periodValues]);
 
   const ownValue = Math.round(value * config.ownRatio);
