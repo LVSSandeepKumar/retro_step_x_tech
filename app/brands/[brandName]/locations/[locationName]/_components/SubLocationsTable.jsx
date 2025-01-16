@@ -8,40 +8,52 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { locations } from "@/lib/constants";
 import { ArrowDownUp } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
+// Helper functions to generate random data
+const getRandomNumber = (min, max) => 
+  Math.floor(Math.random() * (max - min + 1)) + min;
+
+const formatCurrency = (amount) => 
+  `₹${amount.toLocaleString('en-IN')}`;
+
+const generateRandomData = (subLocationName) => ({
+  subLocationName,
+  sales: getRandomNumber(1000, 10000),
+  expenses: formatCurrency(getRandomNumber(500000, 2000000)),
+  revenue: formatCurrency(getRandomNumber(1000000, 5000000)),
+  profitLoss: formatCurrency(getRandomNumber(-500000, 1000000)),
+});
+
 const SubLocationsTable = ({ subLocationNames, otherTabs }) => {
   const { brandName, locationName } = useParams();
-
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "ascending",
   });
-
-  const [randomData, setRandomData] = useState([]);
+  const [tableData, setTableData] = useState([]);
 
   useEffect(() => {
-    const generateRandomNumber = (min, max) => {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    };
+    // Get sub-locations from constants.js (sub type)
+    const subLocations = locations.find(loc => loc.type === "sub")?.cities || [];
+    // Take only first 3 sub-locations
+    const limitedSubLocations = subLocations.slice(0, 3);
+    const data = limitedSubLocations.map(generateRandomData);
+    setTableData(data);
+  }, []);
 
-    const data = subLocationNames.map((subLocationName) => ({
-      subLocationName,
-      sales: generateRandomNumber(1000, 10000),
-      expenses: generateRandomNumber(500, 5000),
-      revenue: generateRandomNumber(2000, 15000),
-      profitLoss:
-        generateRandomNumber(2000, 15000) - generateRandomNumber(500, 5000),
-    }));
-    setRandomData(data);
-  }, [subLocationNames]);
-
-  const sortedLocations = [...randomData].sort((a, b) => {
+  const sortedLocations = [...tableData].sort((a, b) => {
     if (sortConfig.key) {
-      const aValue = a[sortConfig.key];
-      const bValue = b[sortConfig.key];
+      const aValue = typeof a[sortConfig.key] === 'string' && a[sortConfig.key].includes('₹')
+        ? parseFloat(a[sortConfig.key].replace(/[^0-9.-]+/g, ""))
+        : a[sortConfig.key];
+      const bValue = typeof b[sortConfig.key] === 'string' && b[sortConfig.key].includes('₹')
+        ? parseFloat(b[sortConfig.key].replace(/[^0-9.-]+/g, ""))
+        : b[sortConfig.key];
+      
       if (sortConfig.direction === "ascending") {
         return aValue > bValue ? 1 : -1;
       } else {
@@ -87,7 +99,7 @@ const SubLocationsTable = ({ subLocationNames, otherTabs }) => {
                 Location Name
               </TableCell>
               <TableCell
-                className="font-semibold text-gray-500"
+                className="font-semibold text-gray-500 cursor-pointer"
                 onClick={() => requestSort("sales")}
               >
                 <span className="ml-2 flex items-center gap-2">
@@ -96,7 +108,7 @@ const SubLocationsTable = ({ subLocationNames, otherTabs }) => {
                 </span>
               </TableCell>
               <TableCell
-                className="font-semibold text-gray-500"
+                className="font-semibold text-gray-500 cursor-pointer"
                 onClick={() => requestSort("expenses")}
               >
                 <span className="ml-2 flex items-center gap-2">
@@ -105,7 +117,7 @@ const SubLocationsTable = ({ subLocationNames, otherTabs }) => {
                 </span>
               </TableCell>
               <TableCell
-                className="font-semibold text-gray-500"
+                className="font-semibold text-gray-500 cursor-pointer"
                 onClick={() => requestSort("revenue")}
               >
                 <span className="ml-2 flex items-center gap-2">
@@ -114,7 +126,7 @@ const SubLocationsTable = ({ subLocationNames, otherTabs }) => {
                 </span>
               </TableCell>
               <TableCell
-                className="font-semibold text-gray-500"
+                className="font-semibold text-gray-500 cursor-pointer"
                 onClick={() => requestSort("profitLoss")}
               >
                 <span className="ml-2 flex items-center gap-2">

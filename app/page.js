@@ -47,7 +47,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp } from "lucide-react"; // Add this import
+import { ChevronDown, ChevronUp, Star } from "lucide-react"; // Add this import
 import { BRANDS, SERVICE_TYPES, OTHER_TYPES } from './_constants/chartConstants'; // Add import at the top
 
 ChartJS.register(
@@ -558,6 +558,11 @@ export default function Home() {
                   selectedCard="sales"
                   periodValues={revenueValues}
                 />
+                <p className="text-sm text-red-500 font-semibold flex gap-2">
+                <span><Star className="text-black fill-yellow-500 border-black"/></span>
+                Click on the card to see more sales insights.
+                </p>
+
               </div>
               <div className="flex flex-col gap-4">
                 <SelectionGrid
@@ -565,6 +570,10 @@ export default function Home() {
                   selectedCard="services"
                   periodValues={revenueValues}
                 />
+                <p className="text-sm text-red-500 font-semibold flex gap-2">
+                <span><Star className="text-black fill-yellow-500 border-black"/></span>
+                Click on the card to see more services insights.
+                </p>
               </div>
               <div className="flex flex-col gap-4">
                 <SelectionGrid
@@ -572,6 +581,10 @@ export default function Home() {
                   selectedCard="others"
                   periodValues={revenueValues} // Fix: Pass the entire revenueValues object
                 />
+                <p className="text-sm text-red-500 font-semibold flex gap-2">
+                <span><Star className="text-black fill-yellow-500 border-black"/></span>
+                Click on the card to see more other revenue insights.
+                </p>
               </div>
             </div>
 

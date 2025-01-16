@@ -1,26 +1,25 @@
-'use client';
+"use client";
 
 import { usePathname } from "next/navigation";
-import { useSidebarContext } from "@/context/SidebarContext";
 import { useEffect } from "react";
+import { useSidebarContext } from "@/context/SidebarContext";
 
 export default function LayoutWrapper({ children }) {
-  const { setShowSidebar } = useSidebarContext();
-  const pathName = usePathname();
-  
+  const pathname = usePathname();
+  const { setShowLocationDetails, setShowSidebar } = useSidebarContext();
+
   useEffect(() => {
-    const pathParts = pathName.split("/");
-    const brandName = pathParts[2];
-    const locationName = pathParts[4];
-    const sublocationName = pathParts[6];
+    const pathParts = pathname.split('/');
+    const isLocationRoute = pathParts.length >= 4 && pathParts[3] === 'locations';
+    setShowLocationDetails(isLocationRoute);
 
-    // Show sidebar on home page and when we have brand details
-    if (pathName === "/" || (brandName && (locationName || sublocationName))) {
-      setShowSidebar(true);
-    } else {
-      setShowSidebar(false);
-    }
-  }, [pathName, setShowSidebar]);
+    // Set showSidebar based on path or other conditions if needed
+    setShowSidebar(true); // or your logic to determine sidebar visibility
+  }, [pathname, setShowLocationDetails, setShowSidebar]);
 
-  return children;
+  return (
+    <main className="min-h-screen">
+      {children}
+    </main>
+  );
 }

@@ -21,14 +21,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <HeaderProvider>
-          <SidebarProvider>
+        <SidebarProvider>
+          <HeaderProvider>
             <LayoutWrapper>
               {children}
               <ChatBot />
             </LayoutWrapper>
-          </SidebarProvider>
-        </HeaderProvider>
+          </HeaderProvider>
+        </SidebarProvider>
       </body>
     </html>
   );

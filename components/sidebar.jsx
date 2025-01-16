@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation"; // Add this import
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,24 +14,35 @@ import { Separator } from "@/components/ui/separator";
 import { useSidebarContext } from "@/context/SidebarContext";
 import { brandsData, locations as locationData } from "@/lib/constants";
 import { pickABrand } from "@/lib/utils";
-import { ArrowDown, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Sidebar = () => {
+  const router = useRouter(); // Add this line
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const currentBrand = pathname.split("/")[2];
   const locationName = pathname.split("/")[4];
   const subLocationName = pathname.split("/")[6];
   const decodedSubLocationName = decodeURIComponent(subLocationName);
-  const { showSidebar } = useSidebarContext();
+  const currentPage = pathname.split("/")[7];
+
   const [isBillsOpen, setIsBillsOpen] = useState(false);
   const [brandSearch, setBrandSearch] = useState("");
   const [locationSearch, setLocationSearch] = useState("");
   const [isBrandsOpen, setIsBrandsOpen] = useState(false);
   const [isLocationsOpen, setIsLocationsOpen] = useState(false);
+
+  const { showLocationDetails, setShowLocationDetails } = useSidebarContext();
+  
+  // Check if we're in a location route or deeper
+  useEffect(() => {
+    const pathParts = pathname.split('/');
+    const isLocationRoute = pathParts.length >= 4 && pathParts[3] === 'locations';
+    setShowLocationDetails(isLocationRoute);
+  }, [pathname, setShowLocationDetails]);
 
   // Get brands from brandsData
   const brands = brandsData.map((brand) => brand.brandName);
@@ -55,7 +67,30 @@ const Sidebar = () => {
     ),
   };
 
-  // ...rest of your existing code for newBrand state and handlers...
+  const handleSearch = (e, type) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (type === "brand") {
+      setBrandSearch(e.target.value);
+    } else {
+      setLocationSearch(e.target.value);
+    }
+  };
+
+  const handleItemClick = (e, path) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(path);
+    if (path.includes("/brands/")) {
+      setIsBrandsOpen(false);
+    } else {
+      setIsLocationsOpen(false);
+    }
+  };
+
+  const handleSearchClick = (e) => {
+    e.stopPropagation();
+  };
 
   return (
     <div
@@ -67,7 +102,7 @@ const Sidebar = () => {
 
       <div className="flex items-center justify-between mb-4">
         <Link href="/">
-          <h2 className="text-md font-semibold">Retro App</h2>
+          <h2 className="text-md font-semibold">Tirumala Enterprises</h2>
         </Link>
       </div>
       <Separator className="my-4" />
@@ -76,63 +111,89 @@ const Sidebar = () => {
         <>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-md font-semibold">Brands</h2>
-            {/* ...existing Dialog component... */}
           </div>
 
-          <div className="relative mb-4">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search brands..."
-              value={brandSearch}
-              onChange={(e) => setBrandSearch(e.target.value)}
-              className="pl-8 bg-gray-700 border-gray-600 text-white"
-            />
-          </div>
-
-          <DropdownMenu open={isBrandsOpen} onOpenChange={setIsBrandsOpen}>
+          <DropdownMenu
+            open={isBrandsOpen}
+            onOpenChange={setIsBrandsOpen}
+            modal={false}
+          >
             <DropdownMenuTrigger className="w-full">
               <div className="flex items-center justify-between p-2 bg-gray-700 rounded">
                 <span>Select Brand</span>
-                <ArrowDown className="h-4 w-4" />
+                {isBrandsOpen ? (
+                  <ArrowUp className="h-4 w-4" />
+                ) : (
+                  <ArrowDown className="h-4 w-4" />
+                )}
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-gray-700 text-white">
-              {filteredBrands.map((brand) => (
-                <DropdownMenuItem
-                  key={brand}
-                  className={`${currentBrand === brand ? "bg-gray-600" : ""}`}
-                >
-                  <Link href={`/brands/${brand}`} className="w-full">
+            <DropdownMenuContent
+              className="w-56 bg-gray-700 text-white"
+              onCloseAutoFocus={(e) => e.preventDefault()}
+              onInteractOutside={(e) => e.preventDefault()}
+            >
+              <div className="p-2 sticky top-0 bg-gray-700 border-b border-gray-600">
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search brands..."
+                    value={brandSearch}
+                    onChange={(e) => handleSearch(e, "brand")}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    className="pl-8 bg-gray-600 border-gray-600 text-white"
+                  />
+                </div>
+              </div>
+              <ScrollArea className="h-[200px]">
+                {filteredBrands.map((brand) => (
+                  <DropdownMenuItem
+                    key={brand}
+                    className={`${currentBrand === brand ? "bg-gray-600" : ""}`}
+                    onSelect={(e) => e.preventDefault()}
+                    onClick={(e) => handleItemClick(e, `/brands/${brand}`)}
+                  >
                     {brand}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
+                  </DropdownMenuItem>
+                ))}
+              </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
 
           <div className="mt-8">
             <h2 className="text-md font-semibold mb-4">Locations</h2>
-            <div className="relative mb-4">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search locations..."
-                value={locationSearch}
-                onChange={(e) => setLocationSearch(e.target.value)}
-                className="pl-8 bg-gray-700 border-gray-600 text-white"
-              />
-            </div>
-
             <DropdownMenu
               open={isLocationsOpen}
               onOpenChange={setIsLocationsOpen}
+              modal={false}
             >
               <DropdownMenuTrigger className="w-full">
                 <div className="flex items-center justify-between p-2 bg-gray-700 rounded">
                   <span>Select Location</span>
-                  <ArrowDown className="h-4 w-4" />
+                  {isLocationsOpen ? (
+                    <ArrowUp className="h-4 w-4" />
+                  ) : (
+                    <ArrowDown className="h-4 w-4" />
+                  )}
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-gray-700 text-white">
+              <DropdownMenuContent
+                className="w-56 bg-gray-700 text-white"
+                onCloseAutoFocus={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
+              >
+                <div className="p-2 sticky top-0 bg-gray-700 border-b border-gray-600">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search locations..."
+                      value={locationSearch}
+                      onChange={(e) => handleSearch(e, "location")}
+                      onKeyDown={(e) => e.stopPropagation()}
+                      className="pl-8 bg-gray-600 border-gray-600 text-white"
+                    />
+                  </div>
+                </div>
                 <ScrollArea className="h-[300px]">
                   <DropdownMenuGroup>
                     <DropdownMenuItem className="font-semibold sticky top-0 bg-gray-700 z-10">
@@ -172,7 +233,63 @@ const Sidebar = () => {
         </>
       )}
 
-      {/* ...rest of the existing sidebar content... */}
+      {/* sidebar content only from brand level and below */}
+      {showLocationDetails && (
+        <div className="flex flex-col gap-4 mt-6 border-t pt-6">
+          <h1 className="text-lg font-semibold">
+            {locationName} Details
+          </h1>
+
+          <ul className="space-y-2">
+            <li>
+              <button
+                className="block w-full text-left p-2 rounded hover:bg-gray-700"
+                onClick={() => setIsBillsOpen(!isBillsOpen)}
+              >
+                <span className="flex items-center justify-between gap-2">
+                  Bills {isBillsOpen ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                </span>
+              </button>
+              {isBillsOpen && (
+                <ul className="pl-4 space-y-2">
+                  <li className={`block p-2 rounded ${currentPage === "vouchers" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
+                    <Link href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/bills/vouchers`}>
+                      Vouchers
+                    </Link>
+                  </li>
+                  <li className={`block p-2 rounded ${currentPage === "marketing" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
+                    <Link href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/bills/marketing`}>
+                      Marketing
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+            <li
+              className={`block p-2 rounded ${
+                currentPage === "employees" ? "bg-gray-600" : "hover:bg-gray-700"
+              }`}
+            >
+              <Link
+                href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/employees`}
+              >
+                Employees
+              </Link>
+            </li>
+            <li
+              className={`block p-2 rounded ${
+                currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
+              }`}
+            >
+              <Link
+                href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/visits`}
+              >
+                Visits
+              </Link>
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

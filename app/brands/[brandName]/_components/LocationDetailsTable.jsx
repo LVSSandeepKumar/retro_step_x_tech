@@ -7,36 +7,67 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
-import { mockLocations } from "@/lib/constants";
+import { locations, indianFirstNames, indianLastNames } from "@/lib/constants";
 import { ArrowDownUp } from "lucide-react";
 import Link from "next/link";
 
-const LocationDetailsTable = ({ brandName }) => {
-  const brandData = mockLocations.find(
-    (brand) => brand.brandName === brandName
-  );
+// Helper functions to generate random data
+const getRandomNumber = (min, max) => 
+  Math.floor(Math.random() * (max - min + 1)) + min;
 
+const getRandomName = () => {
+  const firstName = indianFirstNames[Math.floor(Math.random() * indianFirstNames.length)];
+  const lastName = indianLastNames[Math.floor(Math.random() * indianLastNames.length)];
+  return `${firstName} ${lastName}`;
+};
+
+const formatCurrency = (amount) => 
+  `₹${amount.toLocaleString('en-IN')}`;
+
+const generateRandomLocationData = (locationName) => ({
+  locationName,
+  salesDetails: {
+    noOfSales: getRandomNumber(1000, 5000),
+    totalSales: formatCurrency(getRandomNumber(1000000, 5000000))
+  },
+  operationalExpenses: {
+    annual: formatCurrency(getRandomNumber(500000, 2000000))
+  },
+  headOfBrand: getRandomName()
+});
+
+const LocationDetailsTable = ({ brandName }) => {
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "ascending",
   });
 
-  if (!brandData) {
-    return <p>No data available for this brand.</p>;
-  }
+  // Get location names from constants.js (own type)
+  const allOwnLocations = locations.find(loc => loc.type === "own")?.cities || [];
+  const ownLocations = allOwnLocations.slice(0, 5);
+  const locationData = ownLocations.map(generateRandomLocationData);
 
   const getNestedValue = (obj, key) => {
     return key.split(".").reduce((acc, part) => acc && acc[part], obj);
   };
 
-  const sortedLocations = [...brandData.locations].sort((a, b) => {
+  const sortedLocations = [...locationData].sort((a, b) => {
     if (sortConfig.key) {
       const aValue = getNestedValue(a, sortConfig.key);
       const bValue = getNestedValue(b, sortConfig.key);
+      
+      // Handle currency string comparisons
+      const aNum = typeof aValue === 'string' && aValue.includes('₹') 
+        ? parseFloat(aValue.replace(/[^0-9.-]+/g, ""))
+        : aValue;
+      const bNum = typeof bValue === 'string' && bValue.includes('₹')
+        ? parseFloat(bValue.replace(/[^0-9.-]+/g, ""))
+        : bValue;
+
       if (sortConfig.direction === "ascending") {
-        return aValue > bValue ? 1 : -1;
+        return aNum > bNum ? 1 : -1;
       } else {
-        return aValue < bValue ? 1 : -1;
+        return aNum < bNum ? 1 : -1;
       }
     }
     return 0;
@@ -48,6 +79,12 @@ const LocationDetailsTable = ({ brandName }) => {
       direction = "descending";
     }
     setSortConfig({ key, direction });
+  };
+
+  const calculateProfitLoss = (sales, expenses) => {
+    const salesNum = parseFloat(sales.replace(/[^0-9.-]+/g, ""));
+    const expensesNum = parseFloat(expenses.replace(/[^0-9.-]+/g, ""));
+    return formatCurrency(salesNum - expensesNum);
   };
 
   return (
@@ -125,15 +162,10 @@ const LocationDetailsTable = ({ brandName }) => {
                   {location.salesDetails.totalSales}
                 </TableCell>
                 <TableCell className="text-gray-700">
-                  {parseFloat(
-                    location.salesDetails.totalSales.replace(/[^0-9.-]+/g, "")
-                  ) -
-                    parseFloat(
-                      location.operationalExpenses.annual.replace(
-                        /[^0-9.-]+/g,
-                        ""
-                      )
-                    )}
+                  {calculateProfitLoss(
+                    location.salesDetails.totalSales,
+                    location.operationalExpenses.annual
+                  )}
                 </TableCell>
                 <TableCell className="text-gray-700">
                   {location.headOfBrand}
