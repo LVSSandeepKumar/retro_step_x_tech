@@ -249,9 +249,8 @@ const LocationRevenueDetails = ({ type = 'sales', amount, count, period }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-bold text-gray-700">{config.title}</h2>
+    <div className="p-4">
+      <div className="flex justify-end mb-6">
         <Select value={selectedType} onValueChange={setSelectedType}>
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Select type" />

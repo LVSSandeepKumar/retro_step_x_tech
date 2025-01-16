@@ -124,7 +124,7 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
 
   if (!selectedCard || !period || !data) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6 flex items-center justify-center h-[400px]">
+      <div className="flex items-center justify-center h-[400px]">
         <p className="text-gray-500">Select a card to view details</p>
       </div>
     );
@@ -135,17 +135,8 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
   const totalCount = Math.round(processedData.reduce((sum, item) => sum + item.count, 0));
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 h-[504px]">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold text-gray-700">
-          {selectedCard === "sales"
-            ? "Brand-wise Sales"
-            : selectedCard === "services"
-            ? "Services Distribution"
-            : selectedCard === "others"
-            ? "Other Revenue"
-            : "Unknown"}
-        </h2>
+    <div className="p-4">
+      <div className="flex justify-end items-center mb-4">
         <span className="text-sm font-medium text-gray-600">
           {PERIODS.find(p => p.value === period)?.label || period}
         </span>

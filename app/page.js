@@ -156,6 +156,8 @@ export default function Home() {
   const [openCash, setOpenCash] = useState(false);
   const [openAgeing, setOpenAgeing] = useState(false);
   const [detailsData, setDetailsData] = useState(null);
+  const [openSalesDetails, setOpenSalesDetails] = useState(false);
+  const [openLocationRevenue, setOpenLocationRevenue] = useState(false);
 
   const PERIODS = {
     YESTERDAY: "Yesterday",
@@ -541,34 +543,55 @@ export default function Home() {
             <div className="pt-4 flex flex-col gap-4">
               {selectedOverview && (
                 <>
-                  <SalesAndServicesDetailsChart
-                    selectedCard={selectedOverview}
-                    period={revenueValues.period}
-                    data={detailsData}
-                  />
-                  {selectedOverview === "sales" && (
-                    <LocationRevenueDetails 
-                      type="sales"
-                      amount={revenueValues.sales}
-                      count={revenueValues.counts.sales}
-                      period={revenueValues.period}
-                    />
-                  )}
-                  {selectedOverview === "services" && (
-                    <LocationRevenueDetails 
-                      type="services"
-                      amount={revenueValues.services}
-                      count={revenueValues.counts.services}
-                      period={revenueValues.period}
-                    />
-                  )}
-                  {selectedOverview === "others" && (
-                    <LocationRevenueDetails 
-                      type="others"
-                      amount={revenueValues.others}
-                      count={revenueValues.counts.others}
-                      period={revenueValues.period}
-                    />
+                  <Collapsible
+                    open={openSalesDetails}
+                    onOpenChange={setOpenSalesDetails}
+                    className="bg-white rounded-lg shadow-lg"
+                  >
+                    <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-gray-50">
+                      <h2 className="text-lg font-bold text-gray-700">
+                        {selectedOverview === "sales"
+                          ? "Brand-wise Sales"
+                          : selectedOverview === "services"
+                          ? "Services Distribution"
+                          : "Other Revenue Analysis"}
+                      </h2>
+                      {openSalesDetails ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SalesAndServicesDetailsChart
+                        selectedCard={selectedOverview}
+                        period={revenueValues.period}
+                        data={detailsData}
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {selectedOverview && (
+                    <Collapsible
+                      open={openLocationRevenue}
+                      onOpenChange={setOpenLocationRevenue}
+                      className="bg-white rounded-lg shadow-lg"
+                    >
+                      <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-gray-50">
+                        <h2 className="text-lg font-bold text-gray-700">
+                          {selectedOverview === "sales"
+                            ? "Location-wise Sales Analysis"
+                            : selectedOverview === "services"
+                            ? "Location-wise Service Analysis"
+                            : "Location-wise Other Revenue Analysis"}
+                        </h2>
+                        {openLocationRevenue ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <LocationRevenueDetails
+                          type={selectedOverview}
+                          amount={revenueValues[selectedOverview]}
+                          count={revenueValues.counts[selectedOverview]}
+                          period={revenueValues.period}
+                        />
+                      </CollapsibleContent>
+                    </Collapsible>
                   )}
                 </>
               )}
