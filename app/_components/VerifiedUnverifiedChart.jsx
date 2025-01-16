@@ -57,7 +57,7 @@ const VerifiedUnverifiedChart = ({ cashCollections = 0 }) => {
       <div className="h-[300px]">
         <Pie data={data} options={options} />
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-4">
+      <div className="mt-[26px] grid grid-cols-2 gap-4">
         <div className="text-center">
           <p className="text-sm text-gray-600">Verified</p>
           <p className="text-lg font-bold text-emerald-600">

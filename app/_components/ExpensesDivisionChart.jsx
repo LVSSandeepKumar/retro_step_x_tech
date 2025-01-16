@@ -9,6 +9,14 @@ import {
   CategoryScale,
   LinearScale
 } from 'chart.js';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 ChartJS.register(
   ArcElement,
@@ -18,25 +26,28 @@ ChartJS.register(
   LinearScale
 );
 
-export const ExpensesDivisionChart = () => {
+export const ExpensesDivisionChart = ({ expensesData }) => {
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+  const [tableData, setTableData] = useState([]);
 
   useEffect(() => {
-    // Generate random amounts following the specified hierarchy
-    const baseAmount = Math.floor(Math.random() * (100000 - 50000) + 50000);
-    const amounts = {
-      'Salaries': baseAmount,
-      'OSJ': baseAmount * 0.8,
-      'Electricity Charges': baseAmount * 0.6,
-      'Other Expenses': baseAmount * 0.4,
-      'Branch Maintenance': baseAmount * 0.3,
-      'Transportation Charges': baseAmount * 0.2
-    };
+    if (!expensesData) return;
+
+    const total = Object.values(expensesData).reduce((a, b) => a + b, 0);
+
+    // Prepare table data
+    const processedData = expenses.map(expense => ({
+      name: expense,
+      amount: expensesData[expense],
+      percentage: ((expensesData[expense] / total) * 100).toFixed(1)
+    }));
+
+    setTableData(processedData);
 
     setChartData({
       labels: expenses,
       datasets: [{
-        data: expenses.map(expense => amounts[expense]),
+        data: expenses.map(expense => expensesData[expense]),
         backgroundColor: [
           'rgba(255, 99, 132, 0.8)',   // Reddish
           'rgba(54, 162, 235, 0.8)',   // Blue
@@ -56,44 +67,16 @@ export const ExpensesDivisionChart = () => {
         borderWidth: 1,
       }],
     });
-  }, []);
+  }, [expensesData]);
 
+  // Modify options to remove legend since we'll show data in table
   const options = {
     responsive: true,
     maintainAspectRatio: true,
     aspectRatio: 1.7,
-    layout: {
-      padding: {
-        right: 150  // Increased right padding for labels
-      }
-    },
     plugins: {
       legend: {
-        position: 'right',
-        align: 'center',
-        labels: {
-          boxWidth: 15,
-          padding: 20,  // Increased padding between labels
-          font: {
-            size: 13
-          },
-          generateLabels: (chart) => {
-            const datasets = chart.data.datasets[0];
-            return chart.data.labels.map((label, index) => {
-              const value = datasets.data[index];
-              const total = datasets.data.reduce((a, b) => a + b, 0);
-              const percentage = ((value / total) * 100).toFixed(1);
-              return {
-                text: `${label}\n₹${value.toLocaleString()}\n(${percentage}%)`,
-                fillStyle: datasets.backgroundColor[index],
-                strokeStyle: datasets.borderColor[index],
-                lineWidth: 1,
-                hidden: false,
-                index: index
-              };
-            });
-          }
-        }
+        display: false // Hide legend since we have table
       },
       tooltip: {
         callbacks: {
@@ -109,13 +92,46 @@ export const ExpensesDivisionChart = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4">  {/* Reduced padding from p-6 to p-4 */}
-      <h2 className="text-lg font-bold text-gray-700 mb-4">Expenses Distribution</h2>
-      <div className="relative h-[400px] w-full px-2">  {/* Added horizontal padding */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          {chartData.labels.length > 0 && (
-            <Pie data={chartData} options={options} />
-          )}
+    <div className="p-4">
+      <div className="flex items-center">
+        {/* Pie Chart Section */}
+        <div className="w-1/2">
+          <div className="h-[400px] relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              {chartData.labels.length > 0 && (
+                <Pie data={chartData} options={options} />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Table Section */}
+        <div className="w-1/2">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Category</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-right">%</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tableData.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell className="text-right">₹{item.amount.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{item.percentage}%</TableCell>
+                </TableRow>
+              ))}
+              <TableRow className="font-semibold bg-muted/50">
+                <TableCell>Total</TableCell>
+                <TableCell className="text-right">
+                  ₹{tableData.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}
+                </TableCell>
+                <TableCell className="text-right">100%</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>

@@ -158,6 +158,8 @@ export default function Home() {
   const [detailsData, setDetailsData] = useState(null);
   const [openSalesDetails, setOpenSalesDetails] = useState(false);
   const [openLocationRevenue, setOpenLocationRevenue] = useState(false);
+  const [openExpenses, setOpenExpenses] = useState(true);
+  const [expensesData, setExpensesData] = useState(null);
 
   const PERIODS = {
     YESTERDAY: "Yesterday",
@@ -400,21 +402,30 @@ export default function Home() {
     router.push(`/brands/${brandName}`);
   };
 
-  const generateValuesForPeriod = (period) => {
-    const multipliers = {
-      YESTERDAY: 10,
-      WEEKLY: 100,
-      MONTHLY: 1000,
-      YTD: 10000
+  const generateExpensesData = (totalExpenses) => {
+    const baseAmount = totalExpenses * 0.3; // 30% for salaries as base
+    const amounts = {
+      'Salaries': baseAmount,
+      'OSJ': baseAmount * 0.8,
+      'Electricity Charges': baseAmount * 0.6,
+      'Other Expenses': baseAmount * 0.4,
+      'Branch Maintenance': baseAmount * 0.3,
+      'Transportation Charges': baseAmount * 0.2
     };
-    
-    const baseValue = 200000 * multipliers[period];
-    setPeriodValues({
-      period,
-      cash: baseValue,
-      upi: Math.round(baseValue * 0.8),
-      expenses: Math.round(baseValue * 1.6 * 0.8)
-    });
+
+    // Ensure total matches the expenses from periodValues
+    const generatedTotal = Object.values(amounts).reduce((a, b) => a + b, 0);
+    const adjustmentFactor = totalExpenses / generatedTotal;
+
+    // Adjust all amounts to match the total
+    const adjustedAmounts = Object.fromEntries(
+      Object.entries(amounts).map(([key, value]) => [
+        key,
+        Math.round(value * adjustmentFactor)
+      ])
+    );
+
+    return adjustedAmounts;
   };
 
   // Add useEffect for initial data generation
@@ -422,6 +433,7 @@ export default function Home() {
     if (!revenueValues) {
       const initialRevenue = generatePeriodData("YESTERDAY");
       setRevenueValues(initialRevenue);
+      generateValuesForPeriod("YESTERDAY"); // This will set both periodValues and expensesData
       // Generate details data using the same values
       setDetailsData(generateDetailsData(
         "YESTERDAY",
@@ -447,6 +459,26 @@ export default function Home() {
       );
       setDetailsData(newDetailsData);
     }
+  };
+
+  const generateValuesForPeriod = (period) => {
+    const multipliers = {
+      YESTERDAY: 1,
+      WEEKLY: 10,
+      MONTHLY: 100,
+      YTD: 1000
+    };
+    
+    const baseValue = 200000 * multipliers[period];
+    const newPeriodValues = {
+      period,
+      cash: baseValue,
+      upi: Math.round(baseValue * 0.8),
+      expenses: Math.round(baseValue * 1.6 * 0.8)
+    };
+    
+    setPeriodValues(newPeriodValues);
+    setExpensesData(generateExpensesData(newPeriodValues.expenses));
   };
 
   const handleCardSelect = (cardId) => {
@@ -725,22 +757,19 @@ export default function Home() {
               </CollapsibleContent>
             </Collapsible>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="col-span-2">
-                <ExpensesDivisionChart />
-              </div>
-            </div>
-
-            {/* <h1 className="text-xl font-bold my-6">Financial Overview</h1>
-            <OverviewTable /> */}
-            {/* Achieved vs Targets Chart */}
-            {/* <h1 className="text-xl font-bold my-6">Achieved vs Targets</h1>
-            <ResponsiveContainer width="100%" height={400}>
-              <Bar
-                data={barChartData}
-                options={{ responsive: true, maintainAspectRatio: false }}
-              />
-            </ResponsiveContainer> */}
+            <Collapsible
+              open={openExpenses}
+              onOpenChange={setOpenExpenses}
+              className="bg-white rounded-lg shadow-lg"
+            >
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-gray-50">
+                <h2 className="text-lg font-bold text-gray-700">Expenses Distribution</h2>
+                {openExpenses ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <ExpensesDivisionChart expensesData={expensesData} />
+              </CollapsibleContent>
+            </Collapsible>
           </TabsContent>
 
           <TabsContent

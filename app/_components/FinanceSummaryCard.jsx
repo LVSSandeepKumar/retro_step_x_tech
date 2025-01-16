@@ -24,9 +24,6 @@ export default function FinanceSummary({ periodValues }) {
           <div className="p-2 bg-gray-100 rounded-full">
             <RefreshCwIcon className="size-5 text-gray-500" />
           </div>
-          <span className="text-sm font-medium text-gray-700">
-            {periodValues.period}
-          </span>
         </div>
         <div>
           <h1 className="text-md font-medium text-gray-900">
@@ -49,9 +46,6 @@ export default function FinanceSummary({ periodValues }) {
           <div className="p-2 bg-gray-100 rounded-full">
             <RefreshCwIcon className="size-5 text-gray-500" />
           </div>
-          <span className="text-sm font-medium text-gray-700">
-            {periodValues.period}
-          </span>
         </div>
         <div>
           <h1 className="text-md font-medium text-gray-900">UPI Collections</h1>
