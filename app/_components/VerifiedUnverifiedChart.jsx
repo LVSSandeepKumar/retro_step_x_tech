@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Pie } from 'react-chartjs-2';
+import React, { useEffect, useState } from "react";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Pie } from "react-chartjs-2";
+import Link from "next/link";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -16,44 +17,42 @@ const VerifiedUnverifiedChart = ({ cashCollections = 0 }) => {
   const unverifiedAmount = cashCollections - verifiedAmount;
 
   const data = {
-    labels: ['Verified', 'Unverified'],
-    datasets: [{
-      data: [verifiedAmount, unverifiedAmount],
-      backgroundColor: [
-        'rgba(75, 192, 192, 0.6)',
-        'rgba(255, 99, 132, 0.6)',
-      ],
-      borderColor: [
-        'rgba(75, 192, 192, 1)',
-        'rgba(255, 99, 132, 1)',
-      ],
-      borderWidth: 1,
-    }],
+    labels: ["Verified", "Unverified"],
+    datasets: [
+      {
+        data: [verifiedAmount, unverifiedAmount],
+        backgroundColor: ["rgba(75, 192, 192, 0.6)", "rgba(255, 99, 132, 0.6)"],
+        borderColor: ["rgba(75, 192, 192, 1)", "rgba(255, 99, 132, 1)"],
+        borderWidth: 1,
+      },
+    ],
   };
 
   const options = {
     plugins: {
       legend: {
-        position: 'bottom',
+        position: "bottom",
       },
       tooltip: {
         callbacks: {
           label: (context) => {
             const value = context.raw;
             const percentage = ((value / cashCollections) * 100).toFixed(1);
-            return `${context.label}: ₹${value.toLocaleString('en-IN', { 
-              maximumFractionDigits: 0 
+            return `${context.label}: ₹${value.toLocaleString("en-IN", {
+              maximumFractionDigits: 0,
             })} (${percentage}%)`;
-          }
-        }
-      }
+          },
+        },
+      },
     },
     maintainAspectRatio: false,
   };
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-lg font-bold text-gray-700 mb-4">Cash Deposits Verification Status</h2>
+      <h2 className="text-lg font-bold text-gray-700 mb-4">
+        Cash Deposits Verification Status
+      </h2>
       <div className="h-[300px]">
         <Pie data={data} options={options} />
       </div>
@@ -61,13 +60,23 @@ const VerifiedUnverifiedChart = ({ cashCollections = 0 }) => {
         <div className="text-center">
           <p className="text-sm text-gray-600">Verified</p>
           <p className="text-lg font-bold text-emerald-600">
-            ₹{verifiedAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+            <Link href="/analytics">
+              ₹
+              {verifiedAmount.toLocaleString("en-IN", {
+                maximumFractionDigits: 0,
+              })}
+            </Link>
           </p>
         </div>
         <div className="text-center">
           <p className="text-sm text-gray-600">Unverified</p>
           <p className="text-lg font-bold text-red-500">
-            ₹{unverifiedAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+            <Link href="/analytics">
+              ₹
+              {unverifiedAmount.toLocaleString("en-IN", {
+                maximumFractionDigits: 0,
+              })}
+            </Link>
           </p>
         </div>
       </div>

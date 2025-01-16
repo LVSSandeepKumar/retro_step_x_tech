@@ -90,7 +90,7 @@ const generatePeriodData = (period) => {
   return {
     period,
     sales: baseSales,
-    services: Math.round(baseSales * 0.9),
+    services: Math.round(baseSales * 0.86),
     others: Math.round(baseSales * 0.9),
     counts: {
       sales: baseCount,
@@ -158,7 +158,7 @@ export default function Home() {
   const [detailsData, setDetailsData] = useState(null);
   const [openSalesDetails, setOpenSalesDetails] = useState(false);
   const [openLocationRevenue, setOpenLocationRevenue] = useState(false);
-  const [openExpenses, setOpenExpenses] = useState(true);
+  const [openExpenses, setOpenExpenses] = useState(false);
   const [expensesData, setExpensesData] = useState(null);
 
   const PERIODS = {
@@ -483,14 +483,18 @@ export default function Home() {
 
   const handleCardSelect = (cardId) => {
     setSelectedOverview(cardId);
-    // Use the existing values from revenueValues state
+    // Generate new details data but don't show collapsible sections
     const newDetailsData = generateDetailsData(
       revenueValues.period, 
       cardId,
-      revenueValues[cardId], // Pass the existing value
-      revenueValues.counts[cardId] // Pass the existing count
+      revenueValues[cardId],
+      revenueValues.counts[cardId]
     );
     setDetailsData(newDetailsData);
+    
+    // Reset collapsible states
+    setOpenSalesDetails(false);
+    setOpenLocationRevenue(false);
   };
 
   // Add loading state handling in the return
