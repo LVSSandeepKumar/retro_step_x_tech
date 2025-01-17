@@ -207,6 +207,61 @@ Finance data: ${PERIODS[localData.finance.period] || "Not set"}`;
     return "You can ask about sales, services, other revenue, cash collections, UPI payments, or expenses. Try asking 'help' for more information.";
   };
 
+  const getAnswerFromDataAI = async (question) => {
+    const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    const GEMINI_API_KEY = process.env.gemini; // Replace with your actual API key
+  
+    const validationError = validateData();
+    if (validationError) return validationError;
+  
+    const lowercaseQuestion = question.toLowerCase();
+  
+    if (lowercaseQuestion.includes("help")) {
+      return `You can ask me about:
+  1. Revenue metrics (sales, services, others)
+  2. Financial metrics (cash, UPI, expenses)
+  3. Current period: ${localData.revenue?.period || "Not set"}
+  Try questions like:
+  - "What are the current sales?"
+  - "Show me services revenue"
+  - "How much is the cash collection?"
+  - "What are the total expenses?"`;
+    }
+  
+  
+    // If no predefined question matches, use Gemini API
+    console.log(`Context: ${JSON.stringify(localData)} \n Question: ${question}`)
+    try {
+      const response = await fetch(GEMINI_API_URL + `?key=${GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: `Context: This application handles revenue and financial data. answer to questions in shoty and try to include values ` },
+                { text: `Context: ${JSON.stringify(localData)} \n Question: ${question}` },
+              ],
+            },
+          ],
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Gemini API error: ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      console.log(data);
+      return data.candidates[0].content.parts[0].text    || "Sorry, no answer found.";
+    } catch (error) {
+      return `Error fetching answer from Gemini API: ${error.message}`;
+    }
+  };
+  
+
   // Update handleSend to include error handling
   const handleSend = () => {
     if (!inputMessage.trim()) return;

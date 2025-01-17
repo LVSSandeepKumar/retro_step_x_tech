@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
           <HeaderProvider>
             <LayoutWrapper>
               {children}
-              <ChatBot />
+              {/* <ChatBot/> */}
             </LayoutWrapper>
           </HeaderProvider>
         </SidebarProvider>
