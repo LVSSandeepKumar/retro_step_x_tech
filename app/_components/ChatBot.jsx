@@ -2,14 +2,55 @@
 import { MessageCircle, Minimize2, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+// Add PERIODS constant at the top
+const PERIODS = {
+  YESTERDAY: "Yesterday",
+  WEEKLY: "Weekly",
+  MONTHLY: "This Month",
+  YTD: "Year to Date",
+};
+
 const ChatBot = ({ revenueData, financeData, selectedOverview }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  // Update state declarations
   const [messages, setMessages] = useState([
     { text: "Hello! How can I help you today?", type: "bot" },
   ]);
   const [inputMessage, setInputMessage] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [localData, setLocalData] = useState({
+    revenue: null,
+    finance: null,
+    isInitialized: false,
+  });
+
   const chatRef = useRef(null);
   const messageContainerRef = useRef(null);
+
+  // Update useEffect for data synchronization
+  useEffect(() => {
+    if (revenueData && financeData) {
+      const newData = {
+        revenue: { ...revenueData },
+        finance: { ...financeData },
+        isInitialized: true,
+      };
+
+      setLocalData(newData);
+
+      // Only add the welcome message once when data is first initialized
+      if (!localData.isInitialized) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            text: `I'm ready to help you with information for ${
+              PERIODS[revenueData.period]
+            }!`,
+            type: "bot",
+          },
+        ]);
+      }
+    }
+  }, [revenueData, financeData]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -63,14 +104,29 @@ const ChatBot = ({ revenueData, financeData, selectedOverview }) => {
     return `₹${formatIndianNumber(scaledValue)}`;
   };
 
+  // Add data validation helper
+  const validateData = () => {
+    if (!localData.isInitialized) {
+      return "I'm still initializing. Please wait a moment...";
+    }
+    if (!localData.revenue || !localData.finance) {
+      return "Some data is missing. Please try again in a moment.";
+    }
+    return null;
+  };
+
+  // Update getAnswerFromData to use validation
   const getAnswerFromData = (question) => {
+    const validationError = validateData();
+    if (validationError) return validationError;
+
     const lowercaseQuestion = question.toLowerCase();
 
     if (lowercaseQuestion.includes("help")) {
       return `You can ask me about:
 1. Revenue metrics (sales, services, others)
 2. Financial metrics (cash, UPI, expenses)
-3. Current period: ${revenueData.period}
+3. Current period: ${localData.revenue?.period || "Not set"}
 Try questions like:
 - "What are the current sales?"
 - "Show me services revenue"
@@ -78,54 +134,65 @@ Try questions like:
 - "What are the total expenses?"`;
     }
 
-    // Handle revenue questions
+    // Handle revenue questions with null checks
     if (lowercaseQuestion.includes("sales")) {
-      return `Sales for ${PERIODS[revenueData.period]}: ${formatValue(
-        revenueData.sales,
-        revenueData.period
+      return `Sales for ${
+        PERIODS[localData.revenue.period] || "current period"
+      }: ${formatValue(
+        localData.revenue.sales || 0,
+        localData.revenue.period
       )}`;
     }
 
     if (lowercaseQuestion.includes("service")) {
       return `Services revenue for ${
-        PERIODS[revenueData.period]
-      }: ${formatValue(revenueData.services, revenueData.period)}`;
+        PERIODS[localData.revenue.period] || "current period"
+      }: ${formatValue(
+        localData.revenue.services || 0,
+        localData.revenue.period
+      )}`;
     }
 
     if (lowercaseQuestion.includes("other")) {
-      return `Other revenue for ${PERIODS[revenueData.period]}: ${formatValue(
-        revenueData.others,
-        revenueData.period
+      return `Other revenue for ${
+        PERIODS[localData.revenue.period] || "current period"
+      }: ${formatValue(
+        localData.revenue.others || 0,
+        localData.revenue.period
       )}`;
     }
 
-    // Handle finance questions
+    // Handle finance questions with null checks
     if (lowercaseQuestion.includes("cash")) {
       return `Cash collections for ${
-        PERIODS[financeData.period]
-      }: ${formatValue(financeData.cash, financeData.period)}`;
+        PERIODS[localData.finance.period] || "current period"
+      }: ${formatValue(localData.finance.cash || 0, localData.finance.period)}`;
     }
 
     if (lowercaseQuestion.includes("upi")) {
-      return `UPI collections for ${PERIODS[financeData.period]}: ${formatValue(
-        financeData.upi,
-        financeData.period
-      )}`;
+      return `UPI collections for ${
+        PERIODS[localData.finance.period] || "current period"
+      }: ${formatValue(localData.finance.upi || 0, localData.finance.period)}`;
     }
 
     if (lowercaseQuestion.includes("expense")) {
-      return `Total expenses for ${PERIODS[financeData.period]}: ${formatValue(
-        financeData.expenses,
-        financeData.period
+      return `Total expenses for ${
+        PERIODS[localData.finance.period] || "current period"
+      }: ${formatValue(
+        localData.finance.expenses || 0,
+        localData.finance.period
       )}`;
     }
 
     if (lowercaseQuestion.includes("collection")) {
-      const total = financeData.cash + financeData.upi;
-      return `Total collections for ${PERIODS[financeData.period]}:
-Cash: ${formatValue(financeData.cash, financeData.period)}
-UPI: ${formatValue(financeData.upi, financeData.period)}
-Total: ${formatValue(total, financeData.period)}`;
+      const total =
+        (localData.finance.cash || 0) + (localData.finance.upi || 0);
+      return `Total collections for ${
+        PERIODS[localData.finance.period] || "current period"
+      }:
+Cash: ${formatValue(localData.finance.cash || 0, localData.finance.period)}
+UPI: ${formatValue(localData.finance.upi || 0, localData.finance.period)}
+Total: ${formatValue(total, localData.finance.period)}`;
     }
 
     if (
@@ -133,30 +200,35 @@ Total: ${formatValue(total, financeData.period)}`;
       lowercaseQuestion.includes("timeframe")
     ) {
       return `Current period settings:
-Revenue data: ${PERIODS[revenueData.period]}
-Finance data: ${PERIODS[financeData.period]}`;
+Revenue data: ${PERIODS[localData.revenue.period] || "Not set"}
+Finance data: ${PERIODS[localData.finance.period] || "Not set"}`;
     }
 
     return "You can ask about sales, services, other revenue, cash collections, UPI payments, or expenses. Try asking 'help' for more information.";
   };
 
+  // Update handleSend to include error handling
   const handleSend = () => {
     if (!inputMessage.trim()) return;
 
-    setMessages((prev) => [...prev, { text: inputMessage, type: "user" }]);
+    const userMessage = { text: inputMessage, type: "user" };
+    setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
 
-    // Get answer based on question
-    const answer = getAnswerFromData(inputMessage);
+    const validationError = validateData();
+    if (validationError) {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          { text: validationError, type: "bot" },
+        ]);
+      }, 500);
+      return;
+    }
 
+    const answer = getAnswerFromData(inputMessage);
     setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: answer,
-          type: "bot",
-        },
-      ]);
+      setMessages((prev) => [...prev, { text: answer, type: "bot" }]);
     }, 500);
   };
 
@@ -201,7 +273,7 @@ Finance data: ${PERIODS[financeData.period]}`;
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                onClick={(e) => e.key === "Enter" && handleSend()}
                 placeholder="Type your message..."
                 className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />

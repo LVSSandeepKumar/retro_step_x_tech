@@ -14,36 +14,88 @@ const TYPES_CONFIG = {
     title: "Location-wise Sales Analysis",
     categories: ["New Vehicle Sales", "Exchange Sales"],
     colors: {
-      own: ['rgba(54, 162, 235, 0.8)', 'rgba(54, 162, 235, 0.4)'],
-      sub: ['rgba(236, 72, 153, 0.8)', 'rgba(236, 72, 153, 0.4)']
+      own: [
+        'rgba(16, 185, 129, 0.8)', // New vehicles - Green
+        'rgba(239, 68, 68, 0.8)',  // Exchange - Red
+      ],
+      sub: [
+        'rgba(59, 130, 246, 0.8)', // New vehicles - Blue
+        'rgba(245, 158, 11, 0.8)'  // Exchange - Orange
+      ]
     },
     borders: {
-      own: ['rgba(54, 162, 235, 1)', 'rgba(54, 162, 235, 0.6)'],
-      sub: ['rgba(236, 72, 153, 1)', 'rgba(236, 72, 153, 0.6)']
+      own: [
+        'rgba(16, 185, 129, 1)', // New vehicles
+        'rgba(239, 68, 68, 1)',  // Exchange
+      ],
+      sub: [
+        'rgba(59, 130, 246, 1)', // New vehicles
+        'rgba(245, 158, 11, 1)'  // Exchange
+      ]
     }
   },
   services: {
     title: "Location-wise Service Analysis",
     categories: ["Part Sales", "Service Sales", "Bajaj Claims Warranty", "Bajaj Claims Free Service"],
     colors: {
-      own: ['rgba(54, 162, 235, 0.8)', 'rgba(75, 192, 192, 0.8)', 'rgba(54, 162, 235, 0.6)', 'rgba(75, 192, 192, 0.6)'],
-      sub: ['rgba(236, 72, 153, 0.8)', 'rgba(244, 114, 182, 0.8)', 'rgba(236, 72, 153, 0.6)', 'rgba(244, 114, 182, 0.6)']
+      own: [
+        'rgba(16, 185, 129, 0.8)',  // Green - Part Sales
+        'rgba(239, 68, 68, 0.8)',   // Red - Service Sales
+        'rgba(99, 102, 241, 0.8)',  // Indigo - Warranty Claims
+        'rgba(245, 158, 11, 0.8)'   // Orange - Free Service
+      ],
+      sub: [
+        'rgba(20, 184, 166, 0.8)',  // Teal - Part Sales
+        'rgba(236, 72, 153, 0.8)',  // Pink - Service Sales
+        'rgba(139, 92, 246, 0.8)',  // Purple - Warranty Claims
+        'rgba(234, 179, 8, 0.8)'    // Yellow - Free Service
+      ]
     },
     borders: {
-      own: ['rgba(54, 162, 235, 1)', 'rgba(75, 192, 192, 1)', 'rgba(54, 162, 235, 0.8)', 'rgba(75, 192, 192, 0.8)'],
-      sub: ['rgba(236, 72, 153, 1)', 'rgba(244, 114, 182, 1)', 'rgba(236, 72, 153, 0.8)', 'rgba(244, 114, 182, 0.8)']
+      own: [
+        'rgba(16, 185, 129, 1)',
+        'rgba(239, 68, 68, 1)',
+        'rgba(99, 102, 241, 1)',
+        'rgba(245, 158, 11, 1)'
+      ],
+      sub: [
+        'rgba(20, 184, 166, 1)',
+        'rgba(236, 72, 153, 1)',
+        'rgba(139, 92, 246, 1)',
+        'rgba(234, 179, 8, 1)'
+      ]
     }
   },
   others: {
     title: "Location-wise Other Revenue Analysis",
     categories: ["Insurance", "Vehicle Finance", "Accessories", "Apparels"],
     colors: {
-      own: ['rgba(54, 162, 235, 0.8)', 'rgba(75, 192, 192, 0.8)', 'rgba(54, 162, 235, 0.6)', 'rgba(75, 192, 192, 0.6)'],
-      sub: ['rgba(236, 72, 153, 0.8)', 'rgba(244, 114, 182, 0.8)', 'rgba(236, 72, 153, 0.6)', 'rgba(244, 114, 182, 0.6)']
+      own: [
+        'rgba(16, 185, 129, 0.8)',  // Green - Insurance
+        'rgba(239, 68, 68, 0.8)',   // Red - Vehicle Finance
+        'rgba(99, 102, 241, 0.8)',  // Indigo - Accessories
+        'rgba(245, 158, 11, 0.8)'   // Orange - Apparels
+      ],
+      sub: [
+        'rgba(20, 184, 166, 0.8)',  // Teal - Insurance
+        'rgba(236, 72, 153, 0.8)',  // Pink - Vehicle Finance  
+        'rgba(139, 92, 246, 0.8)',  // Purple - Accessories
+        'rgba(234, 179, 8, 0.8)'    // Yellow - Apparels
+      ]
     },
     borders: {
-      own: ['rgba(54, 162, 235, 1)', 'rgba(75, 192, 192, 1)', 'rgba(54, 162, 235, 0.8)', 'rgba(75, 192, 192, 0.8)'],
-      sub: ['rgba(236, 72, 153, 1)', 'rgba(244, 114, 182, 1)', 'rgba(236, 72, 153, 0.8)', 'rgba(244, 114, 182, 0.8)']
+      own: [
+        'rgba(16, 185, 129, 1)',
+        'rgba(239, 68, 68, 1)', 
+        'rgba(99, 102, 241, 1)',
+        'rgba(245, 158, 11, 1)'
+      ],
+      sub: [
+        'rgba(20, 184, 166, 1)',
+        'rgba(236, 72, 153, 1)',
+        'rgba(139, 92, 246, 1)',
+        'rgba(234, 179, 8, 1)'
+      ]
     }
   }
 };

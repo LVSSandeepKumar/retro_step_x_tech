@@ -29,7 +29,7 @@ const Sidebar = () => {
   const decodedSubLocationName = decodeURIComponent(subLocationName);
   const currentPage = pathname.split("/")[7];
 
-  const [isBillsOpen, setIsBillsOpen] = useState(false);
+  const [isExpensesOpen, setIsExpensesOpen] = useState(false);
   const [brandSearch, setBrandSearch] = useState("");
   const [locationSearch, setLocationSearch] = useState("");
   const [isBrandsOpen, setIsBrandsOpen] = useState(false);
@@ -98,8 +98,7 @@ const Sidebar = () => {
         isCollapsed ? "w-16" : "w-64"
       }`}
     >
-      {/* ...existing header... */}
-
+      {/* Logo section */}
       <div className="flex items-center justify-between mb-4">
         <Link href="/">
           <h2 className="text-md font-semibold">Tirumala Enterprises</h2>
@@ -109,18 +108,15 @@ const Sidebar = () => {
 
       {!isCollapsed && (
         <>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-md font-semibold">Brands</h2>
-          </div>
-
+          {/* Modified Brands Dropdown */}
           <DropdownMenu
             open={isBrandsOpen}
             onOpenChange={setIsBrandsOpen}
             modal={false}
           >
             <DropdownMenuTrigger className="w-full">
-              <div className="flex items-center justify-between p-2 bg-gray-700 rounded">
-                <span>Select Brand</span>
+              <div className="flex items-center justify-between p-2 hover:bg-gray-700 rounded">
+                <h2 className="text-md font-semibold">Brands</h2>
                 {isBrandsOpen ? (
                   <ArrowUp className="h-4 w-4" />
                 ) : (
@@ -160,76 +156,74 @@ const Sidebar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="mt-8">
-            <h2 className="text-md font-semibold mb-4">Locations</h2>
-            <DropdownMenu
-              open={isLocationsOpen}
-              onOpenChange={setIsLocationsOpen}
-              modal={false}
+          {/* Modified Locations Dropdown */}
+          <DropdownMenu
+            open={isLocationsOpen}
+            onOpenChange={setIsLocationsOpen}
+            modal={false}
+          >
+            <DropdownMenuTrigger className="w-full mt-8">
+              <div className="flex items-center justify-between p-2 hover:bg-gray-700 rounded">
+                <h2 className="text-md font-semibold">Locations</h2>
+                {isLocationsOpen ? (
+                  <ArrowUp className="h-4 w-4" />
+                ) : (
+                  <ArrowDown className="h-4 w-4" />
+                )}
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-56 bg-gray-700 text-white"
+              onCloseAutoFocus={(e) => e.preventDefault()}
+              onInteractOutside={(e) => e.preventDefault()}
             >
-              <DropdownMenuTrigger className="w-full">
-                <div className="flex items-center justify-between p-2 bg-gray-700 rounded">
-                  <span>Select Location</span>
-                  {isLocationsOpen ? (
-                    <ArrowUp className="h-4 w-4" />
-                  ) : (
-                    <ArrowDown className="h-4 w-4" />
-                  )}
+              <div className="p-2 sticky top-0 bg-gray-700 border-b border-gray-600">
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search locations..."
+                    value={locationSearch}
+                    onChange={(e) => handleSearch(e, "location")}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    className="pl-8 bg-gray-600 border-gray-600 text-white"
+                  />
                 </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-56 bg-gray-700 text-white"
-                onCloseAutoFocus={(e) => e.preventDefault()}
-                onInteractOutside={(e) => e.preventDefault()}
-              >
-                <div className="p-2 sticky top-0 bg-gray-700 border-b border-gray-600">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search locations..."
-                      value={locationSearch}
-                      onChange={(e) => handleSearch(e, "location")}
-                      onKeyDown={(e) => e.stopPropagation()}
-                      className="pl-8 bg-gray-600 border-gray-600 text-white"
-                    />
-                  </div>
-                </div>
-                <ScrollArea className="h-[300px]">
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem className="font-semibold sticky top-0 bg-gray-700 z-10">
-                      Own Locations
+              </div>
+              <ScrollArea className="h-[300px]">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="font-semibold sticky top-0 bg-gray-700 z-10">
+                    Own Locations
+                  </DropdownMenuItem>
+                  {filteredLocations.own.map((location) => (
+                    <DropdownMenuItem key={location}>
+                      <Link
+                        href={`/brands/${pickABrand()}/locations/${location}`}
+                        className="w-full"
+                      >
+                        {location}
+                      </Link>
                     </DropdownMenuItem>
-                    {filteredLocations.own.map((location) => (
-                      <DropdownMenuItem key={location}>
-                        <Link
-                          href={`/brands/${pickABrand()}/locations/${location}`}
-                          className="w-full"
-                        >
-                          {location}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem className="font-semibold sticky top-0 bg-gray-700 z-10">
-                      Sub Locations
+                  ))}
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="font-semibold sticky top-0 bg-gray-700 z-10">
+                    Sub Locations
+                  </DropdownMenuItem>
+                  {filteredLocations.sub.map((location) => (
+                    <DropdownMenuItem key={location}>
+                      <Link
+                        href={`/brands/${pickABrand()}/locations/${location}`}
+                        className="w-full"
+                      >
+                        {location}
+                      </Link>
                     </DropdownMenuItem>
-                    {filteredLocations.sub.map((location) => (
-                      <DropdownMenuItem key={location}>
-                        <Link
-                          href={`/brands/${pickABrand()}/locations/${location}`}
-                          className="w-full"
-                        >
-                          {location}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuGroup>
-                </ScrollArea>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                  ))}
+                </DropdownMenuGroup>
+              </ScrollArea>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </>
       )}
 
@@ -244,21 +238,21 @@ const Sidebar = () => {
             <li>
               <button
                 className="block w-full text-left p-2 rounded hover:bg-gray-700"
-                onClick={() => setIsBillsOpen(!isBillsOpen)}
+                onClick={() => setIsExpensesOpen(!isExpensesOpen)}
               >
                 <span className="flex items-center justify-between gap-2">
-                  Bills {isBillsOpen ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                  Expenses {isExpensesOpen ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
                 </span>
               </button>
-              {isBillsOpen && (
+              {isExpensesOpen && (
                 <ul className="pl-4 space-y-2">
                   <li className={`block p-2 rounded ${currentPage === "vouchers" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
-                    <Link href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/bills/vouchers`}>
+                    <Link href={`/brands/${currentBrand}/locations/${locationName}/expenses/vouchers`}>
                       Vouchers
                     </Link>
                   </li>
                   <li className={`block p-2 rounded ${currentPage === "marketing" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
-                    <Link href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/bills/marketing`}>
+                    <Link href={`/brands/${currentBrand}/locations/${locationName}/expenses/marketing`}>
                       Marketing
                     </Link>
                   </li>
@@ -271,7 +265,7 @@ const Sidebar = () => {
               }`}
             >
               <Link
-                href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/employees`}
+                href={`/brands/${currentBrand}/locations/${locationName}/employees`}
               >
                 Employees
               </Link>
@@ -282,9 +276,20 @@ const Sidebar = () => {
               }`}
             >
               <Link
-                href={`/brands/${currentBrand}/locations/${locationName}/sublocations/${subLocationName}/visits`}
+                href={`/brands/${currentBrand}/locations/${locationName}/visits`}
               >
                 Visits
+              </Link>
+            </li>
+            <li
+              className={`block p-2 rounded ${
+                currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
+              }`}
+            >
+              <Link
+                href={`/brands/${currentBrand}/locations/${locationName}/create_sale`}
+              >
+                Create Sale
               </Link>
             </li>
           </ul>

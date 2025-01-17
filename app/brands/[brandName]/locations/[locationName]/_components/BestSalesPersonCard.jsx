@@ -45,7 +45,7 @@ const BestSalesPersonCard = () => {
 
     const data = [
       {
-        name: "Venkey.dev",
+        name: PickAName(),
         sales: generateRandomNumber(11, 13),
         revenue: `₹${generateRandomNumber(100000, 200000)}`,
         topItem: getTopItem(brandName),

@@ -48,7 +48,7 @@ const formatCurrency = (amount) => {
   return numStr;
 };
 
-const SelectionGrid = ({ onCardSelect, selectedCard, periodValues }) => {
+const SelectionGrid = ({ onCardSelect, selectedCard, periodValues, showLocationAnalysis }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   
   // Defensive check for periodValues
@@ -257,6 +257,7 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues }) => {
         selectedCard={selectedCard}
         period={periodValues.period}
         chartData={generateDetailChartData()}
+        showLocationAnalysis={showLocationAnalysis}
       />
     </div>
   );

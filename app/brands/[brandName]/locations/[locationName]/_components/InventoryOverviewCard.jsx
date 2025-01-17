@@ -296,7 +296,7 @@ const InventoryOverviewCard = ({ title }) => {
               <DialogTrigger asChild>
                 <Button variant="default">View {title} Overview</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-8xl">
+              <DialogContent className="max-w-6xl">
                 <DialogHeader>
                   <DialogTitle>{title} Overview</DialogTitle>
                   <DialogDescription>

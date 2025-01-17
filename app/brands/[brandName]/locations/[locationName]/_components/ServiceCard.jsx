@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,9 +19,6 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { ArrowDownUp } from "lucide-react";
-
-// Register required chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend);
 
 const ServiceCard = () => {
   const [serviceData, setServiceData] = useState(null);
@@ -51,34 +46,8 @@ const ServiceCard = () => {
   }, []);
 
   if (!serviceData) {
-    return null; // or a loading spinner
+    return null;
   }
-
-  const backGroundColor = serviceData.percentageCompleted > 75 ? "#22C55E" : serviceData.percentageCompleted < 60 ? "#EF4444" : "#D97706";
-
-  // Chart data
-  const data = {
-    datasets: [
-      {
-        data: [serviceData.percentageCompleted, 100 - serviceData.percentageCompleted],
-        backgroundColor: [backGroundColor, "#E0E0E0"], // Green and Light Gray
-        borderWidth: 0, // Remove borders
-      },
-    ],
-  };
-
-  // Chart options
-  const options = {
-    cutout: "95%", // Create a doughnut effect
-    plugins: {
-      tooltip: {
-        enabled: false, // Disable tooltips
-      },
-      legend: {
-        display: false, // Hide legend
-      },
-    },
-  };
 
   const serviceDetails = [
     { serviceNo: 1, vehicleNo: "12AB1234", customerName: "Rohit", arrivedDate: "2023-10-01", status: "completed", exitedDate: "2023-10-02", responseTime: 1, jcNumber: "JC001", mechanicName: "Ravi", advisorName: "Mahesh", billAmount: "₹5000" },
@@ -131,7 +100,7 @@ const ServiceCard = () => {
         <DialogTrigger asChild>
           <div className="text-3xl font-bold cursor-pointer">{serviceData.total}</div>
         </DialogTrigger>
-        <DialogContent className="max-w-8xl">
+        <DialogContent className="max-w-6xl">
           <DialogHeader>
             <DialogTitle>Service Details</DialogTitle>
             <DialogDescription>Details of services provided in the last 7 days</DialogDescription>
@@ -204,36 +173,36 @@ const ServiceCard = () => {
         Service Requests
       </p>
 
-      <div className="flex justify-between items-center gap-y-2">
-        <div className="flex flex-col gap-2 justify-between">
-          <div className="">
-            <p className="flex flex-col-reverse items-start">
-              <span className="text-lg font-semibold">{serviceData.completed}</span>
+      <div className="flex justify-between items-center">
+        <div className="grid grid-cols-3 gap-4 w-full">
+          <div className="text-center">
+            <p className="flex flex-col items-center">
               <span className="text-sm text-gray-500">Completed</span>
+              <span className="text-lg font-semibold">{serviceData.completed}</span>
             </p>
           </div>
-          <div className="">
-            <p className="flex flex-col-reverse items-start justify-start">
-              <span className="text-lg font-semibold">{serviceData.pending}</span>
+          <div className="text-center">
+            <p className="flex flex-col items-center">
               <span className="text-sm text-gray-500">Pending</span>
+              <span className="text-lg font-semibold">{serviceData.pending}</span>
             </p>
           </div>
-          <div className="">
-            <p className="flex flex-col-reverse items-start">
+          <div className="text-center">
+            <p className="flex flex-col items-center">
+              <span className="text-sm text-gray-500">Response Time</span>
               <span className="text-lg font-semibold">{serviceData.avgResponseTime}</span>
-              <span className="text-sm text-gray-500">Avg Response Time</span>
             </p>
           </div>
         </div>
+      </div>
 
-        <div className="flex mb-16 mr-4">
-          <div className="relative size-36">
-            <Doughnut data={data} options={options} />
-            <div className="absolute inset-0 flex items-center justify-center text-xl font-semibold">
-              {serviceData.percentageCompleted}%
-            </div>
-          </div>
+      <div className="mt-4 text-center">
+        <div className="text-2xl font-bold">
+          {serviceData.percentageCompleted}% Complete
         </div>
+        <p className="text-sm text-gray-500">
+          Total Services: {serviceData.total}
+        </p>
       </div>
     </div>
   );

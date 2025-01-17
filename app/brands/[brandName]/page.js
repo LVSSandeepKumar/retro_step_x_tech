@@ -21,6 +21,7 @@ import SalesAndExpensesCards from "./_components/SalesAndExpensesCard";
 import LocationDetailsTable from "./_components/LocationDetailsTable";
 import AnnouncementDashboard from "@/app/_components/AnnouncementDashboard";
 import PendingAlertsCard from "./_components/PendingAlertsCard";
+import BrandCard from "@/app/_components/BrandCard";
 
 export default function BrandPage() {
   const { brandName } = useParams();
@@ -88,17 +89,12 @@ export default function BrandPage() {
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-4">
       <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </button>
-          <h1 className="text-2xl font-bold">
-            {brandName} CEO : {brandCEO}
-          </h1>
-        </div>
+        <button
+          onClick={() => router.back()}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </button>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
@@ -192,6 +188,10 @@ export default function BrandPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </div>
+
+      <div>
+        <BrandCard brands={[brandName]} />
       </div>
 
       <div className="flex flex-col items-start gap-4">

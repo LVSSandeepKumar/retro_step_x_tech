@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -42,10 +44,14 @@ const LocationDetailsTable = ({ brandName }) => {
     direction: "ascending",
   });
 
-  // Get location names from constants.js (own type)
-  const allOwnLocations = locations.find(loc => loc.type === "own")?.cities || [];
-  const ownLocations = allOwnLocations.slice(0, 5);
-  const locationData = ownLocations.map(generateRandomLocationData);
+  const [locationData, setLocationData] = useState([]);
+
+  useEffect(() => {
+    // Get location names from constants.js (own type)
+    const allOwnLocations = locations.find(loc => loc.type === "own")?.cities || [];
+    const ownLocations = allOwnLocations.slice(0, 5);
+    setLocationData(ownLocations.map(generateRandomLocationData));
+  }, []);
 
   const getNestedValue = (obj, key) => {
     return key.split(".").reduce((acc, part) => acc && acc[part], obj);

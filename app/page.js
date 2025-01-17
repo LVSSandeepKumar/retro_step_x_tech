@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AgeingAnalysisHeatmap from "./_components/AgeingAnalysis";
+import AgeingAnalysisHeatmap from "./_components/AgeingAnalysisHeatmap";
 import ChatBot from "./_components/ChatBot";
 import { ExpensesDivisionChart } from "./_components/ExpensesDivisionChart";
 import ExpensesVsCollectionsChart from "./_components/ExpensesVsCollectionsChart";
@@ -557,6 +557,7 @@ export default function Home() {
                   onCardSelect={handleCardSelect}
                   selectedCard="sales"
                   periodValues={revenueValues}
+                  showLocationAnalysis={true}
                 />
                 <p className="text-sm text-red-500 font-semibold flex gap-2">
                 <span><Star className="text-black fill-yellow-500 border-black"/></span>
@@ -569,6 +570,7 @@ export default function Home() {
                   onCardSelect={handleCardSelect}
                   selectedCard="services"
                   periodValues={revenueValues}
+                  showLocationAnalysis={true}
                 />
                 <p className="text-sm text-red-500 font-semibold flex gap-2">
                 <span><Star className="text-black fill-yellow-500 border-black"/></span>
@@ -579,7 +581,8 @@ export default function Home() {
                 <SelectionGrid
                   onCardSelect={handleCardSelect}
                   selectedCard="others"
-                  periodValues={revenueValues} // Fix: Pass the entire revenueValues object
+                  periodValues={revenueValues}
+                  showLocationAnalysis={true} // Fix: Pass the entire revenueValues object
                 />
                 <p className="text-sm text-red-500 font-semibold flex gap-2">
                 <span><Star className="text-black fill-yellow-500 border-black"/></span>

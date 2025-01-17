@@ -176,7 +176,7 @@ const InsuranceOverviewCard = () => {
             <DialogTrigger asChild>
               <Button variant="default">View Insurance Overview</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-8xl">
+            <DialogContent className="max-w-6xl">
               <DialogHeader>
                 <DialogTitle>Insurance Overview</DialogTitle>
                 <DialogDescription>
