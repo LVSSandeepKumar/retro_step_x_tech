@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ArrowDownUp, Plus } from "lucide-react";
 import { PickAName, pickAProduct } from "@/lib/utils";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 
 const VisitsPage = () => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({
     key: "visitDate",
@@ -168,7 +169,15 @@ const VisitsPage = () => {
 
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6">
-      <h1 className="text-2xl font-semibold mb-4">Visits</h1>
+      <div className="flex items-center mb-4">
+        <button
+          onClick={() => router.back()}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-2xl font-semibold">Visits</h1>
+      </div>
       <div className="flex items-center justify-between gap-8 mb-4">
         <Input
           type="text"

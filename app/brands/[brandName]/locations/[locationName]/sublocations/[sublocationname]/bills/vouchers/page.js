@@ -9,11 +9,13 @@ import {
   TableBody,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { ArrowDownUp, Download, Plus } from "lucide-react";
+import { ArrowDownUp, ArrowLeft, Download, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PickAName } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const VouchersPage = () => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({
     key: "createdOn",
@@ -110,7 +112,15 @@ const VouchersPage = () => {
 
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6">
-      <h1 className="text-2xl font-semibold mb-4">Vouchers</h1>
+      <div className="flex items-center gap-4 mb-4">
+        <button
+          onClick={() => router.back()}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-2xl font-semibold">Vouchers</h1>
+      </div>
       <div className="flex items-center justify-between mb-4">
         <div className="relative max-w-6xl">
           <Input
@@ -130,9 +140,7 @@ const VouchersPage = () => {
               style={{ display: "none" }}
               onChange={handleFileChange}
             />
-            <Button onClick={handleButtonClick}>
-              Add vouchers
-            </Button>
+            <Button onClick={handleButtonClick}>Add vouchers</Button>
           </div>
           <Button className="flex items-center gap-2">
             Export

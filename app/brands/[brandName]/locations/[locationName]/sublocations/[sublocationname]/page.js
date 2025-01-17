@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { subLocationsData } from "@/lib/constants";
 import ServiceCard from "@/app/brands/[brandName]/locations/[locationName]/_components/ServiceCard";
 import BestSellingProductsTable from "@/app/brands/[brandName]/locations/[locationName]/_components/BestSellingProductsTable";
@@ -11,7 +11,7 @@ import BestSalesPersonCard from "../../_components/BestSalesPersonCard";
 import InventoryOverviewCard from "./_components/InventoryOverviewCard";
 import InsuranceOverviewCard from "./_components/InsuranceOverviewCard";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import {
   Dialog,
   DialogTrigger,
@@ -28,8 +28,10 @@ import { toast } from "react-hot-toast";
 import Link from "next/link";
 
 const generateRandomSubLocationData = () => {
-  const serviceDivisions = ["Bike", "Auto", "Commercial", "Electric"].sort(() => Math.random() - 0.5).slice(0, 2);
-  
+  const serviceDivisions = ["Bike", "Auto", "Commercial", "Electric"]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 2);
+
   return {
     serviceDivisions,
     salesMetrics: {
@@ -38,38 +40,50 @@ const generateRandomSubLocationData = () => {
       conversionRate: Math.floor(Math.random() * 30) + 40,
     },
     inventory: {
-      lowStock: Array(5).fill().map(() => ({
-        name: `Product ${Math.floor(Math.random() * 100)}`,
-        quantity: Math.floor(Math.random() * 10),
-        reorderPoint: Math.floor(Math.random() * 20) + 10
-      })),
-      fastMoving: Array(5).fill().map(() => ({
-        name: `Product ${Math.floor(Math.random() * 100)}`,
-        soldCount: Math.floor(Math.random() * 100) + 50,
-        revenue: Math.floor(Math.random() * 100000)
-      })),
-      deadStock: Array(5).fill().map(() => ({
-        name: `Product ${Math.floor(Math.random() * 100)}`,
-        daysInStock: Math.floor(Math.random() * 100) + 60,
-        value: Math.floor(Math.random() * 50000)
-      }))
+      lowStock: Array(5)
+        .fill()
+        .map(() => ({
+          name: `Product ${Math.floor(Math.random() * 100)}`,
+          quantity: Math.floor(Math.random() * 10),
+          reorderPoint: Math.floor(Math.random() * 20) + 10,
+        })),
+      fastMoving: Array(5)
+        .fill()
+        .map(() => ({
+          name: `Product ${Math.floor(Math.random() * 100)}`,
+          soldCount: Math.floor(Math.random() * 100) + 50,
+          revenue: Math.floor(Math.random() * 100000),
+        })),
+      deadStock: Array(5)
+        .fill()
+        .map(() => ({
+          name: `Product ${Math.floor(Math.random() * 100)}`,
+          daysInStock: Math.floor(Math.random() * 100) + 60,
+          value: Math.floor(Math.random() * 50000),
+        })),
     },
     bestSalesPerson: {
-      name: `${['John', 'Jane', 'Mike', 'Sarah'][Math.floor(Math.random() * 4)]} ${['Smith', 'Doe', 'Johnson', 'Williams'][Math.floor(Math.random() * 4)]}`,
+      name: `${
+        ["John", "Jane", "Mike", "Sarah"][Math.floor(Math.random() * 4)]
+      } ${
+        ["Smith", "Doe", "Johnson", "Williams"][Math.floor(Math.random() * 4)]
+      }`,
       sales: Math.floor(Math.random() * 4000) + 1000,
       target: Math.floor(Math.random() * 5000) + 5000,
-      performance: Math.floor(Math.random() * 30) + 70
+      performance: Math.floor(Math.random() * 30) + 70,
     },
     accessories: {
       totalSold: Math.floor(Math.random() * 1000),
       revenue: Math.floor(Math.random() * 500000),
-      topSelling: ['Helmets', 'Phone Holders', 'Seat Covers'][Math.floor(Math.random() * 3)]
+      topSelling: ["Helmets", "Phone Holders", "Seat Covers"][
+        Math.floor(Math.random() * 3)
+      ],
     },
     insurance: {
       policies: Math.floor(Math.random() * 100),
       premium: Math.floor(Math.random() * 200000),
-      claims: Math.floor(Math.random() * 20)
-    }
+      claims: Math.floor(Math.random() * 20),
+    },
   };
 };
 
@@ -78,6 +92,7 @@ const SubLocationPage = () => {
   const [subLocationData, setSubLocationData] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [randomData, setRandomData] = useState(null);
+  const router = useRouter();
 
   const inputFields = [
     { label: "Product Type", type: "text", name: "productType" },
@@ -107,14 +122,26 @@ const SubLocationPage = () => {
 
   if (!subLocationData) return null;
 
-  const locationNameWithoutCountry = decodeURIComponent(locationName).replace(", India", "");
-  const subLocationNames = subLocationsData.find(
-    (loc) => loc.locationName === locationNameWithoutCountry
-  )?.subLocations || [];
+  const locationNameWithoutCountry = decodeURIComponent(locationName).replace(
+    ", India",
+    ""
+  );
+  const subLocationNames =
+    subLocationsData.find(
+      (loc) => loc.locationName === locationNameWithoutCountry
+    )?.subLocations || [];
 
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6">
-      <Tabs defaultValue={subLocationData.serviceDivisions[0]}>
+      <Tabs defaultValue={subLocationData.serviceDivisions[0]} >
+        <div className="flex items-center mb-4">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </button>
+        </div>
         <div className="flex justify-between items-center">
           <TabsList className="mb-2">
             {subLocationData.serviceDivisions.map((division, index) => (
@@ -125,17 +152,17 @@ const SubLocationPage = () => {
           </TabsList>
 
           {/*Create sale button */}
-            <Button asChild>
-          <Link
-            href={`/brands/${brandName}/locations/${locationName}/sublocations/${sublocationname}/create_sale`}
-            className="flex items-center gap-2"
-          >
+          <Button asChild>
+            <Link
+              href={`/brands/${brandName}/locations/${locationName}/sublocations/${sublocationname}/create_sale`}
+              className="flex items-center gap-2"
+            >
               Create Sale
               <Plus className="size-4 ml-2" />
-          </Link>
-            </Button>
+            </Link>
+          </Button>
 
-            {/*Create Sale dialog */}
+          {/*Create Sale dialog */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild></DialogTrigger>
             <DialogContent>

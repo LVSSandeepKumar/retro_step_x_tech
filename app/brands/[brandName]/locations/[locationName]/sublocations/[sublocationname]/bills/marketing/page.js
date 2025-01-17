@@ -9,7 +9,7 @@ import {
   TableBody,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { ArrowDownUp, Plus } from "lucide-react";
+import { ArrowDownUp, ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,10 +23,11 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import MarketingOverviewCard from "./_components/MarketingOverviewCard";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { PickAName } from "@/lib/utils";
 
 const MarketingPage = () => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({
     key: "budget",
@@ -202,7 +203,15 @@ const MarketingPage = () => {
 
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6">
-      <h1 className="text-2xl font-semibold mb-4">Marketing Campaigns</h1>
+      <div className="flex items-center mb-4">
+        <button
+          onClick={() => router.back()}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-2xl font-semibold">Marketing Campaigns</h1>
+      </div>
       <Tabs defaultValue="running" onValueChange={setCurrentTab}>
         <div className="flex items-center justify-between mb-4">
           <TabsList className="mb-4">

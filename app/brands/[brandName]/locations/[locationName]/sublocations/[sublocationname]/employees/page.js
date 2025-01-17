@@ -1,10 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Table, TableHeader, TableRow, TableCell, TableBody } from "@/components/ui/table";
+import { useParams, useRouter } from "next/navigation";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableCell,
+  TableBody,
+} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { ArrowDownUp, Edit, Trash } from "lucide-react";
+import { ArrowDownUp, ArrowLeft, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PickAName } from "@/lib/utils";
 import {
@@ -19,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 
 const EmployeesPage = () => {
+  const router = useRouter();
   const { brandName, locationName, sublocationName } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({
@@ -141,148 +148,144 @@ const EmployeesPage = () => {
 
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6">
-        <h1 className="text-2xl font-semibold mb-4">Employees</h1>
-        <div className="flex items-center justify-between mb-4">
-          <Input
-            type="text"
-            placeholder="Search by Employee ID, Name, Role, Department, Designations"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-6xl"
-          />
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>Add Employee</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Employee</DialogTitle>
-                <DialogDescription>
-                  Fill in the details to add a new employee.
-                </DialogDescription>
-              </DialogHeader>
-              <form className="space-y-4" onSubmit={handleAddSubmit}>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Employee ID
-                  </label>
-                  <Input
-                    type="text"
-                    name="employeeID"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Role
-                  </label>
-                  <Input
-                    type="text"
-                    name="role"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name
-                  </label>
-                  <Input
-                    type="text"
-                    name="name"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Mobile No.
-                  </label>
-                  <Input
-                    type="text"
-                    name="mobileNo"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <Input
-                    type="text"
-                    name="email"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Status
-                  </label>
-                  <Input
-                    type="text"
-                    name="status"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Department
-                  </label>
-                  <Input
-                    type="text"
-                    name="department"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Designations
-                  </label>
-                  <Input
-                    type="text"
-                    name="designations"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Targets
-                  </label>
-                  <Input
-                    type="text"
-                    name="targets"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Achieved
-                  </label>
-                  <Input
-                    type="text"
-                    name="achieved"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Salary
-                  </label>
-                  <Input
-                    type="text"
-                    name="salary"
-                    className="mt-1 block w-full"
-                  />
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button type="submit">Add</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      
+      <div className="flex items-center mb-4">
+        <button
+          onClick={() => router.back()}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-2xl font-semibold">Employees</h1>
+      </div>
+      <div className="flex items-center justify-between mb-4">
+        <Input
+          type="text"
+          placeholder="Search by Employee ID, Name, Role, Department, Designations"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-6xl"
+        />
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>Add Employee</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Employee</DialogTitle>
+              <DialogDescription>
+                Fill in the details to add a new employee.
+              </DialogDescription>
+            </DialogHeader>
+            <form className="space-y-4" onSubmit={handleAddSubmit}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Employee ID
+                </label>
+                <Input
+                  type="text"
+                  name="employeeID"
+                  className="mt-1 block w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Role
+                </label>
+                <Input type="text" name="role" className="mt-1 block w-full" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Name
+                </label>
+                <Input type="text" name="name" className="mt-1 block w-full" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Mobile No.
+                </label>
+                <Input
+                  type="text"
+                  name="mobileNo"
+                  className="mt-1 block w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <Input type="text" name="email" className="mt-1 block w-full" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Status
+                </label>
+                <Input
+                  type="text"
+                  name="status"
+                  className="mt-1 block w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Department
+                </label>
+                <Input
+                  type="text"
+                  name="department"
+                  className="mt-1 block w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Designations
+                </label>
+                <Input
+                  type="text"
+                  name="designations"
+                  className="mt-1 block w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Targets
+                </label>
+                <Input
+                  type="text"
+                  name="targets"
+                  className="mt-1 block w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Achieved
+                </label>
+                <Input
+                  type="text"
+                  name="achieved"
+                  className="mt-1 block w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Salary
+                </label>
+                <Input
+                  type="text"
+                  name="salary"
+                  className="mt-1 block w-full"
+                />
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button type="submit">Add</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>

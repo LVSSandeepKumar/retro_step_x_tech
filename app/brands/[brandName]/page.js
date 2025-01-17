@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { brandsData, mockLocations } from "@/lib/constants";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import {
   Dialog,
   DialogTrigger,
@@ -24,6 +24,7 @@ import PendingAlertsCard from "./_components/PendingAlertsCard";
 
 export default function BrandPage() {
   const { brandName } = useParams();
+  const router = useRouter();
   const brandData = mockLocations.find(
     (brand) => brand.brandName === brandName
   );
@@ -87,9 +88,17 @@ export default function BrandPage() {
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">
-          {brandName} CEO : {brandCEO}
-        </h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </button>
+          <h1 className="text-2xl font-bold">
+            {brandName} CEO : {brandCEO}
+          </h1>
+        </div>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
