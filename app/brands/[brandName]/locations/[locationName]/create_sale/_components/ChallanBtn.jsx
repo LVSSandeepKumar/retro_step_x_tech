@@ -2,10 +2,43 @@ import { useState } from "react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import ReceiptTemplateExact from "./Challan"; // Adjust the path based on your structure
 import { Button } from "@/components/ui/button";
+import DeliveryChallan from "./DelivaryChallan";
 
 export default function GenerateChallan({ type, data, label }) {
-  const [showDialog, setShowDialog] = useState(false);
 
+  const receiptDetails = {
+    receiptNumber: "32",
+    customerName: "Venkey",
+    amount: "50000",
+    amountInWords: "Fifty Thousand Only",
+    paymentMode: "Cash",
+    vehicleModel: "KTM 390 Adventure",
+    date: "17-Jan-2025",
+    place: "Hyderabad",
+    companyName: "Tirumala Automotives",
+    receiptNumber:'34'
+  };
+
+
+  const challanDetails = {
+    challanNumber: "DC001",
+    date: "2024-01-18",
+    customerName: "John Doe",
+    mobileNumber: "9876543210",
+    address: "123 Main Street, City",
+    vehicle: "KTM",
+    vehicleModel: "Duke 390",
+    color: "Orange",
+    engineNumber: "KTM123456",
+    chassisNumber: "CHASSIS789012",
+    accessories: [
+      { name: "Tool Kit", quantity: "1", remarks: "Complete" },
+      { name: "First Aid Kit", quantity: "1", remarks: "Sealed" },
+      { name: "User Manual", quantity: "1", remarks: "Included" }
+    ]
+  };
+  const [showDialog, setShowDialog] = useState(false);
+  console.log(data);
   const handleOpenDialog = () => {
     setShowDialog(true);
   };
@@ -34,7 +67,12 @@ export default function GenerateChallan({ type, data, label }) {
             </DialogDescription>
           </DialogHeader>
           <div>
-            <ReceiptTemplateExact type={type} data={data} />
+            {type === 'advance' && 
+              <ReceiptTemplateExact type={type} details={receiptDetails} label={label} />
+            }
+             {type === 'bike' && 
+              <DeliveryChallan type={type} details={challanDetails} label={label} />
+            }
           </div>
           <Button onClick={handleCloseDialog}>
             Close
