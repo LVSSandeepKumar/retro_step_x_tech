@@ -25,6 +25,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GenerateChallan from "./_components/ChallanBtn"; // Adjust the path based on your project structure
+import BikesSalesForm from "./_components/OldBikesSalesForm";
 
 // Helper functions for price calculations
 const generateRandomPrice = () => {
@@ -1415,24 +1416,8 @@ const CreateSalePage = () => {
           </form>
         </TabsContent>
         <TabsContent value="old-bike">
-          <div className="flex flex-col gap-2">
-            <div>
-              <h1 className="text-lg font-semibold">Customer Details</h1>
-            </div>
-
-            <div className="flex flex-col md:grid md:grid-cols-1 lg:grid-cols-3 gap-4">
-              {customerInfoInputFields.map((field, index) => (
-                <div key={index}>
-                  <label className="text-sm text-gray-500">{field.label}</label>
-                  <Input
-                    type={field.type}
-                    name={field.name}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+        <BikesSalesForm/>
+          
         </TabsContent>
       </Tabs>
     </div>
