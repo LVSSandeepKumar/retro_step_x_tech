@@ -1229,6 +1229,20 @@ const CreateSalePage = () => {
                     </div>
                   ))}
                 </div>
+
+                <div className="flex justify-end mt-2">
+                  <GenerateChallan
+                    type="advance"
+                    data={{
+                      ...spotPaymentDetails,
+                      customerName: newSale.customerName,
+                      customerNo: newSale.customerNo,
+                      bikeModel: selectedModel,
+                      totalAmount: finalPrice.totalAmount,
+                    }}
+                    label="Generate Advance Receipt"
+                  />
+                </div>
               </div>
             )}
 
