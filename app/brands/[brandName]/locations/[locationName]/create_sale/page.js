@@ -619,10 +619,6 @@ const CreateSalePage = () => {
     }
   }, [financeTransactions, financeDetails.loanAmount, paymentMethod.finance]);
 
-  const toogleTabs = (value) => {
-    setActiveTab(value);
-  };
-
   const prepareFormData = () => {
     return {
       bikeDetails: {
