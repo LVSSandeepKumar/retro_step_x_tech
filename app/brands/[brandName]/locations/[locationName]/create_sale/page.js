@@ -263,6 +263,28 @@ const CreateSalePage = () => {
     { label: "Documents", type: "file", name: "documents" },
   ];
 
+  const accessoriesInputFields = [
+    { label: "Serial No.", type: "number", name: "serialNo", disabled: true },
+    { label: "Accessory Name", type: "text", name: "accessoryName" },
+    { label: "Accessory Price", type: "number", name: "accessoryPrice" },
+    { label: "Quantity", type: "number", name: "quantity" },
+    { label: "Total Price", type: "number", name: "totalPrice", disabled: true },
+    { label: "Discount", type: "number", name: "discount" },
+    { label: "Final Price", type: "number", name: "finalPrice", disabled: true },
+    { label: "Actions", type: "actions", name: "actions" }, // Add actions column
+  ];
+
+  const apparelInputFields = [
+    { label: "Serial No.", type: "number", name: "serialNo", disabled: true },
+    { label: "Apparel Name", type: "text", name: "apparelName" },
+    { label: "Apparel Price", type: "number", name: "apparelPrice" },
+    { label: "Quantity", type: "number", name: "quantity" },
+    { label: "Total Price", type: "number", name: "totalPrice", disabled: true },
+    { label: "Discount", type: "number", name: "discount" },
+    { label: "Final Price", type: "number", name: "finalPrice", disabled: true },
+    { label: "Actions", type: "actions", name: "actions" }, // Add actions column
+  ];
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewSale((prev) => ({
@@ -337,6 +359,269 @@ const CreateSalePage = () => {
     }));
   };
 
+  const [accessories, setAccessories] = useState([
+    {
+      serialNo: 1,
+      accessoryName: "",
+      accessoryPrice: "",
+      quantity: "",
+      totalPrice: "",
+      discount: "",
+      finalPrice: "",
+    },
+  ]);
+
+  const [apparel, setApparel] = useState([
+    {
+      serialNo: 1,
+      apparelName: "",
+      apparelPrice: "",
+      quantity: "",
+      totalPrice: "",
+      discount: "",
+      finalPrice: "",
+    },
+  ]);
+
+  // Add these handlers
+  const handleAddAccessory = () => {
+    setAccessories([
+      ...accessories,
+      {
+        serialNo: accessories.length + 1,
+        accessoryName: "",
+        accessoryPrice: "",
+        quantity: "",
+        totalPrice: "",
+        discount: "",
+        finalPrice: "",
+      },
+    ]);
+  };
+
+  const handleRemoveAccessory = (indexToRemove) => {
+    if (accessories.length > 1) {
+      const updatedAccessories = accessories
+        .filter((_, index) => index !== indexToRemove)
+        .map((item, index) => ({ ...item, serialNo: index + 1 }));
+      setAccessories(updatedAccessories);
+    }
+  };
+
+  const handleAddApparel = () => {
+    setApparel([
+      ...apparel,
+      {
+        serialNo: apparel.length + 1,
+        apparelName: "",
+        apparelPrice: "",
+        quantity: "",
+        totalPrice: "",
+        discount: "",
+        finalPrice: "",
+      },
+    ]);
+  };
+
+  const handleRemoveApparel = (indexToRemove) => {
+    if (apparel.length > 1) {
+      const updatedApparel = apparel
+        .filter((_, index) => index !== indexToRemove)
+        .map((item, index) => ({ ...item, serialNo: index + 1 }));
+      setApparel(updatedApparel);
+    }
+  };
+
+  const handleAccessoryChange = (index, field, value) => {
+    const updatedAccessories = accessories.map((item, i) => {
+      if (i === index) {
+        const updatedItem = { ...item, [field]: value };
+        if (field === 'accessoryPrice' || field === 'quantity') {
+          const price = Number(field === 'accessoryPrice' ? value : item.accessoryPrice) || 0;
+          const qty = Number(field === 'quantity' ? value : item.quantity) || 0;
+          updatedItem.totalPrice = price * qty;
+          updatedItem.finalPrice = updatedItem.totalPrice - (Number(updatedItem.discount) || 0);
+        }
+        if (field === 'discount') {
+          updatedItem.finalPrice = updatedItem.totalPrice - Number(value);
+        }
+        return updatedItem;
+      }
+      return item;
+    });
+    setAccessories(updatedAccessories);
+  };
+
+  const handleApparelChange = (index, field, value) => {
+    const updatedApparel = apparel.map((item, i) => {
+      if (i === index) {
+        const updatedItem = { ...item, [field]: value };
+        if (field === 'apparelPrice' || field === 'quantity') {
+          const price = Number(field === 'apparelPrice' ? value : item.apparelPrice) || 0;
+          const qty = Number(field === 'quantity' ? value : item.quantity) || 0;
+          updatedItem.totalPrice = price * qty;
+          updatedItem.finalPrice = updatedItem.totalPrice - (Number(updatedItem.discount) || 0);
+        }
+        if (field === 'discount') {
+          updatedItem.finalPrice = updatedItem.totalPrice - Number(value);
+        }
+        return updatedItem;
+      }
+      return item;
+    });
+    setApparel(updatedApparel);
+  };
+
+  // Add new state for final price
+  const [finalPrice, setFinalPrice] = useState({
+    bikePrice: 0,
+    accessoriesTotal: 0,
+    apparelTotal: 0,
+    totalAmount: 0,
+  });
+
+  // Add price calculation effect
+  useEffect(() => {
+    const accessoriesSum = accessories.reduce((sum, item) => sum + (Number(item.finalPrice) || 0), 0);
+    const apparelSum = apparel.reduce((sum, item) => sum + (Number(item.finalPrice) || 0), 0);
+    const bikePrice = Number(bikeDetails.onRoadPriceAfterExchange) || 0;
+
+    setFinalPrice({
+      bikePrice,
+      accessoriesTotal: accessoriesSum,
+      apparelTotal: apparelSum,
+      totalAmount: bikePrice + accessoriesSum + apparelSum,
+    });
+  }, [accessories, apparel, bikeDetails.onRoadPriceAfterExchange]);
+
+  const [financeDetails, setFinanceDetails] = useState({
+    downPayment: 0,
+    remainingAmount: 0,
+    rateOfInterest: 0,
+    tenure: 0,
+    loanAmount: 0,
+    finalOnRoadPrice: 0,
+  });
+
+  // Add this after finalPrice useEffect
+  useEffect(() => {
+    if (paymentMethod.finance) {
+      const totalAmount = finalPrice.totalAmount;
+      const downPayment = Number(financeDetails.downPayment) || 0;
+      const remainingAmount = totalAmount - downPayment;
+      const roi = Number(financeDetails.rateOfInterest) || 0;
+      const tenure = Number(financeDetails.tenure) || 0;
+
+      // Calculate loan amount with interest
+      // Formula: P * (1 + r/100 * t)
+      // where P is principal, r is rate of interest per year, t is tenure in years
+      const loanAmount = remainingAmount * (1 + (roi / 100) * (tenure / 12));
+      const finalOnRoadPrice = downPayment + loanAmount;
+
+      setFinanceDetails(prev => ({
+        ...prev,
+        remainingAmount,
+        loanAmount: Math.round(loanAmount),
+        finalOnRoadPrice: Math.round(finalOnRoadPrice)
+      }));
+    }
+  }, [
+    financeDetails.downPayment,
+    financeDetails.rateOfInterest,
+    financeDetails.tenure,
+    finalPrice.totalAmount,
+    paymentMethod.finance
+  ]);
+
+  // Add this handler for finance input changes
+  const handleFinanceChange = (e) => {
+    const { name, value } = e.target;
+    setFinanceDetails(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const [financeTransactions, setFinanceTransactions] = useState([
+    {
+      serialNo: 1,
+      paymentMode: "",
+      transactionDetails: "",
+      amount: "",
+    },
+  ]);
+
+  const handleAddFinanceTransaction = () => {
+    setFinanceTransactions([
+      ...financeTransactions,
+      {
+        serialNo: financeTransactions.length + 1,
+        paymentMode: "",
+        transactionDetails: "",
+        amount: "",
+      },
+    ]);
+  };
+
+  const handleRemoveFinanceTransaction = (indexToRemove) => {
+    if (financeTransactions.length > 1) {
+      const updatedTransactions = financeTransactions
+        .filter((_, index) => index !== indexToRemove)
+        .map((transaction, index) => ({
+          ...transaction,
+          serialNo: index + 1,
+        }));
+      setFinanceTransactions(updatedTransactions);
+    }
+  };
+
+  const handleFinanceTransactionChange = (index, field, value) => {
+    if (field === 'amount') {
+      const currentPaid = financeTransactions.reduce((sum, t, i) => 
+        i !== index ? sum + (Number(t.amount) || 0) : sum, 0
+      );
+      const newAmount = Number(value) || 0;
+      // Use loanAmount for validation
+      const totalAllowed = financeDetails.loanAmount;
+      
+      if (currentPaid + newAmount > totalAllowed) {
+        toast.error("Total payments cannot exceed the loan amount");
+        return;
+      }
+    }
+
+    const updatedTransactions = financeTransactions.map((transaction, i) => {
+      if (i === index) {
+        return { ...transaction, [field]: value };
+      }
+      return transaction;
+    });
+    setFinanceTransactions(updatedTransactions);
+  };
+
+  // Add new state for tracking finance payments
+  const [financePaymentDetails, setFinancePaymentDetails] = useState({
+    totalAmount: 0,
+    paidAmount: 0,
+    remainingAmount: 0,
+  });
+
+  // Update finance payment tracking when transactions change
+  useEffect(() => {
+    if (paymentMethod.finance) {
+      const paidAmount = financeTransactions.reduce((sum, transaction) => 
+        sum + (Number(transaction.amount) || 0), 0
+      );
+      // Use loanAmount instead of remainingAmount
+      const totalAmount = financeDetails.loanAmount;
+      setFinancePaymentDetails({
+        totalAmount,
+        paidAmount,
+        remainingAmount: totalAmount - paidAmount,
+      });
+    }
+  }, [financeTransactions, financeDetails.loanAmount, paymentMethod.finance]);
+  
   const toogleTabs = (value) => {
     setActiveTab(value);
   };
@@ -710,14 +995,313 @@ const CreateSalePage = () => {
                       <Input
                         type={field.type}
                         name={field.name}
-                        onChange={handleInputChange}
+                        onChange={handleFinanceChange}
+                        value={
+                          field.name === 'remainingAmount'
+                            ? financeDetails.remainingAmount
+                            : field.name === 'loanAmount'
+                            ? financeDetails.loanAmount
+                            : field.name === 'onRoadPrice'
+                            ? financeDetails.finalOnRoadPrice
+                            : financeDetails[field.name] || ''
+                        }
+                        disabled={
+                          field.name === 'remainingAmount' ||
+                          field.name === 'loanAmount' ||
+                          field.name === 'onRoadPrice'
+                        }
                         placeholder={field.placeholder}
                       />
                     </div>
                   ))}
                 </div>
+
+                <div className="mt-4">
+                  <h4 className="text-lg font-semibold mb-4">Finance Payment Details</h4>
+                  <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="grid grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-600">Loan Amount:</span>
+                        <span className="ml-2 font-semibold">
+                          ₹{financeDetails.loanAmount.toLocaleString()}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Paid Amount:</span>
+                        <span className="ml-2 font-semibold">
+                          ₹{financePaymentDetails.paidAmount.toLocaleString()}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Remaining:</span>
+                        <span className="ml-2 font-semibold text-purple-600">
+                          ₹{financePaymentDetails.remainingAmount.toLocaleString()}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Total EMIs:</span>
+                        <span className="ml-2 font-semibold">
+                          {financeDetails.tenure}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {financeTransactions.map((transaction, index) => (
+                      <div key={index} className="grid grid-cols-4 gap-4">
+                        <Input
+                          type="number"
+                          value={transaction.serialNo}
+                          disabled
+                          className="w-full"
+                        />
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="w-full">
+                            <div className="flex items-center justify-between p-2 bg-gray-100 rounded border">
+                              <span className="truncate">
+                                {transaction.paymentMode || "Select Payment Mode"}
+                              </span>
+                                <ArrowDown className="h-4 w-4" />
+                            </div>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-[200px]">
+                            {paymentModeOptions.map((option) => (
+                              <DropdownMenuItem
+                                key={option}
+                                onClick={() =>
+                                  handleFinanceTransactionChange(index, "paymentMode", option)
+                                }
+                              >
+                                {option}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Input
+                          type="text"
+                          placeholder={
+                            transaction.paymentMode === "Card"
+                              ? "Card Number"
+                              : "Transaction Number"
+                          }
+                          value={transaction.transactionDetails}
+                          onChange={(e) =>
+                            handleFinanceTransactionChange(
+                              index,
+                              "transactionDetails",
+                              e.target.value
+                            )
+                          }
+                          className="w-full"
+                        />
+                        <div className="flex gap-2">
+                          <Input
+                            type="number"
+                            placeholder="Amount"
+                            value={transaction.amount}
+                            onChange={(e) =>
+                              handleFinanceTransactionChange(
+                                index,
+                                "amount",
+                                e.target.value
+                              )
+                            }
+                            className="w-full"
+                          />
+                          <div className="flex gap-1">
+                            {financeTransactions.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleRemoveFinanceTransaction(index)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {index === financeTransactions.length - 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={handleAddFinanceTransaction}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {financePaymentDetails.remainingAmount > 0 && (
+                    <div className="mt-2 flex justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAddFinanceTransaction}
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add Payment
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
+
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold">Accessories</h4>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddAccessory}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Row
+                </Button>
+              </div>
+              <div className="grid grid-cols-8 gap-4 mb-2">
+                {accessoriesInputFields.map((field) => (
+                  <div key={field.name} className="font-medium text-sm text-gray-600">
+                    {field.label}
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                {accessories.map((item, rowIndex) => (
+                  <div key={rowIndex} className="grid grid-cols-8 gap-4 items-center">
+                    {accessoriesInputFields.map((field) => (
+                      <div key={field.name}>
+                        {field.type === "actions" ? (
+                          <div className="flex gap-1 items-center">
+                            {accessories.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleRemoveAccessory(rowIndex)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {rowIndex === accessories.length - 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={handleAddAccessory}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ) : (
+                          <Input
+                            type={field.type}
+                            name={field.name}
+                            value={item[field.name]}
+                            onChange={(e) =>
+                              handleAccessoryChange(rowIndex, field.name, e.target.value)
+                            }
+                            disabled={field.disabled}
+                            className="w-full"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold">Apparel</h4>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddApparel}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Row
+                </Button>
+              </div>
+              <div className="grid grid-cols-8 gap-4 mb-2">
+                {apparelInputFields.map((field) => (
+                  <div key={field.name} className="font-medium text-sm text-gray-600">
+                    {field.label}
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                {apparel.map((item, rowIndex) => (
+                  <div key={rowIndex} className="grid grid-cols-8 gap-4 items-center">
+                    {apparelInputFields.map((field) => (
+                      <div key={field.name}>
+                        {field.type === "actions" ? (
+                          <div className="flex gap-1 items-center">
+                            {apparel.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleRemoveApparel(rowIndex)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {rowIndex === apparel.length - 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={handleAddApparel}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ) : (
+                          <Input
+                            type={field.type}
+                            name={field.name}
+                            value={item[field.name]}
+                            onChange={(e) =>
+                              handleApparelChange(rowIndex, field.name, e.target.value)
+                            }
+                            disabled={field.disabled}
+                            className="w-full"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Add final price summary */}
+            <div className="flex flex-col gap-2 border-t pt-4">
+              <h4 className="text-lg font-semibold">Price Summary</h4>
+              <div className="grid grid-cols-2 gap-4 max-w-md">
+                <div className="text-sm text-gray-600">Bike Price:</div>
+                <div>₹{finalPrice.bikePrice.toLocaleString()}</div>
+                <div className="text-sm text-gray-600">Accessories Total:</div>
+                <div>₹{finalPrice.accessoriesTotal.toLocaleString()}</div>
+                <div className="text-sm text-gray-600">Apparel Total:</div>
+                <div>₹{finalPrice.apparelTotal.toLocaleString()}</div>
+                <div className="text-lg font-semibold">Final Price:</div>
+                <div className="text-lg font-semibold">₹{finalPrice.totalAmount.toLocaleString()}</div>
+              </div>
+            </div>
 
             <div className="flex">
               <Button type="submit">Create Sale</Button>
