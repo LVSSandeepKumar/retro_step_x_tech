@@ -48,7 +48,7 @@ import LocationCashAnalysisDetails from "@/app/_components/LocationCashAnalysisD
 import AgeingAnalysisHeatmap from "@/app/_components/AgeingAnalysisHeatmap";
 import { ExpensesDivisionChart } from "@/app/_components/ExpensesDivisionChart";
 import { BRANDS, SERVICE_TYPES, OTHER_TYPES } from '@/app/_constants/chartConstants';
-import DeliveryCard from "./_components/DeliveryCard";
+import DeliveryCard from "./_components/DeliveryBikes";
 
 const PERIODS = {
   YESTERDAY: "Yesterday",
@@ -420,8 +420,8 @@ const LocationPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            <BestSalesPersonCard data={randomData?.bestSalesPerson} />
-            <DeliveryCard data={randomData?.serviceDivisions} />
+            {/* <BestSalesPersonCard data={randomData?.bestSalesPerson} /> */}
+            <DeliveryCard  data={randomData?.serviceDivisions} />
             <BestSellingProductsTable />
           </div>
         </TabsContent>
