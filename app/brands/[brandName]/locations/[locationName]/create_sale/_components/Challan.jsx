@@ -91,9 +91,49 @@ const ReceiptTemplate = ({ type, data }) => {
     </div>
   );
 
+  const renderAdvanceReceipt = () => (
+    <div className="p-6 border rounded-lg">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold">Advance Receipt</h2>
+        <p className="text-gray-500">Date: {new Date().toLocaleDateString()}</p>
+      </div>
+
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p><strong>Customer Name:</strong> {data.customerName}</p>
+            <p><strong>Contact:</strong> {data.customerNo}</p>
+            <p><strong>Bike Model:</strong> {data.bikeModel}</p>
+          </div>
+          <div>
+            <p><strong>Total Amount:</strong> ₹{data.totalAmount.toLocaleString()}</p>
+            <p><strong>Discount Applied:</strong> {data.discountApplied}%</p>
+            <p><strong>Final Amount:</strong> ₹{data.finalAmount.toLocaleString()}</p>
+            <p><strong>Advance Received:</strong> ₹{Number(data.advanceReceived).toLocaleString()}</p>
+            <p><strong>Expected Delivery:</strong> {data.deliveryDate}</p>
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <p className="text-lg"><strong>Amount in words:</strong> {convertToWords(data.advanceReceived)} only</p>
+        </div>
+
+        <div className="mt-8 pt-4 border-t grid grid-cols-2">
+          <div>
+            <p className="font-semibold">Customer Signature</p>
+          </div>
+          <div className="text-right">
+            <p className="font-semibold">Authorized Signature</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <div ref={printRef}>
+        {type === 'advance' && renderAdvanceReceipt()}
         {type === 'bike' && renderBikeChallan()}
         {type === 'accessories' && renderAccessoriesChallan()}
         {type === 'complete' && renderCompleteChallan()}
@@ -103,6 +143,13 @@ const ReceiptTemplate = ({ type, data }) => {
       </Button>
     </div>
   );
+};
+
+// Add helper function for converting numbers to words
+const convertToWords = (amount) => {
+  // Implement number to words conversion
+  // You can use a library like 'number-to-words' or implement your own logic
+  return amount; // Placeholder return
 };
 
 const GenerateChallan = ({ type, data, label }) => {

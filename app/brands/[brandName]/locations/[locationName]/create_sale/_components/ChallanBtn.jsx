@@ -3,7 +3,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import ReceiptTemplateExact from "./Challan"; // Adjust the path based on your structure
 import { Button } from "@/components/ui/button";
 
-export default function GenerateChallan() {
+export default function GenerateChallan({ type, data, label }) {
   const [showDialog, setShowDialog] = useState(false);
 
   const handleOpenDialog = () => {
@@ -14,22 +14,10 @@ export default function GenerateChallan() {
     setShowDialog(false);
   };
 
-  const receiptDetails = {
-    receiptNumber: "32",
-    customerName: "John Doe",
-    amount: "50000",
-    amountInWords: "Fifty Thousand Only",
-    paymentMode: "Cash",
-    vehicleModel: "KTM 390 Adventure",
-    date: "17-Jan-2025",
-    place: "Hyderabad",
-    companyName: "Tirumala Automotives",
-  };
-
   return (
     <div>
       <Button className="ml-4" onClick={handleOpenDialog}>
-        Generate Challan
+        {label || "Generate Challan"}
       </Button>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
@@ -38,20 +26,19 @@ export default function GenerateChallan() {
         </DialogTrigger>
         <DialogContent className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-lg">
           <DialogHeader>
-            <DialogTitle>Receipt Details</DialogTitle>
+            <DialogTitle>
+              {type === 'advance' ? 'Advance Receipt' : 'Receipt Details'}
+            </DialogTitle>
             <DialogDescription>
-              Below are the details of the generated receipt.
+              {type === 'advance' ? 'Advance payment details' : 'Below are the details of the generated receipt.'}
             </DialogDescription>
           </DialogHeader>
           <div>
-            <ReceiptTemplateExact details={receiptDetails} />
+            <ReceiptTemplateExact type={type} data={data} />
           </div>
-          <button
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={handleCloseDialog}
-          >
+          <Button onClick={handleCloseDialog}>
             Close
-          </button>
+          </Button>
         </DialogContent>
       </Dialog>
     </div>

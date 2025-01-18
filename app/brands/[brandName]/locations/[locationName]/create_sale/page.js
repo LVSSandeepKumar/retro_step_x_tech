@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react"; // Add useRef import
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -49,6 +49,9 @@ const calculateOnRoadPrice = (prices) => {
 
 const CreateSalePage = () => {
   const router = useRouter();
+
+  const brandName = usePathname().split("/")[2];
+  const locationName = usePathname().split("/")[4]; 
   const [modelSearch, setModelSearch] = useState("");
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState("");
@@ -188,12 +191,6 @@ const CreateSalePage = () => {
     { label: "PDI Charges", type: "number", name: "pdiCharges" },
     { label: "Accessories", type: "number", name: "accessories" },
     { label: "On Road Price", type: "number", name: "onRoadPrice" },
-    {
-      label: "On Road Price After Exchange",
-      type: "number",
-      name: "onRoadPriceAfterExchange",
-      css: "col-span-2",
-    }, // Add this field
   ];
 
   const oldBikeInfoInputFields = [
@@ -232,8 +229,10 @@ const CreateSalePage = () => {
   // Update spotPaymentInputFields to mark finalAmount as disabled
   const spotPaymentInputFields = [
     { label: "OnRoadPrice", type: "number", name: "onRoadPrice", disabled: true },
-    { label: "Discount Applied", type: "text", name: "discountApplied" },
+    { label: "Discount", type: "text", name: "discountApplied" },
     { label: "Final Amount", type: "number", name: "finalAmount", disabled: true },
+    { label: "Advance Received", type: "number", name: "advanceReceived" },
+    { label: "Delivery Date", type: "text", name: "deliveryDate" },
   ];
 
   const transactionFields = {
@@ -308,9 +307,6 @@ const CreateSalePage = () => {
     e.preventDefault();
     // Handle the submit logic here
     toast.success("New Sale created successfully");
-    router.push(
-      `/brands/${router.query.brandName}/locations/${router.query.locationName}/sublocations/${router.query.sublocationname}`
-    );
   };
 
   // Add useEffect for click outside handler
@@ -692,6 +688,48 @@ const CreateSalePage = () => {
     }));
   };
 
+  // Update spotPaymentDetails state initialization
+  const [spotPaymentDetails, setSpotPaymentDetails] = useState({
+    onRoadPrice: 0,
+    discountApplied: "",
+    finalAmount: finalPrice.totalAmount,
+    advanceReceived: "",
+    deliveryDate: ""
+  });
+
+  // Modify handleDiscountChange
+  const handleSpotPaymentChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'discountApplied') {
+      const discountPercent = parseFloat(value) || 0;
+      const onRoadPrice = finalPrice.totalAmount;
+      const discountAmount = (onRoadPrice * discountPercent) / 100;
+      const finalAmount = onRoadPrice - discountAmount;
+
+      setSpotPaymentDetails(prev => ({
+        ...prev,
+        [name]: value,
+        finalAmount: Math.round(finalAmount)
+      }));
+    } else {
+      setSpotPaymentDetails(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  // Update useEffect for finalPrice changes
+  useEffect(() => {
+    if (paymentMethod.spotPayment) {
+      setSpotPaymentDetails(prev => ({
+        ...prev,
+        onRoadPrice: finalPrice.totalAmount,
+        finalAmount: finalPrice.totalAmount
+      }));
+    }
+  }, [finalPrice.totalAmount, paymentMethod.spotPayment]);
+
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6">
       <div className="flex justify-between items-center mb-4">
@@ -800,6 +838,21 @@ const CreateSalePage = () => {
                     />
                   </div>
                 ))}
+                {exchange && (
+                  <div>
+                    <label className="text-sm text-gray-500">
+                      On Road Price After Exchange
+                    </label>
+                    <Input
+                      type="number"
+                      name="onRoadPriceAfterExchange"
+                      value={bikeDetails.onRoadPriceAfterExchange}
+                      onChange={handleInputChange}
+                      disabled={selectedModel}
+                      className="col-span-2"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -864,7 +917,7 @@ const CreateSalePage = () => {
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-500">Spot Payment</label>
+                  <label className="text-lg font-semibold">Spot Payment</label>
                   <Checkbox
                     checked={paymentMethod.spotPayment}
                     onCheckedChange={(checked) => {
@@ -876,7 +929,7 @@ const CreateSalePage = () => {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-500">Finance</label>
+                  <label className="text-lg font-semibold">Finance</label>
                   <Checkbox
                     checked={paymentMethod.finance}
                     onCheckedChange={(checked) => {
@@ -892,45 +945,38 @@ const CreateSalePage = () => {
 
             {paymentMethod.spotPayment && (
               <div className="flex flex-col gap-2">
-                <h4 className="text-lg font-semibold">Spot Payment Details</h4>
-                <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="flex flex-col md:grid md:grid-cols-3 lg:grid-cols-5 gap-4">
                   {spotPaymentInputFields.map((field, index) => (
                     <div key={index}>
                       <label className="text-sm text-gray-500">{field.label}</label>
                       <Input
                         type={field.type}
                         name={field.name}
-                        onChange={field.name === 'discountApplied' ? handleDiscountChange : handleInputChange}
-                        value={
-                          field.name === 'onRoadPrice' 
-                            ? finalPrice.totalAmount 
-                            : field.name === 'finalAmount'
-                            ? newSale.finalAmount || finalPrice.totalAmount
-                            : newSale[field.name] || ""
-                        }
+                        onChange={handleSpotPaymentChange}
+                        value={spotPaymentDetails[field.name]}
                         disabled={field.disabled}
                         placeholder={field.name === 'discountApplied' ? "Enter discount %" : ""}
                       />
                     </div>
                   ))}
-
-                  {/* Render transaction fields based on payment mode */}
-                  {paymentMode &&
-                    transactionFields[paymentMode]?.map((field, index) => (
-                      <div key={index}>
-                        <label className="text-sm text-gray-500">
-                          {field.label}
-                        </label>
-                        <Input
-                          type={field.type}
-                          name={field.name}
-                          onChange={handleInputChange}
-                          value={newSale[field.name] || ""}
-                        />
-                      </div>
-                    ))}
                 </div>
 
+                {/* Add Generate Advance Receipt button */}
+                <div className="flex justify-end mt-2">
+                  <GenerateChallan 
+                    type="advance"
+                    data={{
+                      ...spotPaymentDetails,
+                      customerName: newSale.customerName,
+                      customerNo: newSale.customerNo,
+                      bikeModel: selectedModel,
+                      totalAmount: finalPrice.totalAmount
+                    }}
+                    label="Generate Advance Receipt"
+                  />
+                </div>
+                
+                {/* Rest of the spot payment section */}
                 <div>
                   <h1 className="text-lg font-semibold">Payment Details</h1>
                 </div>
@@ -1203,14 +1249,6 @@ const CreateSalePage = () => {
 
             {/* Modify the accessories section header */}
             <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold">Accessories</h4>
-                <GenerateChallan 
-                  type="accessories" 
-                  data={prepareFormData()} 
-                  label="Generate Accessories Challan"
-                />
-              </div>
               {/* Rest of accessories section remains same */}
               <div className="grid grid-cols-8 gap-4 mb-2">
                 {accessoriesInputFields.map((field) => (
@@ -1347,7 +1385,7 @@ const CreateSalePage = () => {
               <GenerateChallan 
                 type="bike" 
                 data={prepareFormData()} 
-                label="Generate Bike Challan"
+                label="Generate Delivery Challan"
               />
             </div>
           </form>
