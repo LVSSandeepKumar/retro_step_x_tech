@@ -1,13 +1,24 @@
 "use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import React, { useState } from "react";
-import VerifiedUnverifiedTable from "./_components/VerifiedUnverifiedTable";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import VerifiedUnverifiedTable from "./_components/VerifiedUnverifiedTable";
 
 const AnalyticsPage = () => {
   const [activeTab, setActiveTab] = useState("verified");
+  const [selectedRows, setSelectedRows] = useState([]);
   const router = useRouter();
+
+  const handleRowSelect = (id) => {
+    setSelectedRows(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(rowId => rowId !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -51,7 +62,12 @@ const AnalyticsPage = () => {
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-lg font-bold mb-4">Unverified Analytics</h2>
             {/* Add your unverified analytics components here */}
-            <VerifiedUnverifiedTable currentTab={activeTab} />
+            <VerifiedUnverifiedTable 
+              currentTab={activeTab} 
+              showActions={true}
+              onRowSelect={handleRowSelect}
+              selectedRows={selectedRows}
+            />
           </div>
         </TabsContent>
       </Tabs>

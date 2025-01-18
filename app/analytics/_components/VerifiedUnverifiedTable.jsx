@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { locations } from "@/lib/constants";
+import { useMemo, useState } from "react";
 
 const billTypes = ["Sales", "Service", "Spares", "Insurance"];
 
@@ -17,7 +18,20 @@ const statusColors = {
   pending: "text-yellow-600 bg-yellow-50",
 };
 
-const VerifiedUnverifiedTable = ({ currentTab }) => {
+const VerifiedUnverifiedTable = ({ currentTab, showActions, onRowSelect, selectedRows }) => {
+  const [verifiedBills, setVerifiedBills] = useState(new Set());
+
+  const handleRowStatusChange = (billNumber) => {
+    setVerifiedBills(prev => {
+      const newSet = new Set(prev);
+      newSet.add(billNumber);
+      return newSet;
+    });
+    if (onRowSelect) {
+      onRowSelect(billNumber);
+    }
+  };
+
   // Combine all cities from own and sub locations
   const allLocations = useMemo(() => {
     const ownCities = locations.find((loc) => loc.type === "own")?.cities || [];
@@ -81,33 +95,54 @@ const VerifiedUnverifiedTable = ({ currentTab }) => {
             {currentTab === "unverified" && (
               <TableHead>Pending Since</TableHead>
             )}
+            {showActions && currentTab === "unverified" && (
+              <TableHead className="text-right">Actions</TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {bills.map((bill) => (
-            <TableRow key={bill.billNumber}>
-              <TableCell className="font-medium">{bill.billNumber}</TableCell>
-              <TableCell>{bill.date}</TableCell>
-              <TableCell>{bill.location}</TableCell>
-              <TableCell>{bill.locationType.toUpperCase()}</TableCell>
-              <TableCell>₹{bill.amount.toLocaleString()}</TableCell>
-              <TableCell>{bill.type}</TableCell>
-              <TableCell>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    statusColors[bill.status]
-                  }`}
-                >
-                  {bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}
-                </span>
-              </TableCell>
-              {currentTab === "unverified" && (
-                <TableCell className="text-red-500">
-                  {bill.pendingSince}
+          {bills.map((bill) => {
+            if (currentTab === "unverified" && verifiedBills.has(bill.billNumber)) {
+              return null;
+            }
+
+            return (
+              <TableRow key={bill.billNumber}>
+                <TableCell className="font-medium">{bill.billNumber}</TableCell>
+                <TableCell>{bill.date}</TableCell>
+                <TableCell>{bill.location}</TableCell>
+                <TableCell>{bill.locationType.toUpperCase()}</TableCell>
+                <TableCell>₹{bill.amount.toLocaleString()}</TableCell>
+                <TableCell>{bill.type}</TableCell>
+                <TableCell>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      verifiedBills.has(bill.billNumber) 
+                        ? statusColors.verified
+                        : statusColors[bill.status]
+                    }`}
+                  >
+                    {verifiedBills.has(bill.billNumber) 
+                      ? "Verified"
+                      : bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}
+                  </span>
                 </TableCell>
-              )}
-            </TableRow>
-          ))}
+                {currentTab === "unverified" && (
+                  <TableCell className="text-red-500">
+                    {bill.pendingSince}
+                  </TableCell>
+                )}
+                {showActions && currentTab === "unverified" && (
+                  <TableCell className="text-right">
+                    <Checkbox
+                      checked={verifiedBills.has(bill.billNumber)}
+                      onCheckedChange={() => handleRowStatusChange(bill.billNumber)}
+                    />
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

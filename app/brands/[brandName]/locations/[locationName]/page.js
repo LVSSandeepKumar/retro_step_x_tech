@@ -1,31 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { subLocationsData } from "@/lib/constants";
-import ServiceCard from "@/app/brands/[brandName]/locations/[locationName]/_components/ServiceCard";
 import BestSellingProductsTable from "@/app/brands/[brandName]/locations/[locationName]/_components/BestSellingProductsTable";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import OverviewCard from "@/components/OverviewCard";
-import BestSalesPersonCard from "@/app/brands/[brandName]/locations/[locationName]/_components/BestSalesPersonCard";
 import InventoryOverviewCard from "@/app/brands/[brandName]/locations/[locationName]/_components/InventoryOverviewCard";
-import InsuranceOverviewCard from "@/app/brands/[brandName]/locations/[locationName]/_components/InsuranceOverviewCard";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus } from "lucide-react";
 import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
+  Dialog
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "react-hot-toast";
-import Link from "next/link";
 import {
   Select,
   SelectContent,
@@ -33,21 +12,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { subLocationsData } from "@/lib/constants";
+import { ArrowLeft } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 // Remove these imports as they're no longer needed
 // import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 // import { ChevronDown, ChevronUp } from "lucide-react";
-import { Star } from "lucide-react";
 import SelectionGrid from "@/app/_components/SelectionGrid";
-import SalesAndServicesDetailsChart from "@/app/_components/SalesAndServicesDetailsChart";
+import { Star } from "lucide-react";
 // Remove LocationRevenueDetails import since we won't use it here
+import { ExpensesDivisionChart } from "@/app/_components/ExpensesDivisionChart";
+import ExpensesVsCollectionsChart from "@/app/_components/ExpensesVsCollectionsChart";
 import FinanceSummary from "@/app/_components/FinanceSummaryCard";
 import VerifiedUnverifiedChart from "@/app/_components/VerifiedUnverifiedChart";
-import ExpensesVsCollectionsChart from "@/app/_components/ExpensesVsCollectionsChart";
-import LocationCashAnalysisDetails from "@/app/_components/LocationCashAnalysisDetails";
-import AgeingAnalysisHeatmap from "@/app/_components/AgeingAnalysisHeatmap";
-import { ExpensesDivisionChart } from "@/app/_components/ExpensesDivisionChart";
-import { BRANDS, SERVICE_TYPES, OTHER_TYPES } from '@/app/_constants/chartConstants';
+import { BRANDS, OTHER_TYPES, SERVICE_TYPES } from '@/app/_constants/chartConstants';
 import DeliveryCard from "./_components/DeliveryBikes";
 
 const PERIODS = {
@@ -152,6 +134,36 @@ const generatePeriodData = (period) => {
   };
 };
 
+const INITIAL_PERIOD_VALUES = {
+  YESTERDAY: {
+    period: "YESTERDAY",
+    sales: 50000,
+    services: 43000,
+    others: 45000,
+    counts: {
+      sales: 5,
+      services: 6,
+      others: 11
+    }
+  }
+};
+
+const INITIAL_FINANCE_VALUES = {
+  period: "YESTERDAY",
+  cash: 200000,
+  upi: 160000,
+  expenses: 288000
+};
+
+const INITIAL_EXPENSES_DATA = {
+  'Salaries': 60000,
+  'OSJ': 48000,
+  'Electricity Charges': 36000,
+  'Other Expenses': 24000,
+  'Branch Maintenance': 18000,
+  'Transportation Charges': 12000
+};
+
 const LocationPage = () => {
   const { brandName, locationName } = useParams();
   const router = useRouter();
@@ -163,16 +175,11 @@ const LocationPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedOverview, setSelectedOverview] = useState(null);
   const [detailsData, setDetailsData] = useState(null);
-  const [periodValues, setPeriodValues] = useState({
-    period: "YESTERDAY",
-    cash: 200000,
-    upi: 160000,
-    expenses: 288000
-  });
-  const [expensesData, setExpensesData] = useState(null);
+  const [periodValues, setPeriodValues] = useState(INITIAL_FINANCE_VALUES);
+  const [expensesData, setExpensesData] = useState(INITIAL_EXPENSES_DATA);
 
   // Add new state
-  const [revenueValues, setRevenueValues] = useState(null);
+  const [revenueValues, setRevenueValues] = useState(INITIAL_PERIOD_VALUES.YESTERDAY);
 
   const inputFields = [
     { label: "Product Type", type: "text", name: "productType" },
@@ -243,8 +250,13 @@ const LocationPage = () => {
 
   // Replace generateDataForPeriod with these two functions
   const generateRevenueValues = (period) => {
-    const newRevenueValues = generatePeriodData(period);
-    setRevenueValues(newRevenueValues);
+    // Only generate new values if not using initial values
+    if (period === "YESTERDAY" && !revenueValues.hasRandomized) {
+      setRevenueValues({ ...INITIAL_PERIOD_VALUES.YESTERDAY, hasRandomized: true });
+    } else {
+      const newRevenueValues = generatePeriodData(period);
+      setRevenueValues(newRevenueValues);
+    }
     
     // If there's a selected overview, update the details data
     if (selectedOverview) {
@@ -441,11 +453,10 @@ const LocationPage = () => {
         </TabsContent>
 
         <TabsContent value="inventory" className="mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <InventoryOverviewCard title="Low Stock" />
             <InventoryOverviewCard title="Fast Moving" />
             <InventoryOverviewCard title="Dead Stock" />
-            <InventoryOverviewCard title="Old Bikes" />
           </div>
         </TabsContent>
       </Tabs>
