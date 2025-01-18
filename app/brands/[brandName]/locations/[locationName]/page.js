@@ -441,10 +441,11 @@ const LocationPage = () => {
         </TabsContent>
 
         <TabsContent value="inventory" className="mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <InventoryOverviewCard title="Low Stock" />
             <InventoryOverviewCard title="Fast Moving" />
             <InventoryOverviewCard title="Dead Stock" />
+            <InventoryOverviewCard title="Old Bikes" />
           </div>
         </TabsContent>
       </Tabs>

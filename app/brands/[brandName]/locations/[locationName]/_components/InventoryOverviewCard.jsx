@@ -228,6 +228,23 @@ const InventoryOverviewCard = ({ title }) => {
         },
       ];
       setData(deadStockData);
+    } else if (title === "Old Bikes") {
+      setSold(generateRandomNumber(40, 60)); // Purchases
+      setTotal(generateRandomNumber(20, 40)); // Sales
+      const oldBikesData = [
+        {
+          bikeModel: pickAProduct(brandName),
+          previousOwner: "John Doe",
+          purchaseValue: generateRandomNumber(50000, 150000),
+          purchaseDate: "2024-01-15",
+          kilometersRun: generateRandomNumber(10000, 50000),
+          condition: ["Good", "Bad", "Fair", "Excellent"][Math.floor(Math.random() * 4)],
+          insuranceAmount: generateRandomNumber(2000, 8000),
+          insuranceValidity: "2024-12-31"
+        },
+        // Add 3 more similar items with random data
+      ];
+      setData(oldBikesData);
     }
   }, [title]);
 
@@ -275,13 +292,17 @@ const InventoryOverviewCard = ({ title }) => {
           <div className="">
             <div className="flex justify-between">
               <div className="flex flex-col">
-                <span className="text-md mb-2 text-gray-600">Sales</span>
+                <span className="text-md mb-2 text-gray-600">
+                  {title === "Old Bikes" ? "Purchases" : "Sales"}
+                </span>
                 <span className="text-lg font-bold text-gray-800 mb-2">
                   {sold}%
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-md mb-2 text-gray-600">Inwards</span>
+                <span className="text-md mb-2 text-gray-600">
+                  {title === "Old Bikes" ? "Sales" : "Inwards"}
+                </span>
                 <span className="text-lg font-bold text-gray-800 mb-2">
                   {total - sold}%
                 </span>
@@ -291,7 +312,8 @@ const InventoryOverviewCard = ({ title }) => {
           </div>
           {(title === "Low Stock" ||
             title === "Fast Moving" ||
-            title === "Dead Stock") && (
+            title === "Dead Stock" ||
+            title === "Old Bikes") && (
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger asChild>
                 <Button variant="default">View {title} Overview</Button>
@@ -313,52 +335,82 @@ const InventoryOverviewCard = ({ title }) => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableCell className="font-semibold">
-                        Product ID
-                      </TableCell>
-                      <TableCell className="font-semibold">
-                        Product Type
-                      </TableCell>
-                      <TableCell className="font-semibold">
-                        Product Name
-                      </TableCell>
-                      <TableCell className="font-semibold">
-                        Inward Items
-                      </TableCell>
-                      <TableCell onClick={() => requestSort("date")}>
-                        <span className="ml-2 flex items-center gap-2 font-semibold">
-                          Inward Date
-                          <ArrowDownUp className="size-4" />
-                        </span>
-                      </TableCell>
-                      <TableCell onClick={() => requestSort("amount")}>
-                        <span className="ml-2 flex items-center gap-2 font-semibold">
-                          Inward Price
-                          <ArrowDownUp className="size-4" />
-                        </span>
-                      </TableCell>
-                      <TableCell>Sold</TableCell>
-                      <TableCell onClick={() => requestSort("amount")}>
-                        <span className="ml-2 flex items-center gap-2 font-semibold">
-                          Revenue
-                          <ArrowDownUp className="size-4" />
-                        </span>
-                      </TableCell>
-                      <TableCell>Remaining Stock</TableCell>
+                      {title === "Old Bikes" ? (
+                        <>
+                          <TableCell>Bike Model</TableCell>
+                          <TableCell>Previous Owner</TableCell>
+                          <TableCell>Purchase Value</TableCell>
+                          <TableCell>Purchase Date</TableCell>
+                          <TableCell>Kilometres Run</TableCell>
+                          <TableCell>Condition</TableCell>
+                          <TableCell>Insurance Amount</TableCell>
+                          <TableCell>Insurance Validity</TableCell>
+                        </>
+                      ) : (
+                        <>
+                          <TableCell className="font-semibold">
+                            Product ID
+                          </TableCell>
+                          <TableCell className="font-semibold">
+                            Product Type
+                          </TableCell>
+                          <TableCell className="font-semibold">
+                            Product Name
+                          </TableCell>
+                          <TableCell className="font-semibold">
+                            Inward Items
+                          </TableCell>
+                          <TableCell onClick={() => requestSort("date")}>
+                            <span className="ml-2 flex items-center gap-2 font-semibold">
+                              Inward Date
+                              <ArrowDownUp className="size-4" />
+                            </span>
+                          </TableCell>
+                          <TableCell onClick={() => requestSort("amount")}>
+                            <span className="ml-2 flex items-center gap-2 font-semibold">
+                              Inward Price
+                              <ArrowDownUp className="size-4" />
+                            </span>
+                          </TableCell>
+                          <TableCell>Sold</TableCell>
+                          <TableCell onClick={() => requestSort("amount")}>
+                            <span className="ml-2 flex items-center gap-2 font-semibold">
+                              Revenue
+                              <ArrowDownUp className="size-4" />
+                            </span>
+                          </TableCell>
+                          <TableCell>Remaining Stock</TableCell>
+                        </>
+                      )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {sortedData.map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>{item.productID}</TableCell>
-                        <TableCell>{item.productType}</TableCell>
-                        <TableCell>{item.productName}</TableCell>
-                        <TableCell>{item.inward}</TableCell>
-                        <TableCell>{item.inwardDate}</TableCell>
-                        <TableCell>₹ {item.inwardPrice}</TableCell>
-                        <TableCell>{item.sold}</TableCell>
-                        <TableCell>₹ {item.revenue}</TableCell>
-                        <TableCell>{item.inward - item.sold}</TableCell>
+                        {title === "Old Bikes" ? (
+                          <>
+                            <TableCell>{item.bikeModel}</TableCell>
+                            <TableCell>{item.previousOwner}</TableCell>
+                            <TableCell>₹ {item.purchaseValue}</TableCell>
+                            <TableCell>{item.purchaseDate}</TableCell>
+                            <TableCell>{item.kilometersRun}</TableCell>
+                            <TableCell>{item.condition}</TableCell>
+                            <TableCell>₹ {item.insuranceAmount}</TableCell>
+                            <TableCell>{item.insuranceValidity}</TableCell>
+                          </>
+                        ) : (
+                          <>
+                            <TableCell>{item.productID}</TableCell>
+                            <TableCell>{item.productType}</TableCell>
+                            <TableCell>{item.productName}</TableCell>
+                            <TableCell>{item.inward}</TableCell>
+                            <TableCell>{item.inwardDate}</TableCell>
+                            <TableCell>₹ {item.inwardPrice}</TableCell>
+                            <TableCell>{item.sold}</TableCell>
+                            <TableCell>₹ {item.revenue}</TableCell>
+                            <TableCell>{item.inward - item.sold}</TableCell>
+                          </>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
