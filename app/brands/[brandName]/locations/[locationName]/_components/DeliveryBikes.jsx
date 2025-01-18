@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { ArrowDownUp } from "lucide-react";
-
+import {useRouter } from "next/navigation";
 const DeliveryCard = () => {
     const [deliveryData, setDeliveryData] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +31,7 @@ const DeliveryCard = () => {
         deliveryDate: "all", // Options: all, today, yesterday, tomorrow
     });
     const [sortConfig, setSortConfig] = useState({ key: "deliveryDate", direction: "descending" });
-
+    const router = useRouter();
     useEffect(() => {
         const generateRandomNumber = (min, max) => {
             return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -161,6 +161,10 @@ const DeliveryCard = () => {
         return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     };
 
+    const navigateToDeliveryDetails = (delivery) => {
+       router.push(`/brands/Triumph/locations/Ongole-HO/orderNumber`);
+    }
+
     return (
         <div className="col-start-1 col-end-3 p-4 rounded-lg border shadow-md bg-white">
             <h2 className="text-lg font-semibold mb-2">Delivery Details</h2>
@@ -233,7 +237,7 @@ const DeliveryCard = () => {
                 </TableHeader>
                 <TableBody>
                     {sortedDeliveries.map((delivery, index) => (
-                        <TableRow key={index}>
+                        <TableRow key={index}  className={index % 2 === 0 ? "bg-white" : "bg-gray-100"} onClick={navigateToDeliveryDetails}>
                             <TableCell>{delivery.orderNumber}</TableCell>
                             <TableCell>{delivery.bikeName}</TableCell>
                             <TableCell>{delivery.customerName}</TableCell>
