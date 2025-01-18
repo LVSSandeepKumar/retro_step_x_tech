@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import GenerateChallan
+  from "./_components/ChallanBtn"; // Adjust the path based on your project structure
 
 // Helper functions for price calculations
 const generateRandomPrice = () => {
@@ -79,6 +81,8 @@ const CreateSalePage = () => {
       amount: "",
     },
   ]);
+  const [activeTab, setActiveTab] = useState("new-bike");
+
 
   const paymentModeOptions = ["Cash", "Card", "UPI", "Bank Transfer"];
 
@@ -225,10 +229,11 @@ const CreateSalePage = () => {
     // Remove onRoadPriceAfterExchange from here
   ];
 
+  // Update spotPaymentInputFields to mark finalAmount as disabled
   const spotPaymentInputFields = [
-    { label: "OnRoadPrice", type: "number", name: "onRoadPrice" },
+    { label: "OnRoadPrice", type: "number", name: "onRoadPrice", disabled: true },
     { label: "Discount Applied", type: "text", name: "discountApplied" },
-    { label: "Final Amount", type: "number", name: "finalAmount" },
+    { label: "Final Amount", type: "number", name: "finalAmount", disabled: true },
   ];
 
   const transactionFields = {
@@ -618,6 +623,75 @@ const CreateSalePage = () => {
     }
   }, [financeTransactions, financeDetails.loanAmount, paymentMethod.finance]);
 
+  const toogleTabs = (value) => {
+    setActiveTab(value);
+  };
+
+  const prepareFormData = () => {
+    return {
+      bikeDetails: {
+        ...bikeDetails,
+        selectedModel,
+      },
+      customerDetails: {
+        ...newSale,
+      },
+      exchangeDetails: exchange ? {
+        ...exchangeDetails,
+      } : null,
+      paymentDetails: {
+        method: paymentMethod.spotPayment ? 'spot' : 'finance',
+        spotPayment: paymentMethod.spotPayment ? {
+          transactions,
+        } : null,
+        finance: paymentMethod.finance ? {
+          ...financeDetails,
+          transactions: financeTransactions,
+        } : null,
+      },
+      accessories: {
+        items: accessories,
+        total: finalPrice.accessoriesTotal,
+      },
+      apparel: {
+        items: apparel,
+        total: finalPrice.apparelTotal,
+      },
+      pricing: {
+        ...finalPrice,
+      },
+      metadata: {
+        createdAt: new Date().toISOString(),
+        status: 'pending',
+      }
+    };
+  };
+
+  // Add useEffect to update spot payment on road price
+  useEffect(() => {
+    if (paymentMethod.spotPayment) {
+      setNewSale(prev => ({
+        ...prev,
+        onRoadPrice: finalPrice.totalAmount
+      }));
+    }
+  }, [finalPrice.totalAmount, paymentMethod.spotPayment]);
+
+  // Add this handler to calculate final amount when discount changes
+  const handleDiscountChange = (e) => {
+    const { value } = e.target;
+    const discountPercent = parseFloat(value) || 0;
+    const onRoadPrice = finalPrice.totalAmount;
+    const discountAmount = (onRoadPrice * discountPercent) / 100;
+    const finalAmount = onRoadPrice - discountAmount;
+
+    setNewSale(prev => ({
+      ...prev,
+      discountApplied: value,
+      finalAmount: Math.round(finalAmount)
+    }));
+  };
+
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6">
       <div className="flex justify-between items-center mb-4">
@@ -632,19 +706,19 @@ const CreateSalePage = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="new-bike" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="new-bike" className="w-full">
         <div className="flex items-center justify-between mr-4">
           <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
             <TabsTrigger value="new-bike">New Bike</TabsTrigger>
             <TabsTrigger value="old-bike">Old Bike</TabsTrigger>
           </TabsList>
-          <div className="flex items-center gap-2">
+          {activeTab=='new-bike' && <div className="flex items-center gap-2">
             <Checkbox
               checked={exchange}
               onCheckedChange={(checked) => setExchange(checked)}
             />
             <label className="text-sm text-gray-500">Exchange</label>
-          </div>
+          </div>}
         </div>
 
         <TabsContent value="new-bike">
@@ -777,8 +851,8 @@ const CreateSalePage = () => {
                           field.name === "exchangeValue"
                             ? exchangeDetails.exchangeValue
                             : field.name === "onRoadPriceAfterExchange"
-                            ? `₹${exchangeDetails.onRoadPriceAfterExchange.toLocaleString()}`
-                            : ""
+                              ? `₹${exchangeDetails.onRoadPriceAfterExchange.toLocaleString()}`
+                              : ""
                         }
                       />
                     </div>
@@ -822,38 +896,21 @@ const CreateSalePage = () => {
                 <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {spotPaymentInputFields.map((field, index) => (
                     <div key={index}>
-                      <label className="text-sm text-gray-500">
-                        {field.label}
-                      </label>
-                      {field.type === "dropdown" ? (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="w-full">
-                            <div className="flex items-center justify-between p-2 bg-gray-100 rounded border">
-                              <span className="truncate">
-                                {paymentMode || "Select Payment Mode"}
-                              </span>
-                              <ArrowDown className="h-4 w-4" />
-                            </div>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-full">
-                            {field.options.map((option) => (
-                              <DropdownMenuItem
-                                key={option}
-                                onClick={() => handlePaymentModeChange(option)}
-                              >
-                                {option}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      ) : (
-                        <Input
-                          type={field.type}
-                          name={field.name}
-                          onChange={handleInputChange}
-                          value={newSale[field.name] || ""}
-                        />
-                      )}
+                      <label className="text-sm text-gray-500">{field.label}</label>
+                      <Input
+                        type={field.type}
+                        name={field.name}
+                        onChange={field.name === 'discountApplied' ? handleDiscountChange : handleInputChange}
+                        value={
+                          field.name === 'onRoadPrice' 
+                            ? finalPrice.totalAmount 
+                            : field.name === 'finalAmount'
+                            ? newSale.finalAmount || finalPrice.totalAmount
+                            : newSale[field.name] || ""
+                        }
+                        disabled={field.disabled}
+                        placeholder={field.name === 'discountApplied' ? "Enter discount %" : ""}
+                      />
                     </div>
                   ))}
 
@@ -1144,20 +1201,17 @@ const CreateSalePage = () => {
               </div>
             )}
 
+            {/* Modify the accessories section header */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-lg font-semibold">Accessories</h4>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddAccessory}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Row
-                </Button>
+                <GenerateChallan 
+                  type="accessories" 
+                  data={prepareFormData()} 
+                  label="Generate Accessories Challan"
+                />
               </div>
+              {/* Rest of accessories section remains same */}
               <div className="grid grid-cols-8 gap-4 mb-2">
                 {accessoriesInputFields.map((field) => (
                   <div key={field.name} className="font-medium text-sm text-gray-600">
@@ -1212,20 +1266,12 @@ const CreateSalePage = () => {
               </div>
             </div>
 
+            {/* Modify the apparel section header - remove the Add Row button */}
             <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4">
                 <h4 className="text-lg font-semibold">Apparel</h4>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddApparel}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Row
-                </Button>
               </div>
+              {/* Rest of apparel section remains same */}
               <div className="grid grid-cols-8 gap-4 mb-2">
                 {apparelInputFields.map((field) => (
                   <div key={field.name} className="font-medium text-sm text-gray-600">
@@ -1295,7 +1341,15 @@ const CreateSalePage = () => {
               </div>
             </div>
 
-            <Button type="submit">Create Sale</Button>
+            {/* Replace the buttons section at the bottom */}
+            <div className="flex gap-4">
+              <Button type="submit">Create Sale</Button>
+              <GenerateChallan 
+                type="bike" 
+                data={prepareFormData()} 
+                label="Generate Bike Challan"
+              />
+            </div>
           </form>
         </TabsContent>
         <TabsContent value="old-bike">
