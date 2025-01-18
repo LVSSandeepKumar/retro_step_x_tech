@@ -81,6 +81,8 @@ const CreateSalePage = () => {
       amount: "",
     },
   ]);
+  const [activeTab, setActiveTab] = useState("new-bike");
+
 
   const paymentModeOptions = ["Cash", "Card", "UPI", "Bank Transfer"];
 
@@ -335,6 +337,10 @@ const CreateSalePage = () => {
     }));
   };
 
+  const toogleTabs = (value) => {
+    setActiveTab(value);
+  };
+
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6">
       <div className="flex justify-between items-center mb-4">
@@ -349,19 +355,19 @@ const CreateSalePage = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="new-bike" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="new-bike" className="w-full">
         <div className="flex items-center justify-between mr-4">
           <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
             <TabsTrigger value="new-bike">New Bike</TabsTrigger>
             <TabsTrigger value="old-bike">Old Bike</TabsTrigger>
           </TabsList>
-          <div className="flex items-center gap-2">
+          {activeTab=='new-bike' && <div className="flex items-center gap-2">
             <Checkbox
               checked={exchange}
               onCheckedChange={(checked) => setExchange(checked)}
             />
             <label className="text-sm text-gray-500">Exchange</label>
-          </div>
+          </div>}
         </div>
 
         <TabsContent value="new-bike">
