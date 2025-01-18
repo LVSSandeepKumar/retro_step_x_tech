@@ -7,8 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "react-hot-toast";
 import { generateRandomNumber } from "@/lib/utils";
-import { bikeModels } from "@/lib/constants";
-import { Search, ArrowDown, ArrowUp, ArrowLeft, Plus, Minus } from "lucide-react"; // Add Plus and Minus import
+import { bikeModels, vehicleInsuranceProviders } from "@/lib/constants"; // Add vehicleInsuranceProviders import
+import {
+  Search,
+  ArrowDown,
+  ArrowUp,
+  ArrowLeft,
+  Plus,
+  Minus,
+} from "lucide-react"; // Add Plus and Minus import
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,8 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import GenerateChallan
-  from "./_components/ChallanBtn"; // Adjust the path based on your project structure
+import GenerateChallan from "./_components/ChallanBtn"; // Adjust the path based on your project structure
 
 // Helper functions for price calculations
 const generateRandomPrice = () => {
@@ -51,7 +57,7 @@ const CreateSalePage = () => {
   const router = useRouter();
 
   const brandName = usePathname().split("/")[2];
-  const locationName = usePathname().split("/")[4]; 
+  const locationName = usePathname().split("/")[4];
   const [modelSearch, setModelSearch] = useState("");
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState("");
@@ -85,7 +91,6 @@ const CreateSalePage = () => {
     },
   ]);
   const [activeTab, setActiveTab] = useState("new-bike");
-
 
   const paymentModeOptions = ["Cash", "Card", "UPI", "Bank Transfer"];
 
@@ -228,9 +233,19 @@ const CreateSalePage = () => {
 
   // Update spotPaymentInputFields to mark finalAmount as disabled
   const spotPaymentInputFields = [
-    { label: "OnRoadPrice", type: "number", name: "onRoadPrice", disabled: true },
+    {
+      label: "OnRoadPrice",
+      type: "number",
+      name: "onRoadPrice",
+      disabled: true,
+    },
     { label: "Discount", type: "text", name: "discountApplied" },
-    { label: "Final Amount", type: "number", name: "finalAmount", disabled: true },
+    {
+      label: "Final Amount",
+      type: "number",
+      name: "finalAmount",
+      disabled: true,
+    },
     { label: "Advance Received", type: "number", name: "advanceReceived" },
     { label: "Delivery Date", type: "text", name: "deliveryDate" },
   ];
@@ -254,11 +269,29 @@ const CreateSalePage = () => {
 
   const financePaymentInputFields = [
     { label: "Down Payment", type: "number", name: "downPayment" },
-    { label: "Remaining Amount", type: "number", name: "remainingAmount" },
+    {
+      label: "Advance Down payment",
+      type: "number",
+      name: "advanceDownPayment",
+    },
+    {
+      label: "Balance Down Payment",
+      type: "number",
+      name: "balanceDownPayment",
+    },
+    { label: "Delivery Date", type: "text", name: "deliveryDate" },
     { label: "Finance Provider", type: "dropdown", name: "financeProvider" },
-    { label: "Rate of Interest", type: "number", name: "rateOfInterest" },
-    { label: "Tenure", type: "number", name: "tenure" },
-    { label: "Loan Amount", type: "number", name: "loanAmount" },
+    {
+      label: "Requested Loan Amount",
+      type: "number",
+      name: "requestedLoanAmount",
+    },
+    {
+      label: "Approved Loan Amount",
+      type: "number",
+      name: "approvedLoanAmount",
+    },
+    { label: "Balance to be paid", type: "number", name: "balanceToBePaid" },
     { label: "On road price", type: "number", name: "onRoadPrice" },
     { label: "Documents", type: "file", name: "documents" },
   ];
@@ -268,9 +301,19 @@ const CreateSalePage = () => {
     { label: "Accessory Name", type: "text", name: "accessoryName" },
     { label: "Accessory Price", type: "number", name: "accessoryPrice" },
     { label: "Quantity", type: "number", name: "quantity" },
-    { label: "Total Price", type: "number", name: "totalPrice", disabled: true },
+    {
+      label: "Total Price",
+      type: "number",
+      name: "totalPrice",
+      disabled: true,
+    },
     { label: "Discount", type: "number", name: "discount" },
-    { label: "Final Price", type: "number", name: "finalPrice", disabled: true },
+    {
+      label: "Final Price",
+      type: "number",
+      name: "finalPrice",
+      disabled: true,
+    },
     { label: "Actions", type: "actions", name: "actions" }, // Add actions column
   ];
 
@@ -279,9 +322,19 @@ const CreateSalePage = () => {
     { label: "Apparel Name", type: "text", name: "apparelName" },
     { label: "Apparel Price", type: "number", name: "apparelPrice" },
     { label: "Quantity", type: "number", name: "quantity" },
-    { label: "Total Price", type: "number", name: "totalPrice", disabled: true },
+    {
+      label: "Total Price",
+      type: "number",
+      name: "totalPrice",
+      disabled: true,
+    },
     { label: "Discount", type: "number", name: "discount" },
-    { label: "Final Price", type: "number", name: "finalPrice", disabled: true },
+    {
+      label: "Final Price",
+      type: "number",
+      name: "finalPrice",
+      disabled: true,
+    },
     { label: "Actions", type: "actions", name: "actions" }, // Add actions column
   ];
 
@@ -433,13 +486,16 @@ const CreateSalePage = () => {
     const updatedAccessories = accessories.map((item, i) => {
       if (i === index) {
         const updatedItem = { ...item, [field]: value };
-        if (field === 'accessoryPrice' || field === 'quantity') {
-          const price = Number(field === 'accessoryPrice' ? value : item.accessoryPrice) || 0;
-          const qty = Number(field === 'quantity' ? value : item.quantity) || 0;
+        if (field === "accessoryPrice" || field === "quantity") {
+          const price =
+            Number(field === "accessoryPrice" ? value : item.accessoryPrice) ||
+            0;
+          const qty = Number(field === "quantity" ? value : item.quantity) || 0;
           updatedItem.totalPrice = price * qty;
-          updatedItem.finalPrice = updatedItem.totalPrice - (Number(updatedItem.discount) || 0);
+          updatedItem.finalPrice =
+            updatedItem.totalPrice - (Number(updatedItem.discount) || 0);
         }
-        if (field === 'discount') {
+        if (field === "discount") {
           updatedItem.finalPrice = updatedItem.totalPrice - Number(value);
         }
         return updatedItem;
@@ -453,13 +509,15 @@ const CreateSalePage = () => {
     const updatedApparel = apparel.map((item, i) => {
       if (i === index) {
         const updatedItem = { ...item, [field]: value };
-        if (field === 'apparelPrice' || field === 'quantity') {
-          const price = Number(field === 'apparelPrice' ? value : item.apparelPrice) || 0;
-          const qty = Number(field === 'quantity' ? value : item.quantity) || 0;
+        if (field === "apparelPrice" || field === "quantity") {
+          const price =
+            Number(field === "apparelPrice" ? value : item.apparelPrice) || 0;
+          const qty = Number(field === "quantity" ? value : item.quantity) || 0;
           updatedItem.totalPrice = price * qty;
-          updatedItem.finalPrice = updatedItem.totalPrice - (Number(updatedItem.discount) || 0);
+          updatedItem.finalPrice =
+            updatedItem.totalPrice - (Number(updatedItem.discount) || 0);
         }
-        if (field === 'discount') {
+        if (field === "discount") {
           updatedItem.finalPrice = updatedItem.totalPrice - Number(value);
         }
         return updatedItem;
@@ -479,8 +537,14 @@ const CreateSalePage = () => {
 
   // Add price calculation effect
   useEffect(() => {
-    const accessoriesSum = accessories.reduce((sum, item) => sum + (Number(item.finalPrice) || 0), 0);
-    const apparelSum = apparel.reduce((sum, item) => sum + (Number(item.finalPrice) || 0), 0);
+    const accessoriesSum = accessories.reduce(
+      (sum, item) => sum + (Number(item.finalPrice) || 0),
+      0
+    );
+    const apparelSum = apparel.reduce(
+      (sum, item) => sum + (Number(item.finalPrice) || 0),
+      0
+    );
     const bikePrice = Number(bikeDetails.onRoadPriceAfterExchange) || 0;
 
     setFinalPrice({
@@ -515,11 +579,11 @@ const CreateSalePage = () => {
       const loanAmount = remainingAmount * (1 + (roi / 100) * (tenure / 12));
       const finalOnRoadPrice = downPayment + loanAmount;
 
-      setFinanceDetails(prev => ({
+      setFinanceDetails((prev) => ({
         ...prev,
         remainingAmount,
         loanAmount: Math.round(loanAmount),
-        finalOnRoadPrice: Math.round(finalOnRoadPrice)
+        finalOnRoadPrice: Math.round(finalOnRoadPrice),
       }));
     }
   }, [
@@ -527,15 +591,15 @@ const CreateSalePage = () => {
     financeDetails.rateOfInterest,
     financeDetails.tenure,
     finalPrice.totalAmount,
-    paymentMethod.finance
+    paymentMethod.finance,
   ]);
 
   // Add this handler for finance input changes
   const handleFinanceChange = (e) => {
     const { name, value } = e.target;
-    setFinanceDetails(prev => ({
+    setFinanceDetails((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -573,14 +637,15 @@ const CreateSalePage = () => {
   };
 
   const handleFinanceTransactionChange = (index, field, value) => {
-    if (field === 'amount') {
-      const currentPaid = financeTransactions.reduce((sum, t, i) => 
-        i !== index ? sum + (Number(t.amount) || 0) : sum, 0
+    if (field === "amount") {
+      const currentPaid = financeTransactions.reduce(
+        (sum, t, i) => (i !== index ? sum + (Number(t.amount) || 0) : sum),
+        0
       );
       const newAmount = Number(value) || 0;
       // Use loanAmount for validation
       const totalAllowed = financeDetails.loanAmount;
-      
+
       if (currentPaid + newAmount > totalAllowed) {
         toast.error("Total payments cannot exceed the loan amount");
         return;
@@ -606,8 +671,9 @@ const CreateSalePage = () => {
   // Update finance payment tracking when transactions change
   useEffect(() => {
     if (paymentMethod.finance) {
-      const paidAmount = financeTransactions.reduce((sum, transaction) => 
-        sum + (Number(transaction.amount) || 0), 0
+      const paidAmount = financeTransactions.reduce(
+        (sum, transaction) => sum + (Number(transaction.amount) || 0),
+        0
       );
       // Use loanAmount instead of remainingAmount
       const totalAmount = financeDetails.loanAmount;
@@ -628,18 +694,24 @@ const CreateSalePage = () => {
       customerDetails: {
         ...newSale,
       },
-      exchangeDetails: exchange ? {
-        ...exchangeDetails,
-      } : null,
+      exchangeDetails: exchange
+        ? {
+            ...exchangeDetails,
+          }
+        : null,
       paymentDetails: {
-        method: paymentMethod.spotPayment ? 'spot' : 'finance',
-        spotPayment: paymentMethod.spotPayment ? {
-          transactions,
-        } : null,
-        finance: paymentMethod.finance ? {
-          ...financeDetails,
-          transactions: financeTransactions,
-        } : null,
+        method: paymentMethod.spotPayment ? "spot" : "finance",
+        spotPayment: paymentMethod.spotPayment
+          ? {
+              transactions,
+            }
+          : null,
+        finance: paymentMethod.finance
+          ? {
+              ...financeDetails,
+              transactions: financeTransactions,
+            }
+          : null,
       },
       accessories: {
         items: accessories,
@@ -654,17 +726,17 @@ const CreateSalePage = () => {
       },
       metadata: {
         createdAt: new Date().toISOString(),
-        status: 'pending',
-      }
+        status: "pending",
+      },
     };
   };
 
   // Add useEffect to update spot payment on road price
   useEffect(() => {
     if (paymentMethod.spotPayment) {
-      setNewSale(prev => ({
+      setNewSale((prev) => ({
         ...prev,
-        onRoadPrice: finalPrice.totalAmount
+        onRoadPrice: finalPrice.totalAmount,
       }));
     }
   }, [finalPrice.totalAmount, paymentMethod.spotPayment]);
@@ -677,10 +749,10 @@ const CreateSalePage = () => {
     const discountAmount = (onRoadPrice * discountPercent) / 100;
     const finalAmount = onRoadPrice - discountAmount;
 
-    setNewSale(prev => ({
+    setNewSale((prev) => ({
       ...prev,
       discountApplied: value,
-      finalAmount: Math.round(finalAmount)
+      finalAmount: Math.round(finalAmount),
     }));
   };
 
@@ -690,27 +762,27 @@ const CreateSalePage = () => {
     discountApplied: "",
     finalAmount: finalPrice.totalAmount,
     advanceReceived: "",
-    deliveryDate: ""
+    deliveryDate: "",
   });
 
   // Modify handleDiscountChange
   const handleSpotPaymentChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'discountApplied') {
+    if (name === "discountApplied") {
       const discountPercent = parseFloat(value) || 0;
       const onRoadPrice = finalPrice.totalAmount;
       const discountAmount = (onRoadPrice * discountPercent) / 100;
       const finalAmount = onRoadPrice - discountAmount;
 
-      setSpotPaymentDetails(prev => ({
+      setSpotPaymentDetails((prev) => ({
         ...prev,
         [name]: value,
-        finalAmount: Math.round(finalAmount)
+        finalAmount: Math.round(finalAmount),
       }));
     } else {
-      setSpotPaymentDetails(prev => ({
+      setSpotPaymentDetails((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
@@ -718,13 +790,15 @@ const CreateSalePage = () => {
   // Update useEffect for finalPrice changes
   useEffect(() => {
     if (paymentMethod.spotPayment) {
-      setSpotPaymentDetails(prev => ({
+      setSpotPaymentDetails((prev) => ({
         ...prev,
         onRoadPrice: finalPrice.totalAmount,
-        finalAmount: finalPrice.totalAmount
+        finalAmount: finalPrice.totalAmount,
       }));
     }
   }, [finalPrice.totalAmount, paymentMethod.spotPayment]);
+
+  const [selectedProvider, setSelectedProvider] = useState("");
 
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6">
@@ -740,19 +814,26 @@ const CreateSalePage = () => {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="new-bike" className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        defaultValue="new-bike"
+        className="w-full"
+      >
         <div className="flex items-center justify-between mr-4">
           <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
             <TabsTrigger value="new-bike">New Bike</TabsTrigger>
             <TabsTrigger value="old-bike">Old Bike</TabsTrigger>
           </TabsList>
-          {activeTab=='new-bike' && <div className="flex items-center gap-2">
-            <Checkbox
-              checked={exchange}
-              onCheckedChange={(checked) => setExchange(checked)}
-            />
-            <label className="text-sm text-gray-500">Exchange</label>
-          </div>}
+          {activeTab == "new-bike" && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={exchange}
+                onCheckedChange={(checked) => setExchange(checked)}
+              />
+              <label className="text-sm text-gray-500">Exchange</label>
+            </div>
+          )}
         </div>
 
         <TabsContent value="new-bike">
@@ -900,8 +981,8 @@ const CreateSalePage = () => {
                           field.name === "exchangeValue"
                             ? exchangeDetails.exchangeValue
                             : field.name === "onRoadPriceAfterExchange"
-                              ? `₹${exchangeDetails.onRoadPriceAfterExchange.toLocaleString()}`
-                              : ""
+                            ? `₹${exchangeDetails.onRoadPriceAfterExchange.toLocaleString()}`
+                            : ""
                         }
                       />
                     </div>
@@ -944,14 +1025,20 @@ const CreateSalePage = () => {
                 <div className="flex flex-col md:grid md:grid-cols-3 lg:grid-cols-5 gap-4">
                   {spotPaymentInputFields.map((field, index) => (
                     <div key={index}>
-                      <label className="text-sm text-gray-500">{field.label}</label>
+                      <label className="text-sm text-gray-500">
+                        {field.label}
+                      </label>
                       <Input
                         type={field.type}
                         name={field.name}
                         onChange={handleSpotPaymentChange}
                         value={spotPaymentDetails[field.name]}
                         disabled={field.disabled}
-                        placeholder={field.name === 'discountApplied' ? "Enter discount %" : ""}
+                        placeholder={
+                          field.name === "discountApplied"
+                            ? "Enter discount %"
+                            : ""
+                        }
                       />
                     </div>
                   ))}
@@ -959,19 +1046,19 @@ const CreateSalePage = () => {
 
                 {/* Add Generate Advance Receipt button */}
                 <div className="flex justify-end mt-2">
-                  <GenerateChallan 
+                  <GenerateChallan
                     type="advance"
                     data={{
                       ...spotPaymentDetails,
                       customerName: newSale.customerName,
                       customerNo: newSale.customerNo,
                       bikeModel: selectedModel,
-                      totalAmount: finalPrice.totalAmount
+                      totalAmount: finalPrice.totalAmount,
                     }}
                     label="Generate Advance Receipt"
                   />
                 </div>
-                
+
                 {/* Rest of the spot payment section */}
                 <div>
                   <h1 className="text-lg font-semibold">Payment Details</h1>
@@ -979,58 +1066,62 @@ const CreateSalePage = () => {
                 <div className="col-span-full">
                   <div className="space-y-2">
                     {transactions.map((transaction, index) => (
-                      <div key={index} className="grid grid-cols-4 gap-4">
+                      <div key={index} className="grid grid-cols-8 gap-4">
                         <Input
                           type="number"
                           value={transaction.serialNo}
                           disabled
-                          className="w-full"
+                          className="w-full col-span-1"
                         />
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="w-full">
-                            <div className="flex items-center justify-between p-2 bg-gray-100 rounded border">
-                              <span className="truncate">
-                                {transaction.paymentMode ||
-                                  "Select Payment Mode"}
-                              </span>
-                              <ArrowDown className="h-4 w-4" />
-                            </div>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-[200px]">
-                            {paymentModeOptions.map((option) => (
-                              <DropdownMenuItem
-                                key={option}
-                                onClick={() =>
-                                  handleTransactionChange(
-                                    index,
-                                    "paymentMode",
-                                    option
-                                  )
-                                }
-                              >
-                                {option}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Input
-                          type="text"
-                          placeholder={
-                            transaction.paymentMode === "Card"
-                              ? "Card Number"
-                              : "Transaction Number"
-                          }
-                          value={transaction.transactionDetails}
-                          onChange={(e) =>
-                            handleTransactionChange(
-                              index,
-                              "transactionDetails",
-                              e.target.value
-                            )
-                          }
-                          className="w-full"
-                        />
-                        <div className="flex gap-2">
+                        <div className="col-span-3">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger className="w-full">
+                              <div className="flex items-center justify-between p-2 bg-gray-100 rounded border">
+                                <span className="truncate">
+                                  {transaction.paymentMode ||
+                                    "Select Payment Mode"}
+                                </span>
+                                <ArrowDown className="h-4 w-4" />
+                              </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-[200px]">
+                              {paymentModeOptions.map((option) => (
+                                <DropdownMenuItem
+                                  key={option}
+                                  onClick={() =>
+                                    handleTransactionChange(
+                                      index,
+                                      "paymentMode",
+                                      option
+                                    )
+                                  }
+                                >
+                                  {option}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                        <div className="col-span-2">
+                          <Input
+                            type="text"
+                            placeholder={
+                              transaction.paymentMode === "Card"
+                                ? "Card Number"
+                                : "Transaction Number"
+                            }
+                            value={transaction.transactionDetails}
+                            onChange={(e) =>
+                              handleTransactionChange(
+                                index,
+                                "transactionDetails",
+                                e.target.value
+                              )
+                            }
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="col-span-2 flex gap-2">
                           <Input
                             type="number"
                             placeholder="Amount"
@@ -1076,186 +1167,93 @@ const CreateSalePage = () => {
 
             {paymentMethod.finance && (
               <div className="flex flex-col gap-2">
-                <h4 className="text-lg font-semibold">Finance Details</h4>
-                <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {financePaymentInputFields.map((field, index) => (
                     <div key={index}>
                       <label className="text-sm text-gray-500">
                         {field.label}
                       </label>
-                      <Input
-                        type={field.type}
-                        name={field.name}
-                        onChange={handleFinanceChange}
-                        value={
-                          field.name === 'remainingAmount'
-                            ? financeDetails.remainingAmount
-                            : field.name === 'loanAmount'
-                            ? financeDetails.loanAmount
-                            : field.name === 'onRoadPrice'
-                            ? financeDetails.finalOnRoadPrice
-                            : financeDetails[field.name] || ''
-                        }
-                        disabled={
-                          field.name === 'remainingAmount' ||
-                          field.name === 'loanAmount' ||
-                          field.name === 'onRoadPrice'
-                        }
-                        placeholder={field.placeholder}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-4">
-                  <h4 className="text-lg font-semibold mb-4">Finance Payment Details</h4>
-                  <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                    <div className="grid grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-600">Loan Amount:</span>
-                        <span className="ml-2 font-semibold">
-                          ₹{financeDetails.loanAmount.toLocaleString()}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Paid Amount:</span>
-                        <span className="ml-2 font-semibold">
-                          ₹{financePaymentDetails.paidAmount.toLocaleString()}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Remaining:</span>
-                        <span className="ml-2 font-semibold text-purple-600">
-                          ₹{financePaymentDetails.remainingAmount.toLocaleString()}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Total EMIs:</span>
-                        <span className="ml-2 font-semibold">
-                          {financeDetails.tenure}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {financeTransactions.map((transaction, index) => (
-                      <div key={index} className="grid grid-cols-4 gap-4">
-                        <Input
-                          type="number"
-                          value={transaction.serialNo}
-                          disabled
-                          className="w-full"
-                        />
+                      {field.type === "dropdown" ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger className="w-full">
                             <div className="flex items-center justify-between p-2 bg-gray-100 rounded border">
                               <span className="truncate">
-                                {transaction.paymentMode || "Select Payment Mode"}
+                                {selectedProvider || "Select Finance Provider"}
                               </span>
-                                <ArrowDown className="h-4 w-4" />
+                              <ArrowDown className="h-4 w-4" />
                             </div>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-[200px]">
-                            {paymentModeOptions.map((option) => (
-                              <DropdownMenuItem
-                                key={option}
-                                onClick={() =>
-                                  handleFinanceTransactionChange(index, "paymentMode", option)
-                                }
-                              >
-                                {option}
-                              </DropdownMenuItem>
-                            ))}
+                          <DropdownMenuContent className="w-[300px]">
+                            <ScrollArea className="h-[200px]">
+                              {vehicleInsuranceProviders.map((provider) => (
+                                <DropdownMenuItem
+                                  key={provider}
+                                  onClick={() => {
+                                    setSelectedProvider(provider);
+                                    handleFinanceChange({
+                                      target: {
+                                        name: "financeProvider",
+                                        value: provider,
+                                      },
+                                    });
+                                  }}
+                                >
+                                  {provider}
+                                </DropdownMenuItem>
+                              ))}
+                            </ScrollArea>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                      ) : (
                         <Input
-                          type="text"
-                          placeholder={
-                            transaction.paymentMode === "Card"
-                              ? "Card Number"
-                              : "Transaction Number"
+                          type={field.type}
+                          name={field.name}
+                          onChange={handleFinanceChange}
+                          value={
+                            field.name === "remainingAmount"
+                              ? financeDetails.remainingAmount
+                              : field.name === "loanAmount"
+                              ? financeDetails.loanAmount
+                              : field.name === "onRoadPrice"
+                              ? financeDetails.finalOnRoadPrice
+                              : financeDetails[field.name] || ""
                           }
-                          value={transaction.transactionDetails}
-                          onChange={(e) =>
-                            handleFinanceTransactionChange(
-                              index,
-                              "transactionDetails",
-                              e.target.value
-                            )
+                          disabled={
+                            field.name === "remainingAmount" ||
+                            field.name === "loanAmount" ||
+                            field.name === "onRoadPrice"
                           }
-                          className="w-full"
+                          placeholder={field.placeholder}
                         />
-                        <div className="flex gap-2">
-                          <Input
-                            type="number"
-                            placeholder="Amount"
-                            value={transaction.amount}
-                            onChange={(e) =>
-                              handleFinanceTransactionChange(
-                                index,
-                                "amount",
-                                e.target.value
-                              )
-                            }
-                            className="w-full"
-                          />
-                          <div className="flex gap-1">
-                            {financeTransactions.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleRemoveFinanceTransaction(index)}
-                              >
-                                <Minus className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {index === financeTransactions.length - 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                onClick={handleAddFinanceTransaction}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {financePaymentDetails.remainingAmount > 0 && (
-                    <div className="mt-2 flex justify-end">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleAddFinanceTransaction}
-                        className="flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Add Payment
-                      </Button>
+                      )}
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
             )}
 
             {/* Modify the accessories section header */}
             <div className="flex flex-col gap-2">
+              <div className="mb-4">
+                <h4 className="text-lg font-semibold">Accessories</h4>
+              </div>
               {/* Rest of accessories section remains same */}
               <div className="grid grid-cols-8 gap-4 mb-2">
                 {accessoriesInputFields.map((field) => (
-                  <div key={field.name} className="font-medium text-sm text-gray-600">
+                  <div
+                    key={field.name}
+                    className="font-medium text-sm text-gray-600"
+                  >
                     {field.label}
                   </div>
                 ))}
               </div>
               <div className="space-y-2">
                 {accessories.map((item, rowIndex) => (
-                  <div key={rowIndex} className="grid grid-cols-8 gap-4 items-center">
+                  <div
+                    key={rowIndex}
+                    className="grid grid-cols-8 gap-4 items-center"
+                  >
                     {accessoriesInputFields.map((field) => (
                       <div key={field.name}>
                         {field.type === "actions" ? (
@@ -1287,7 +1285,11 @@ const CreateSalePage = () => {
                             name={field.name}
                             value={item[field.name]}
                             onChange={(e) =>
-                              handleAccessoryChange(rowIndex, field.name, e.target.value)
+                              handleAccessoryChange(
+                                rowIndex,
+                                field.name,
+                                e.target.value
+                              )
                             }
                             disabled={field.disabled}
                             className="w-full"
@@ -1308,14 +1310,20 @@ const CreateSalePage = () => {
               {/* Rest of apparel section remains same */}
               <div className="grid grid-cols-8 gap-4 mb-2">
                 {apparelInputFields.map((field) => (
-                  <div key={field.name} className="font-medium text-sm text-gray-600">
+                  <div
+                    key={field.name}
+                    className="font-medium text-sm text-gray-600"
+                  >
                     {field.label}
                   </div>
                 ))}
               </div>
               <div className="space-y-2">
                 {apparel.map((item, rowIndex) => (
-                  <div key={rowIndex} className="grid grid-cols-8 gap-4 items-center">
+                  <div
+                    key={rowIndex}
+                    className="grid grid-cols-8 gap-4 items-center"
+                  >
                     {apparelInputFields.map((field) => (
                       <div key={field.name}>
                         {field.type === "actions" ? (
@@ -1347,7 +1355,11 @@ const CreateSalePage = () => {
                             name={field.name}
                             value={item[field.name]}
                             onChange={(e) =>
-                              handleApparelChange(rowIndex, field.name, e.target.value)
+                              handleApparelChange(
+                                rowIndex,
+                                field.name,
+                                e.target.value
+                              )
                             }
                             disabled={field.disabled}
                             className="w-full"
@@ -1371,23 +1383,42 @@ const CreateSalePage = () => {
                 <div className="text-sm text-gray-600">Apparel Total:</div>
                 <div>₹{finalPrice.apparelTotal.toLocaleString()}</div>
                 <div className="text-lg font-semibold">Final Price:</div>
-                <div className="text-lg font-semibold">₹{finalPrice.totalAmount.toLocaleString()}</div>
+                <div className="text-lg font-semibold">
+                  ₹{finalPrice.totalAmount.toLocaleString()}
+                </div>
               </div>
             </div>
 
             {/* Replace the buttons section at the bottom */}
             <div className="flex gap-4">
               <Button type="submit">Create Sale</Button>
-              <GenerateChallan 
-                type="bike" 
-                data={prepareFormData()} 
+              <GenerateChallan
+                type="bike"
+                data={prepareFormData()}
                 label="Generate Delivery Challan"
               />
             </div>
           </form>
         </TabsContent>
         <TabsContent value="old-bike">
-          <div className="flex flex-col gap-2"></div>
+          <div className="flex flex-col gap-2">
+            <div>
+              <h1 className="text-lg font-semibold">Customer Details</h1>
+            </div>
+
+            <div className="flex flex-col md:grid md:grid-cols-1 lg:grid-cols-3 gap-4">
+              {customerInfoInputFields.map((field, index) => (
+                <div key={index}>
+                  <label className="text-sm text-gray-500">{field.label}</label>
+                  <Input
+                    type={field.type}
+                    name={field.name}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

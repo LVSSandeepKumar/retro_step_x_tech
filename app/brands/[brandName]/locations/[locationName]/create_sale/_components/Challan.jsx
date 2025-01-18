@@ -1,8 +1,7 @@
 "use client";
 import React, { useRef } from "react";
-import { Button } from "@/components/ui/button";
 
-const ReceiptTemplate = ({ type, data }) => {
+const ReceiptTemplateExact = ({ details }) => {
   const printRef = useRef();
 
   const handlePrint = () => {
@@ -15,156 +14,84 @@ const ReceiptTemplate = ({ type, data }) => {
     printWindow.print();
   };
 
-  const renderBikeChallan = () => (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">Bike Purchase Receipt</h2>
-      <div className="space-y-2">
-        <p><strong>Model:</strong> {data.bikeDetails.selectedModel}</p>
-        <p><strong>Customer:</strong> {data.customerDetails.customerName}</p>
-        <p><strong>Contact:</strong> {data.customerDetails.customerNo}</p>
-        <p><strong>Price:</strong> ₹{data.bikeDetails.onRoadPrice.toLocaleString()}</p>
-        {data.exchangeDetails && (
-          <>
-            <p><strong>Exchange Value:</strong> ₹{data.exchangeDetails.exchangeValue}</p>
-            <p><strong>Final Price:</strong> ₹{data.bikeDetails.onRoadPriceAfterExchange.toLocaleString()}</p>
-          </>
-        )}
-      </div>
-    </div>
-  );
-
-  const renderAccessoriesChallan = () => (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">Accessories & Apparel Receipt</h2>
-      <div className="space-y-4">
-        {data.accessories.items.length > 0 && (
-          <div>
-            <h3 className="font-semibold">Accessories</h3>
-            {data.accessories.items.map((item, index) => (
-              <div key={index} className="ml-4">
-                <p>{item.accessoryName} - ₹{item.finalPrice}</p>
-              </div>
-            ))}
-            <p className="font-semibold">Total: ₹{data.accessories.total}</p>
-          </div>
-        )}
-        {data.apparel.items.length > 0 && (
-          <div>
-            <h3 className="font-semibold">Apparel</h3>
-            {data.apparel.items.map((item, index) => (
-              <div key={index} className="ml-4">
-                <p>{item.apparelName} - ₹{item.finalPrice}</p>
-              </div>
-            ))}
-            <p className="font-semibold">Total: ₹{data.apparel.total}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  const renderCompleteChallan = () => (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">Complete Sale Receipt</h2>
-      {renderBikeChallan()}
-      {renderAccessoriesChallan()}
-      <div className="mt-4 pt-4 border-t">
-        <h3 className="font-semibold">Payment Details</h3>
-        <p><strong>Payment Method:</strong> {data.paymentDetails.method}</p>
-        {data.paymentDetails.spotPayment && (
-          <div className="ml-4">
-            {data.paymentDetails.spotPayment.transactions.map((t, i) => (
-              <p key={i}>{t.paymentMode}: ₹{t.amount}</p>
-            ))}
-          </div>
-        )}
-        {data.paymentDetails.finance && (
-          <div className="ml-4">
-            <p>Down Payment: ₹{data.paymentDetails.finance.downPayment}</p>
-            <p>Loan Amount: ₹{data.paymentDetails.finance.loanAmount}</p>
-          </div>
-        )}
-        <p className="mt-4 text-xl font-bold">
-          Grand Total: ₹{data.pricing.totalAmount.toLocaleString()}
-        </p>
-      </div>
-    </div>
-  );
-
-  const renderAdvanceReceipt = () => (
-    <div className="p-6 border rounded-lg">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold">Advance Receipt</h2>
-        <p className="text-gray-500">Date: {new Date().toLocaleDateString()}</p>
-      </div>
-
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p><strong>Customer Name:</strong> {data.customerName}</p>
-            <p><strong>Contact:</strong> {data.customerNo}</p>
-            <p><strong>Bike Model:</strong> {data.bikeModel}</p>
-          </div>
-          <div>
-            <p><strong>Total Amount:</strong> ₹{data.totalAmount.toLocaleString()}</p>
-            <p><strong>Discount Applied:</strong> {data.discountApplied}%</p>
-            <p><strong>Final Amount:</strong> ₹{data.finalAmount.toLocaleString()}</p>
-            <p><strong>Advance Received:</strong> ₹{Number(data.advanceReceived).toLocaleString()}</p>
-            <p><strong>Expected Delivery:</strong> {data.deliveryDate}</p>
-          </div>
-        </div>
-
-        <div className="mt-8">
-          <p className="text-lg"><strong>Amount in words:</strong> {convertToWords(data.advanceReceived)} only</p>
-        </div>
-
-        <div className="mt-8 pt-4 border-t grid grid-cols-2">
-          <div>
-            <p className="font-semibold">Customer Signature</p>
-          </div>
-          <div className="text-right">
-            <p className="font-semibold">Authorized Signature</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  
 
   return (
     <div>
-      <div ref={printRef}>
-        {type === 'advance' && renderAdvanceReceipt()}
-        {type === 'bike' && renderBikeChallan()}
-        {type === 'accessories' && renderAccessoriesChallan()}
-        {type === 'complete' && renderCompleteChallan()}
+      <div
+        ref={printRef}
+        style={{
+          border: "1px solid black",
+          padding: "20px",
+          width: "800px",
+          fontFamily: "Arial, sans-serif",
+          position: "relative",
+        }}
+      >
+        <div
+          style={{
+            textAlign: "center",
+            borderBottom: "2px solid black",
+            paddingBottom: "10px",
+          }}
+        >
+          <h3 style={{ margin: "0", textTransform: "uppercase" }}>
+            Receipt for Advance Booking
+          </h3>
+          <p style={{ fontSize: "12px", margin: "5px 0" }}>
+            Ongole: 9121182099 | Ram Nagar: 7207817555 | Addanki: 9701050818 | Adda Road: 7207828555
+          </p>
+          <p style={{ fontSize: "12px", margin: "5px 0" }}>
+            Chirala: 9246465452 | Chimakurthy: 7207832555 | Inkollu: 9912400740
+          </p>
+          <p style={{ fontSize: "12px", margin: "5px 0" }}>
+            Kunta: 7207828444 | Martur: 9246465401 | Medarametla: 9704344798
+          </p>
+          <p style={{ fontSize: "12px", margin: "5px 0" }}>
+            S.Konda: 7207831555 | Tangutur: 7207830555 | Ulavapadu: 7207807444
+          </p>
+        </div>
+        <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+          <strong>KTM: 9010857552</strong>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "10px",
+          }}
+        >
+          <p>
+            <strong>No:</strong> {details.receiptNumber}
+          </p>
+          <p>
+            <strong>For:</strong> {details.vehicle}
+          </p>
+        </div>
+        <p>
+          Received with thanks from Sri/Smt/Ms: <strong>{details.customerName}</strong>
+        </p>
+        <p>A sum of Rs: <strong>{details.amount}</strong></p>
+        <p>(Rupees: {details.amountInWords})</p>
+        <p>
+          Vide Cash/Cheque/DD/Pay Order: <strong>{details.paymentMode}</strong>
+        </p>
+        <p>
+          Towards advance for booking of vehicle Model Number:{" "}
+          <strong>{details.vehicleModel}</strong>
+        </p>
+        <p>Dated: <strong>{details.date}</strong></p>
+        <p>Place: <strong>{details.place}</strong></p>
+        <div style={{ textAlign: "right", marginTop: "20px" }}>
+          <p>For <strong>Tirumala Automotives</strong></p>
+          <p>Authorised Signatory</p>
+        </div>
       </div>
-      <Button onClick={handlePrint} className="mt-4">
-        Print {type.charAt(0).toUpperCase() + type.slice(1)} Receipt
-      </Button>
+      <button onClick={handlePrint} style={{ marginTop: "20px" }}>
+        Print Receipt
+      </button>
     </div>
   );
 };
 
-// Add helper function for converting numbers to words
-const convertToWords = (amount) => {
-  // Implement number to words conversion
-  // You can use a library like 'number-to-words' or implement your own logic
-  return amount; // Placeholder return
-};
-
-const GenerateChallan = ({ type, data, label }) => {
-  return (
-    <Button
-      onClick={() => {
-        const challanWindow = window.open("", "_blank");
-        challanWindow.document.write("<div id='challan'></div>");
-        const root = ReactDOM.createRoot(challanWindow.document.getElementById('challan'));
-        root.render(<ReceiptTemplate type={type} data={data} />);
-      }}
-    >
-      {label}
-    </Button>
-  );
-};
-
-export default GenerateChallan;
+export default ReceiptTemplateExact;

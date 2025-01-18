@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { locations } from '@/lib/constants';
+import { useRouter } from 'next/navigation';
 import {
   Select,
   SelectContent,
@@ -8,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { pickABrand } from '@/lib/utils';
 
 const PERIODS = [
   { label: "Yesterday", value: "YESTERDAY" },
@@ -17,6 +19,7 @@ const PERIODS = [
 ];
 
 const LocationStockAnalysisDetails = () => {
+  const router = useRouter();
   const [selectedPeriod, setSelectedPeriod] = useState('WEEKLY');
   const [chartData, setChartData] = useState(null);
 
@@ -85,6 +88,12 @@ const LocationStockAnalysisDetails = () => {
     });
   }, [selectedPeriod]);
 
+  const handleLocationClick = (locationName) => {
+    // Transform location name to URL friendly format and navigate
+    const formattedLocation = locationName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+    router.push(`/brands/${pickABrand()}/locations/${formattedLocation}`);
+  };
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -100,6 +109,12 @@ const LocationStockAnalysisDetails = () => {
         ticks: {
           callback: (value) => `${value} units`
         }
+      }
+    },
+    onClick: (event, elements) => {
+      if (elements.length > 0) {
+        const locationName = chartData.labels[elements[0].index];
+        handleLocationClick(locationName);
       }
     },
     plugins: {
@@ -128,7 +143,17 @@ const LocationStockAnalysisDetails = () => {
         padding: 12,
         displayColors: false
       }
-    }
+    },
+    hover: {
+      mode: 'index',
+      intersect: false,
+    },
+  };
+
+  const customStyles = {
+    canvas: {
+      cursor: 'pointer',
+    },
   };
 
   return (
@@ -149,7 +174,7 @@ const LocationStockAnalysisDetails = () => {
         </Select>
       </div>
 
-      <div className="h-[400px]">
+      <div className="h-[400px]" style={customStyles.canvas}>
         {chartData && <Bar data={chartData} options={options} />}
       </div>
     </div>
