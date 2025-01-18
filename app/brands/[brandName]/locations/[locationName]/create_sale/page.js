@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import GenerateChallan
+  from "./_components/ChallanBtn"; // Adjust the path based on your project structure
 
 // Helper functions for price calculations
 const generateRandomPrice = () => {
@@ -492,8 +494,8 @@ const CreateSalePage = () => {
                           field.name === "exchangeValue"
                             ? exchangeDetails.exchangeValue
                             : field.name === "onRoadPriceAfterExchange"
-                            ? `₹${exchangeDetails.onRoadPriceAfterExchange.toLocaleString()}`
-                            : ""
+                              ? `₹${exchangeDetails.onRoadPriceAfterExchange.toLocaleString()}`
+                              : ""
                         }
                       />
                     </div>
@@ -711,7 +713,11 @@ const CreateSalePage = () => {
               </div>
             )}
 
-            <Button type="submit">Create Sale</Button>
+            <div className="flex">
+              <Button type="submit">Create Sale</Button>
+
+              <GenerateChallan />
+            </div>
           </form>
         </TabsContent>
         <TabsContent value="old-bike">
