@@ -43,7 +43,7 @@ const BikesSalesForm = () => {
                     "kmReading": 15000,
                     "color": "Black",
                     "purchasePrice": 85000,
-                    "salePrice": 950000,
+                    "salePrice": 75000,
                     "insurance": "Valid till Jun 2025"
                 },
                 {
@@ -226,6 +226,15 @@ const BikesSalesForm = () => {
         setSelectedBike(value);
     };
 
+    const calculateProfit = (purchasePrice, salePrice) => {
+        const profit = salePrice - purchasePrice;
+        return {
+            value: Math.abs(profit),
+            type: profit >= 0 ? 'profit' : 'loss',
+            percentage: ((Math.abs(profit) / purchasePrice) * 100).toFixed(2)
+        };
+    };
+
     return (
         <div className="">
         
@@ -344,13 +353,34 @@ const BikesSalesForm = () => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <div>Sale Price</div>
+                                    <div className="flex justify-between">
+                                        <span>Sale Price</span>
+                                        {formData.salePrice && (
+                                            <span className={`text-sm ${
+                                                Number(formData.salePrice) >= selectedVariant.purchasePrice 
+                                                ? 'text-green-600' 
+                                                : 'text-red-600'
+                                            }`}>
+                                                {Number(formData.salePrice) >= selectedVariant.purchasePrice 
+                                                ? `Profit: ${calculateProfit(selectedVariant.purchasePrice, Number(formData.salePrice)).percentage}%`
+                                                : `Loss: ${calculateProfit(selectedVariant.purchasePrice, Number(formData.salePrice)).percentage}%`
+                                                }
+                                            </span>
+                                        )}
+                                    </div>
                                     <Input
                                         type="number"
                                         name="salePrice"
                                         value={formData.salePrice}
                                         onChange={handleInputChange}
                                         placeholder="Enter sale price"
+                                        className={`${
+                                            formData.salePrice && (
+                                                Number(formData.salePrice) >= selectedVariant.purchasePrice 
+                                                ? 'border-green-500' 
+                                                : 'border-red-500'
+                                            )
+                                        }`}
                                     />
                                 </div>
                             </div>
@@ -370,22 +400,29 @@ const BikesSalesForm = () => {
                                             <TableHead>Color</TableHead>
                                             <TableHead>Purchase Price</TableHead>
                                             <TableHead>Sale Price</TableHead>
+                                            <TableHead>Profit/Loss</TableHead>
                                             <TableHead>Insurance</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {bikes
                                             .find(bike => bike.model === selectedBike)
-                                            ?.variants.map((variant, index) => (
-                                                <TableRow key={index}>
-                                                    <TableCell>{variant.customerName}</TableCell>
-                                                    <TableCell>{variant.kmReading}</TableCell>
-                                                    <TableCell>{variant.color}</TableCell>
-                                                    <TableCell>₹{variant.purchasePrice}</TableCell>
-                                                    <TableCell>₹{variant.salePrice}</TableCell>
-                                                    <TableCell>{variant.insurance}</TableCell>
-                                                </TableRow>
-                                            ))}
+                                            ?.variants.map((variant, index) => {
+                                                const profitLoss = calculateProfit(variant.purchasePrice, variant.salePrice);
+                                                return (
+                                                    <TableRow key={index}>
+                                                        <TableCell>{variant.customerName}</TableCell>
+                                                        <TableCell>{variant.kmReading}</TableCell>
+                                                        <TableCell>{variant.color}</TableCell>
+                                                        <TableCell>₹{variant.purchasePrice}</TableCell>
+                                                        <TableCell>₹{variant.salePrice}</TableCell>
+                                                        <TableCell className={profitLoss.type === 'profit' ? 'text-green-600' : 'text-red-600'}>
+                                                            {profitLoss.type === 'profit' ? '+' : '-'}₹{profitLoss.value} ({profitLoss.percentage}%)
+                                                        </TableCell>
+                                                        <TableCell>{variant.insurance}</TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
                                     </TableBody>
                                 </Table>
                             </div>
