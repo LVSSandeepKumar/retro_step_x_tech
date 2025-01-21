@@ -292,6 +292,15 @@ const Sidebar = () => {
                 Create Sale
               </Link>
             </li>
+            <li
+              className={`block p-2 rounded ${
+                currentPage === "osj" ? "bg-gray-600" : "hover:bg-gray-700"
+              }`}
+            >
+              <Link href="/OSJ">
+                OSJ
+              </Link>
+            </li>
           </ul>
         </div>
       )}
