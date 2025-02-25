@@ -1,19 +1,32 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button"; // Import Button component
 
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+const Table = ({ children, className }) => (
+  <table className={`table-auto ${className}`}>{children}</table>
+);
 
-const JobCardTable = ({ jobCards, onSave }) => {
+const TableHeader = ({ children }) => <thead>{children}</thead>;
+
+const TableBody = ({ children }) => <tbody>{children}</tbody>;
+
+const TableHead = ({ children, className }) => (
+  <th className={className}>{children}</th>
+);
+
+const TableRow = ({ children, className, ...props }) => (
+  <tr className={className} {...props}>
+    {children}
+  </tr>
+);
+
+const TableCell = ({ children, className }) => (
+  <td className={className}>{children}</td>
+);
+
+const JobCardTable = ({ jobCards }) => {
   const tableHeaders = [
     "Job Card Number",
     "Reg No",
@@ -32,7 +45,6 @@ const JobCardTable = ({ jobCards, onSave }) => {
     "Total Amount",
   ];
 
-  // Option 1: If TableRow is a custom component, wrap it:
   const MotionTableRow = motion(TableRow);
 
   return (
@@ -55,7 +67,6 @@ const JobCardTable = ({ jobCards, onSave }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
-              onClick={() => onSave(jobCard)}
             >
               <TableCell className="py-2 px-4 border-b">
                 {jobCard.jobCardNumber}
@@ -112,13 +123,14 @@ const JobCardTable = ({ jobCards, onSave }) => {
 
 const JobCardPage = () => {
   const [jobCards, setJobCards] = useState([]);
+  const [showInput, setShowInput] = useState(false);
+  const [newJobCard, setNewJobCard] = useState("");
   const router = useRouter();
-  const searchParams = useSearchParams(); // Now inside the component
+  const searchParams = useSearchParams();
   const someParam = searchParams.get("someParam");
   console.log("someParam:", someParam);
 
   useEffect(() => {
-    // Mock data fetch
     const fetchJobCards = async () => {
       const data = [
         {
@@ -146,18 +158,20 @@ const JobCardPage = () => {
   }, []);
 
   const handleAddCardClick = () => {
-    const brandName = "mahindra"; // Example brand name
-    const locationName = "Hyderabad"; // Example location name
-    const path = `/brands/${encodeURIComponent(
-      brandName
-    )}/locations/${encodeURIComponent(locationName)}/job-card/add-job-card`;
-
-    router.push(path);
+    setShowInput(true);
   };
 
-  const handleSave = (jobCard) => {
-    console.log("Job Card saved:", jobCard);
-    // Add your save logic here
+  const handleInputChange = (e) => {
+    setNewJobCard(e.target.value);
+  };
+
+  const handleInputSave = () => {
+    const newCard = {
+      jobCardNumber: newJobCard,
+      // Add other fields as necessary
+    };
+    setJobCards([...jobCards, newCard]);
+    setShowInput(false);
   };
 
   return (
@@ -170,8 +184,22 @@ const JobCardPage = () => {
           Add Card
         </Button>
       </div>
+      {showInput && (
+        <div className="mb-4">
+          <input
+            type="text"
+            value={newJobCard}
+            onChange={handleInputChange}
+            className="border p-2 rounded"
+            placeholder="Enter Job Card Number"
+          />
+          <Button onClick={handleInputSave} className="bg-blue-500 text-white ml-2">
+            Save
+          </Button>
+        </div>
+      )}
       <div className="content w-full overflow-x-auto">
-        <JobCardTable jobCards={jobCards} onSave={handleSave} />
+        <JobCardTable jobCards={jobCards} />
       </div>
     </div>
   );

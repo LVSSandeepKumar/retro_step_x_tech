@@ -18,7 +18,7 @@ import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import AddJobCardPage from "@/app/brands/[brandName]/locations/[locationName]/job-card/add-job-card/page"; // Add this import
+// import AddJobCardPage from "@/app/brands/[brandName]/locations/[locationName]/job-card/add-job-card/page"; // Add this import
 
 const Sidebar = () => {
   const router = useRouter(); // Add this line
