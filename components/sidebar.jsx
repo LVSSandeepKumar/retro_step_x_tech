@@ -18,6 +18,7 @@ import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import AddJobCardPage from "@/app/brands/[brandName]/locations/[locationName]/job-card/add-job-card/page"; // Add this import
 
 const Sidebar = () => {
   const router = useRouter(); // Add this line
@@ -34,6 +35,7 @@ const Sidebar = () => {
   const [locationSearch, setLocationSearch] = useState("");
   const [isBrandsOpen, setIsBrandsOpen] = useState(false);
   const [isLocationsOpen, setIsLocationsOpen] = useState(false);
+  const [isAddJobCardVisible, setIsAddJobCardVisible] = useState(false); // Add this state
 
   const { showLocationDetails, setShowLocationDetails } = useSidebarContext();
   
@@ -90,6 +92,20 @@ const Sidebar = () => {
 
   const handleSearchClick = (e) => {
     e.stopPropagation();
+  };
+
+  const handleAddJobCardClick = () => {
+    setIsAddJobCardVisible(true);
+  };
+
+  const handleSaveJobCard = (newJobCard) => {
+    // Save the new job card data
+    // ...existing code to save data...
+    setIsAddJobCardVisible(false);
+  };
+
+  const handleCancelJobCard = () => {
+    setIsAddJobCardVisible(false);
   };
 
   return (
@@ -286,10 +302,19 @@ const Sidebar = () => {
                 currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
               }`}
             >
-              <Link
-                href={`/brands/${currentBrand}/locations/${locationName}/create_sale`}
-              >
+              <button onClick={handleAddJobCardClick}>
                 Create Sale
+              </button>
+            </li>
+            <li
+              className={`block p-2 rounded ${
+                currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
+              }`}
+            >
+              <Link
+                href={`/brands/${currentBrand}/locations/${locationName}/job-card`}
+              >
+                Job Card
               </Link>
             </li>
             <li
@@ -302,6 +327,12 @@ const Sidebar = () => {
               </Link>
             </li>
           </ul>
+        </div>
+      )}
+
+      {isAddJobCardVisible && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+          <AddJobCardPage onSave={handleSaveJobCard} onCancel={handleCancelJobCard} />
         </div>
       )}
     </div>
