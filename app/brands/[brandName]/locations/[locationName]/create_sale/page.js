@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react"; // Add useRef import
+import React, { useEffect, useState, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "react-hot-toast";
 import { generateRandomNumber } from "@/lib/utils";
-import { bikeModels, vehicleInsuranceProviders } from "@/lib/constants"; // Add vehicleInsuranceProviders import
+import { bikeModels, vehicleInsuranceProviders } from "@/lib/constants";
 import {
   Search,
   ArrowDown,
@@ -15,7 +15,7 @@ import {
   ArrowLeft,
   Plus,
   Minus,
-} from "lucide-react"; // Add Plus and Minus import
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import GenerateChallan from "./_components/ChallanBtn"; // Adjust the path based on your project structure
+import GenerateChallan from "./_components/ChallanBtn";
 import BikesSalesForm from "./_components/OldBikesSalesForm";
 
 // Helper functions for price calculations
@@ -70,7 +70,7 @@ const CreateSalePage = () => {
     pdiCharges: 0,
     accessories: 0,
     onRoadPrice: 0,
-    onRoadPriceAfterExchange: 0, // Add this field
+    onRoadPriceAfterExchange: 0,
   });
   const [paymentMethod, setPaymentMethod] = useState({
     spotPayment: false,
@@ -82,7 +82,7 @@ const CreateSalePage = () => {
   const [exchangeDetails, setExchangeDetails] = useState({
     exchangeValue: 0,
   });
-  const [paymentMode, setPaymentMode] = useState(""); // Add this state
+  const [paymentMode, setPaymentMode] = useState("");
   const [transactions, setTransactions] = useState([
     {
       serialNo: 1,
@@ -113,7 +113,7 @@ const CreateSalePage = () => {
         .filter((_, index) => index !== indexToRemove)
         .map((transaction, index) => ({
           ...transaction,
-          serialNo: index + 1, // Reorder serial numbers
+          serialNo: index + 1,
         }));
       setTransactions(updatedTransactions);
     }

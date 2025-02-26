@@ -18,7 +18,7 @@ import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-// import AddJobCardPage from "@/app/brands/[brandName]/locations/[locationName]/job-card/add-job-card/page"; // Add this import
+import AddJobCardPage from "@/components/AddJobCardPage"; // Adjust the path based on your project structure
 
 const Sidebar = () => {
   const router = useRouter(); // Add this line
@@ -302,9 +302,14 @@ const Sidebar = () => {
                 currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
               }`}
             >
-              <button onClick={handleAddJobCardClick}>
+              <Link
+                href={`/brands/${currentBrand}/locations/${locationName}/create-sale`}
+              >
+                create sale
+              </Link>
+              {/* <button onClick={handleAddJobCardClick}>
                 Create Sale
-              </button>
+              </button> */}
             </li>
             <li
               className={`block p-2 rounded ${
