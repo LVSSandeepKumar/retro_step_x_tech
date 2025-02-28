@@ -1,19 +1,22 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import {api} from "@/utils/api";
+import { api } from "@/utils/api";
+import axios from "axios";
+import PieCharts from "../_components/PieChart"; // Adjust the import path as needed
 
 const JobCardDetails = () => {
   const [jobCardData, setJobCardData] = useState();
 
   const fetchingdata = async () => {
-    const response = await api.get(`/job-card?page=1&pageSize=25`)
-    .then((response) => {
-      console.log(response);
-      return response;
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+    const response = await axios
+      .get(` http://3.7.2.124:5000/api/job-card?page=1&pageSize=25`)
+      .then((response) => {
+        // console.log(response);
+        return response;
+      })
+      .catch((error) => {
+        console.error(error);
+      });
     setJobCardData(response.data.data[0]);
     console.log(response.data.data[0]);
   };
@@ -28,104 +31,162 @@ const JobCardDetails = () => {
 
   const OwnerDetailComponent = () => {
     return (
-      <div className="text-right">
-        <p>
-          <span className="font-semibold">Model:</span> {jobCardData.model}
-        </p>
-        <p>
-          <span className="font-semibold">Reg No:</span> {jobCardData.regNo}
-        </p>
-        <p>
-          <span className="font-semibold">Repair Type:</span> {jobCardData.repairType}
-        </p>
-        <p>
-          <span className="font-semibold">Date:</span> {jobCardData.date}
-        </p>
-      </div>
-    );
-  };
-
-
-  
-
-  const DealerInfo = () => {
-    return (
-      <div className="flex items-start mb-4">
-        <div className="space-y-1">
-          <h2 className="font-semibold text-lg">Dealer Info</h2>
-          <p>{jobCardData.dealerName}</p>
-          <p>{jobCardData.dealerLocation}</p>
-          <p>{jobCardData.dealerState}</p>
-          <p>{jobCardData.dealerContact}</p>
-          <p>{jobCardData.dealerEmail}</p>
+      <div className="mt-16">
+        <div className="flex items-center mb-2">
+          <p className="w-32 font-semibold text-right">Model:</p>
+          <p className="ml-4">
+            {jobCardData.vehicle.vehicleModel.name || "N/A"}
+          </p>
+        </div>
+        <div className="flex items-center mb-2">
+          <p className="w-32 font-semibold text-right">Reg No:</p>
+          <p className="ml-4">{jobCardData.vehicle.registrationNo || "N/A"}</p>
+        </div>
+        <div className="flex items-center mb-2">
+          <p className="w-32 font-semibold text-right">Repair Type:</p>
+          <p className="ml-4">{jobCardData.jobCardType.name || "N/A"}</p>
+        </div>
+        <div className="flex items-center mb-2">
+          <p className="w-32 font-semibold text-right">Date:</p>
+          <p className="ml-4">{jobCardData.date || "N/A"}</p>
         </div>
       </div>
     );
   };
 
-  const Scratches = () => {
+  const DealerInfo = () => {
     return (
-      <div className="mr-8 mb-4 md:mb-0">
-        <p className="font-semibold underline mb-2">Scratches</p>
-        {(jobCardData.scratches || [...new Array(4)]).map((scratch, index) => (
-          <p key={index}>{scratch}</p>
-        ))}
+      <div className="mt-10">
+        <h2 className="font-bold text-2xl ml-10 underline p-2">Dealer Info</h2>
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <p className="w-32 font-semibold text-right">Name:</p>
+            <p className="ml-4">{jobCardData.location.name || "N/A"}</p>
+          </div>
+          <div className="flex items-center">
+            <p className="w-32 font-semibold text-right">Address:</p>
+            <p className="ml-4">{jobCardData.location.address || "N/A"}</p>
+          </div>
+          <div className="flex items-center">
+            <p className="w-32 font-semibold text-right">State:</p>
+            <p className="ml-4">{jobCardData.dealerState || "N/A"}</p>
+          </div>
+          <div className="flex items-center">
+            <p className="w-32 font-semibold text-right">Contact:</p>
+            <p className="ml-4">{jobCardData.dealerContact || "N/A"}</p>
+          </div>
+          <div className="flex items-center">
+            <p className="w-32 font-semibold text-right">Email:</p>
+            <p className="ml-4">{jobCardData.dealerEmail || "N/A"}</p>
+          </div>
+        </div>
       </div>
     );
   };
 
-  const Missing = () => {
+  const CheckBoxGroup = ({ label }) => {
     return (
-      <div>
-        <p className="font-semibold underline mb-2">Missing</p>
-        {(jobCardData.missing||[]).map((item, index) => (
-          <p key={index}>{item}</p>
-        ))}
+      <div className="mb-4">
+        <p className="font-semibold">{label}</p>
+        <div className="flex space-x-4">
+          <label>
+            <input type="checkbox" name={`${label}-a`} /> Scratches
+          </label>
+          <label>
+            <input type="checkbox" name={`${label}-b`} /> Damage
+          </label>
+          <label>
+            <input type="checkbox" name={`${label}-c`} /> Missing
+          </label>
+        </div>
       </div>
     );
   };
 
+  const CustomerDetails = ({
+    name,
+    email,
+    address,
+    chassisNo,
+    engineNo,
+    contactNo,
+  }) => {
+    return (
+      <div className="m-6 p-4 border rounded-lg shadow-sm bg-gray-50">
+        <h2 className="text-xl font-bold mb-4 text-center">Customer Details</h2>
+        <div className="flex flex-row justify-around divide-x divide-gray-800">
+          <div className="pr-4">
+            <div className="flex items-center">
+              <p className="w-32 font-semibold text-right">Name:</p>
+              <p className="ml-4">{jobCardData.customer.name || "N/A"}</p>
+            </div>
+            <div className="flex items-center">
+              <p className="w-32 font-semibold text-right">Email:</p>
+              <p className="ml-4">{jobCardData.customer.email || "N/A"}</p>
+            </div>
+            <div className="flex items-center">
+              <p className="w-32 font-semibold text-right">Address:</p>
+              <p className="ml-4">{jobCardData.customer.address || "N/A"}</p>
+            </div>
+          </div>
+          <div className="pl-4">
+            <div className="flex items-center">
+              <p className="w-32 font-semibold text-right">Chassis No:</p>
+              <p className="ml-4">{jobCardData.vehicle.chassisNo || "N/A"}</p>
+            </div>
+            <div className="flex items-center">
+              <p className="w-32 font-semibold text-right">Engine No:</p>
+              <p className="ml-4">{jobCardData.vehicle.engineNo || "N/A"}</p>
+            </div>
+            <div className="flex items-center">
+              <p className="w-32 font-semibold text-right">Contact No:</p>
+              <p className="ml-4">{jobCardData.customer.phone || "N/A"}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+    
+  };
 
   return (
     <div className="p-8 text-gray-800 bg-gray-50 min-h-screen">
       {/* Page Title */}
-      <div className="flex justify-around">
-        <OwnerDetailComponent />
-        <DealerInfo />
+      <div className="flex justify-around flex-col">
+        <div className="text-2xl font-bold text-center ">JOB CARD</div>
+        <div className="flex flex-row justify-around">
+          <DealerInfo />
+          <OwnerDetailComponent />
+        </div>
       </div>
-
-      <hr className="my-4" />
-
-      {/* Job Card Heading */}
-      <h2 className="text-xl font-bold text-center mb-4">JOB CARD</h2>
-
-      {/* Job Card Info Rows */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div>
-            <p className="font-semibold">Job Card No:</p>
-            <p>
-                {
-                    jobCardData.code
-                }
-            </p>
+      <div className=" gap-4 m-6 ">
+        <div className="flex flex-row p-2  border-2 bg-gray-300 rounded-lg justify-center">
+          <div className="font-semibold ">Job Card Code:- </div>
+          <p>{jobCardData.code}</p>
         </div>
       </div>
 
-      <hr className="my-4" />
+      <hr className="my-4 border-1 border-black" />
 
-      {/* Inventory Management */}
-      <h2 className="text-lg font-bold mb-2">Inventory Management</h2>
-      <div className="flex flex-wrap md:flex-nowrap md:space-x-8">
-        {/* Left Column (Labels) */}
-        <div className="mr-8 mb-4 md:mb-0">
-          <p className="font-semibold">petrol</p>
-          <p className="font-semibold">D v/s M</p>
-        </div>
+      <CustomerDetails />
 
-        {/* Damage */}
-       
-        <Scratches />
-        <Missing />
+      <hr className="my-4 border-1 border-black" />
+
+      {/* Checkboxes */}
+      <div className="mt-8 justify-center  items-center ">
+        <CheckBoxGroup label="P.Tank" />
+        <CheckBoxGroup label="Tank Logo" />
+        <CheckBoxGroup label="Side cover" />
+        <CheckBoxGroup label="Indicator glass" />
+        <CheckBoxGroup label="Crash guard" />
+        <CheckBoxGroup label="Speed meter" />
+      </div>
+
+      <hr className="my-4 border-1 border-black" />
+
+      {/* Pie Chart Example */}
+      <div className=" border-4 border-black flex justify-center mt-8">
+        <PieCharts/>
       </div>
     </div>
   );
