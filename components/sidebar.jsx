@@ -31,6 +31,7 @@ const Sidebar = () => {
   const currentPage = pathname.split("/")[7];
 
   const [isExpensesOpen, setIsExpensesOpen] = useState(false);
+  const [isMasterOpen, setIsMasterOpen] = useState(false); // Add this state
   const [brandSearch, setBrandSearch] = useState("");
   const [locationSearch, setLocationSearch] = useState("");
   const [isBrandsOpen, setIsBrandsOpen] = useState(false);
@@ -106,6 +107,16 @@ const Sidebar = () => {
 
   const handleCancelJobCard = () => {
     setIsAddJobCardVisible(false);
+  };
+
+  const toggleSubSidebar = (sidebar) => {
+    if (sidebar === "expenses") {
+      setIsExpensesOpen(!isExpensesOpen);
+      setIsMasterOpen(false);
+    } else if (sidebar === "master") {
+      setIsMasterOpen(!isMasterOpen);
+      setIsExpensesOpen(false);
+    }
   };
 
   return (
@@ -254,7 +265,7 @@ const Sidebar = () => {
             <li>
               <button
                 className="block w-full text-left p-2 rounded hover:bg-gray-700"
-                onClick={() => setIsExpensesOpen(!isExpensesOpen)}
+                onClick={() => toggleSubSidebar("expenses")}
               >
                 <span className="flex items-center justify-between gap-2">
                   Expenses {isExpensesOpen ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
@@ -305,11 +316,8 @@ const Sidebar = () => {
               <Link
                 href={`/brands/${currentBrand}/locations/${locationName}/create-sale`}
               >
-                create sale
-              </Link>
-              {/* <button onClick={handleAddJobCardClick}>
                 Create Sale
-              </button> */}
+              </Link>
             </li>
             <li
               className={`block p-2 rounded ${
@@ -324,7 +332,35 @@ const Sidebar = () => {
             </li>
             <li
               className={`block p-2 rounded ${
-                currentPage === "osj" ? "bg-gray-600" : "hover:bg-gray-700"
+                currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
+              }`}
+            >
+              <button
+                className="block w-full text-left p-2 rounded hover:bg-gray-700"
+                onClick={() => toggleSubSidebar("master")}
+              >
+                <span className="flex items-center justify-between ">
+                  Master {isMasterOpen ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                </span>
+              </button>
+              {isMasterOpen && (
+                <ul className="pl-4 space-y-2">
+                  <li className={`block p-2 rounded ${currentPage === "vouchers" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
+                    <Link href={`/brands/${currentBrand}/locations/${locationName}/expenses/products`}>
+                      Products
+                    </Link>
+                  </li>
+                  <li className={`block p-2 rounded ${currentPage === "marketing" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
+                    <Link href={`/brands/${currentBrand}/locations/${locationName}/expenses/customer`}>
+                      Customer
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+            <li
+              className={`block p-2 rounded ${
+                currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
               }`}
             >
               <Link href="/OSJ">

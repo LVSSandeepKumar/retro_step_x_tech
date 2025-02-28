@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, Edit, Trash } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
-import { Calendar } from "@/components/ui/calender"; // Import Calendar component
+import JobCardDetails from "./job-card-details/page";
+import Calendar from "@/components/ui/CalendarComponent"; // Import Calendar component
 uuidv4();
 
 const Table = ({ children, className }) => (
@@ -45,11 +46,11 @@ const JobCardTable = ({ jobCards, onDelete }) => {
 
   return (
     <div className="overflow-x-auto w-full">
-      <Table className="bg-gray-100 shadow-md rounded-lg">
+      <Table className="bg-gray-100 shadow-lg w-full rounded-lg">
         <TableHeader>
-          <TableRow className="bg-gray-200">
+          <TableRow className="bg-gray-200 w-full">
             {tableHeaders.map((header, index) => (
-              <TableHead key={index} className="py-2 px-4 border-b font-bold">
+              <TableHead key={index} className="py-2 px-4 border-b  font-bold">
                 {header}
               </TableHead>
             ))}
@@ -127,6 +128,9 @@ const JobCardPage = () => {
   const someParam = searchParams.get("someParam");
   console.log("someParam:", someParam);
 
+  const brandName = searchParams.get("brandName") || "defaultBrand"; // Define brandName with a fallback
+  const locationName = searchParams.get("locationName") || "defaultLocation"; // Define locationName with a fallback
+
   useEffect(() => {
     const fetchJobCards = async () => {
       const response = await fetch("/api/job-cards");
@@ -139,6 +143,9 @@ const JobCardPage = () => {
 
   const handleAddCardClick = () => {
     setShowInput(true);
+  };
+  const handleAddJobCardClick = () => {
+    router.push(`/brands/${brandName}/locations/${locationName}/job-card/job-card-details`);
   };
 
   const handleInputChange = (e) => {
@@ -194,38 +201,43 @@ const JobCardPage = () => {
 
   return (
     <div className="flex flex-col p-8 bg-gray-50 min-h-screen overflow-x-hidden">
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex  items-center gap-4 mb-4">
         <Button onClick={() => router.back()} className="bg-black text-white">
           <ArrowLeft className="mr-2" />
         </Button>
         <div className="flex items-center justify-between w-full border-black ml-10 gap-4">
-
-        <div>
-          <input
-            type="text"
-            value={searchInput}
-            onChange={handleSearchChange}
-            className="border-[1px] mr-4 border-black p-2  rounded"
-            placeholder="Mobile No/Bike No"
-          />
-          <Button
-            onClick={handleSearchSubmit}
-            className="bg-blue-500 text-white w-28 "
-          >
-            Enter
-          </Button>
-        </div>
-        <div>
-          <Button
-            onClick={handleAddCardClick}
-            className="bg-green-500  text-white hover:bg-black hover:border-black hover:text-white"
-          >
-            <Plus className="mr-2" /> Add Customer  
-          </Button>
-        </div>
+          <div>
+            <input
+              type="text"
+              value={searchInput}
+              onChange={handleSearchChange}
+              className="border-[1px] mr-4 border-black p-2  rounded"
+              placeholder="Mobile No/Bike No"
+            />
+            <Button
+              onClick={handleSearchSubmit}
+              className="bg-blue-500 text-white w-28 "
+            >
+              Enter
+            </Button>
+          </div>
+          <div>
+            <Button
+              onClick={handleAddCardClick}
+              className="bg-green-500 mr-2 text-white hover:bg-black hover:border-black hover:text-white"
+            >
+              <Plus className="mr-2" /> Add Customer
+            </Button>
+            <Button
+              onClick={handleAddJobCardClick}
+              className="bg-green-500  text-white hover:bg-black hover:border-black hover:text-white"
+            >
+              <Plus className="mr-2" /> Add Job Card
+            </Button>
+          </div>
         </div>
       </div>
-      <div className="content w-full overflow-x-auto">
+      <div className="content w-full  overflow-x-auto">
         <JobCardTable jobCards={searchResults} onDelete={handleDelete} />
       </div>
 
@@ -237,59 +249,10 @@ const JobCardPage = () => {
           transition={{ duration: 0.3, ease: "easeIn" }}
         >
           <div className="bg-white p-8 rounded-lg shadow-lg w-4/5 max-w-4xl">
-            <h2 className="text-2xl font-semibold mb-4 text-center">Add Customer </h2>
-            <div className="grid grid-cols-2 gap-4">
-              <h3 className="col-span-2 text-xl font-semibold">Add Vehicle Details</h3>
-              <input
-                type="text"
-                name="brand"
-                value={newJobCard.brand}
-                onChange={handleInputChange}
-                className="border p-2 rounded"
-                placeholder="Brand"
-              />
-                <input
-                  type="text"
-                  name="modelNo"
-                  value={newJobCard.modelNo}
-                  onChange={handleInputChange}
-                  className="border p-2 rounded"
-                  placeholder="Model No"
-                />
-              <input
-                type="text"
-                name="yearOfManufacture"
-                value={newJobCard.yearOfManufacture}
-                onChange={handleInputChange}
-                className="border p-2 rounded"
-                placeholder="Year of Manufacture"
-              />
-              {/* <input
-                type="text"
-                name="vehicleName"
-                value={newJobCard.vehicleName}
-                onChange={handleInputChange}
-                className="border p-2 rounded"
-                placeholder="Vehicle Name"
-              /> */}
-              <input
-                type="text"
-                name="engineNo"
-                value={newJobCard.engineNo}
-                onChange={handleInputChange}
-                className="border p-2 rounded"
-                placeholder="Engine No"
-              />
-              <input
-                type="text"
-                name="chassisNo"
-                value={newJobCard.chassisNo}
-                onChange={handleInputChange}
-                className="border p-2 rounded"
-                placeholder="Chassis No"
-              />
-
-              <h3 className="col-span-2 text-xl font-semibold mt-4">Add User Details</h3>
+            <div className="grid grid-cols-2 gap-5">
+              <h3 className="col-span-2 text-xl font-semibold mt-4 text-center">
+                Add Customer Details
+              </h3>
               <input
                 type="text"
                 name="name"
@@ -322,14 +285,49 @@ const JobCardPage = () => {
                 className="border p-2 rounded"
                 placeholder="Email"
               />
-              <div className="col-span-2">
-                <label className="text-sm text-gray-500">Job Card Date</label>
-                <Calendar
-                  selected={newJobCard.jobCardDate}
-                  onChange={(date) => handleDateChange("jobCardDate", date)}
-                  className="border p-2 rounded w-full"
-                />
-              </div>
+              <h3 className="col-span-2 text-xl font-semibold mt-4 text-center">
+                Add Vehicle Details
+              </h3>
+              <input
+                type="text"
+                name="brand"
+                value={newJobCard.brand}
+                onChange={handleInputChange}
+                className="border p-2 rounded"
+                placeholder="Brand"
+              />
+              <input
+                type="text"
+                name="modelNo"
+                value={newJobCard.modelNo}
+                onChange={handleInputChange}
+                className="border p-2 rounded"
+                placeholder="Model No"
+              />
+              <input
+                type="text"
+                name="yearOfManufacture"
+                value={newJobCard.yearOfManufacture}
+                onChange={handleInputChange}
+                className="border p-2 rounded"
+                placeholder="Year of Manufacture"
+              />
+              <input
+                type="text"
+                name="engineNo"
+                value={newJobCard.engineNo}
+                onChange={handleInputChange}
+                className="border p-2 rounded"
+                placeholder="Engine No"
+              />
+              <input
+                type="text"
+                name="chassisNo"
+                value={newJobCard.chassisNo}
+                onChange={handleInputChange}
+                className="border p-2 rounded"
+                placeholder="Chassis No"
+              />
             </div>
             <div className="flex justify-end mt-4">
               <Button
