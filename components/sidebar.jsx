@@ -113,7 +113,8 @@ const Sidebar = () => {
     if (sidebar === "expenses") {
       setIsExpensesOpen(!isExpensesOpen);
       setIsMasterOpen(false);
-    } else if (sidebar === "master") {
+    } 
+    if (sidebar === "master") {
       setIsMasterOpen(!isMasterOpen);
       setIsExpensesOpen(false);
     }
@@ -335,8 +336,9 @@ const Sidebar = () => {
                 currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
               }`}
             >
+              
               <button
-                className="block w-full text-left p-2 rounded hover:bg-gray-700"
+                className="block w-full text-left rounded hover:bg-gray-700"
                 onClick={() => toggleSubSidebar("master")}
               >
                 <span className="flex items-center justify-between ">
@@ -345,13 +347,13 @@ const Sidebar = () => {
               </button>
               {isMasterOpen && (
                 <ul className="pl-4 space-y-2">
-                  <li className={`block p-2 rounded ${currentPage === "vouchers" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
-                    <Link href={`/brands/${currentBrand}/locations/${locationName}/expenses/products`}>
+                  <li className={`block p-2 rounded ${currentPage === "product" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
+                    <Link href={`/brands/${currentBrand}/locations/${locationName}/master/product`}>
                       Products
                     </Link>
                   </li>
-                  <li className={`block p-2 rounded ${currentPage === "marketing" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
-                    <Link href={`/brands/${currentBrand}/locations/${locationName}/expenses/customer`}>
+                  <li className={`block p-2 rounded ${currentPage === "customer" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
+                    <Link href={`/brands/${currentBrand}/locations/${locationName}/master/customer`}>
                       Customer
                     </Link>
                   </li>

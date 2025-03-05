@@ -1,12 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
+import Link from "next/link";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, Edit, Trash } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import JobCardDetails from "./job-card-details/page";
-import Calendar from "@/components/ui/CalendarComponent"; // Import Calendar component
 uuidv4();
 
 const Table = ({ children, className }) => (
@@ -42,7 +43,11 @@ const JobCardTable = ({ jobCards, onDelete }) => {
     "Actions",
   ];
 
-  const MotionTableRow = motion(TableRow);
+  const MotionTableRow = motion.create(TableRow);
+
+  const pathname = usePathname();
+  const brandName = pathname.split("/")[2];
+  const locationName = pathname.split("/")[4];
 
   return (
     <div className="overflow-x-auto w-full">
@@ -50,7 +55,7 @@ const JobCardTable = ({ jobCards, onDelete }) => {
         <TableHeader>
           <TableRow className="bg-gray-200 w-full">
             {tableHeaders.map((header, index) => (
-              <TableHead key={index} className="py-2 px-4 border-b  font-bold">
+              <TableHead key={index} className="py-2 px-4 border-b font-bold">
                 {header}
               </TableHead>
             ))}
@@ -65,21 +70,28 @@ const JobCardTable = ({ jobCards, onDelete }) => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <TableCell className="py-2 px-4 border-b">{index + 1}</TableCell>
-              <TableCell className="py-2 px-4 border-b">
-                {jobCard.jobCardNumber}
+              <TableCell className="py-2 text-center px-4 border-b">
+                {index + 1}
               </TableCell>
-              <TableCell className="py-2 px-4 border-b">
-                {jobCard.servicedDate}
+              <TableCell className="py-2 text-center px-4 border-b">
+                <Link
+                  href={`/brands/${brandName}/locations/${locationName}/job-card/${jobCard.code}`}
+                  passHref
+                >
+                  {jobCard.code || "N/A"}
+                </Link>
               </TableCell>
-              <TableCell className="py-2 px-4 border-b">
-                {jobCard.lastTimeKilometer}
+              <TableCell className="py-2 text-center px-4 border-b">
+                {jobCard.servicedDate || "N/A"}
               </TableCell>
-              <TableCell className="py-2 px-4 border-b">
-                {jobCard.jobCardType}
+              <TableCell className="py-2 text-center px-4 border-b">
+                {jobCard.generalDetails.kmReading || "N/A"}
               </TableCell>
-              <TableCell className="py-2 px-4 border-b">
-                {jobCard.totalAmount}
+              <TableCell className="py-2 text-center px-4 border-b">
+                {jobCard.jobCardType.name || "N/A"}
+              </TableCell>
+              <TableCell className="py-2 text-center  px-4 border-b">
+                {jobCard.totalAmount || "N/A"}
               </TableCell>
               <TableCell className="py-2 px-4 border-b flex gap-2">
                 <Button variant="outline" size="icon">
@@ -103,6 +115,7 @@ const JobCardTable = ({ jobCards, onDelete }) => {
 
 const JobCardPage = () => {
   const [jobCards, setJobCards] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
   const [showInput, setShowInput] = useState(false);
   const [newJobCard, setNewJobCard] = useState({
     jobCardNumber: "",
@@ -122,20 +135,21 @@ const JobCardPage = () => {
     totalAmount: "",
   });
   const [searchInput, setSearchInput] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const someParam = searchParams.get("someParam");
-  console.log("someParam:", someParam);
+  // const someParam = searchParams.get("someParam");
+  // console.log("someParam:", someParam);
 
-  const brandName = searchParams.get("brandName") || "defaultBrand"; // Define brandName with a fallback
-  const locationName = searchParams.get("locationName") || "defaultLocation"; // Define locationName with a fallback
+  const brandName = searchParams.get("brandName") || "defaultBrand";
+  const locationName = searchParams.get("locationName");
 
   useEffect(() => {
     const fetchJobCards = async () => {
-      const response = await fetch("/api/job-cards");
-      const data = await response.json();
+      const data = await getAllJobCards();
       setJobCards(data);
+      // Optionally, initialize searchResults with all job cards:
+      setSearchResults(data);
+      // console.log(data);
     };
 
     fetchJobCards();
@@ -144,8 +158,11 @@ const JobCardPage = () => {
   const handleAddCardClick = () => {
     setShowInput(true);
   };
+
   const handleAddJobCardClick = () => {
-    router.push(`/brands/${brandName}/locations/${locationName}/job-card/job-card-details`);
+    router.push(
+      `/brands/${brandName}/locations/${locationName}/job-card/job-card-details`
+    );
   };
 
   const handleInputChange = (e) => {
@@ -156,11 +173,30 @@ const JobCardPage = () => {
     }));
   };
 
-  const handleDateChange = (name, date) => {
-    setNewJobCard((prev) => ({
-      ...prev,
-      [name]: date,
-    }));
+  const getAllJobCards = async () => {
+    try {
+      let page = 1;
+      const pageSize = 25;
+      let allJobCards = [];
+      let hasMore = true;
+
+      while (hasMore) {
+        const response = await axios.get(
+          `http://3.7.2.124:5000/api/job-card?page=${page}&pageSize=${pageSize}`
+        );
+        const fetchedJobCards = response.data.data;
+        if (fetchedJobCards && fetchedJobCards.length > 0) {
+          allJobCards = allJobCards.concat(fetchedJobCards);
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+      console.log(allJobCards);
+      return allJobCards;
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleInputSave = async () => {
@@ -175,6 +211,7 @@ const JobCardPage = () => {
     if (response.ok) {
       const newCard = await response.json();
       setJobCards([...jobCards, newCard]);
+      setSearchResults([...jobCards, newCard]);
       setShowInput(false);
     } else {
       console.error("Failed to save job card");
@@ -196,12 +233,16 @@ const JobCardPage = () => {
   };
 
   const handleDelete = (index) => {
+    // Adjust deletion from searchResults if needed.
     setSearchResults((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Determine which job cards to display: if searchResults is empty, fallback to jobCards.
+  const displayedJobCards = searchResults.length ? searchResults : jobCards;
+
   return (
     <div className="flex flex-col p-8 bg-gray-50 min-h-screen overflow-x-hidden">
-      <div className="flex  items-center gap-4 mb-4">
+      <div className="flex items-center gap-4 mb-4">
         <Button onClick={() => router.back()} className="bg-black text-white">
           <ArrowLeft className="mr-2" />
         </Button>
@@ -211,12 +252,12 @@ const JobCardPage = () => {
               type="text"
               value={searchInput}
               onChange={handleSearchChange}
-              className="border-[1px] mr-4 border-black p-2  rounded"
+              className="border-[1px] mr-4 border-black p-2 rounded"
               placeholder="Mobile No/Bike No"
             />
             <Button
               onClick={handleSearchSubmit}
-              className="bg-blue-500 text-white w-28 "
+              className="bg-blue-500 text-white w-28"
             >
               Enter
             </Button>
@@ -230,17 +271,16 @@ const JobCardPage = () => {
             </Button>
             <Button
               onClick={handleAddJobCardClick}
-              className="bg-green-500  text-white hover:bg-black hover:border-black hover:text-white"
+              className="bg-green-500 text-white hover:bg-black hover:border-black hover:text-white"
             >
-              <Plus className="mr-2" /> Add Job Card
+              <Plus className="mr-2" /> Create Job Card
             </Button>
           </div>
         </div>
       </div>
-      <div className="content w-full  overflow-x-auto">
-        <JobCardTable jobCards={searchResults} onDelete={handleDelete} />
+      <div className="content w-full overflow-x-auto">
+        <JobCardTable jobCards={displayedJobCards} onDelete={handleDelete} />
       </div>
-
       {showInput && (
         <motion.div
           className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
