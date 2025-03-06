@@ -23,6 +23,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import TruncatedText from "@/components/TruncatedText";
 
 const EmployeesPage = () => {
   const router = useRouter();
@@ -44,7 +45,7 @@ const EmployeesPage = () => {
 
     const mockEmployees = [
       {
-        employeeID: `EMP-${generateRandomNumber(1, 99)}`,
+        employeeID: `${generateRandomNumber(1, 99)}`,
         role: "Manager",
         name: PickAName(),
         mobileNo: generateRandomNumber(9000000000, 9999999999),
@@ -57,7 +58,7 @@ const EmployeesPage = () => {
         salary: `₹${generateRandomNumber(30, 35)},000`,
       },
       {
-        employeeID: `EMP-${generateRandomNumber(1, 99)}`,
+        employeeID: `${generateRandomNumber(1, 99)}`,
         role: "Manager",
         name: PickAName(),
         mobileNo: generateRandomNumber(9000000000, 9999999999),
@@ -70,7 +71,7 @@ const EmployeesPage = () => {
         salary: `₹${generateRandomNumber(30, 35)},000`,
       },
       {
-        employeeID: `EMP-${generateRandomNumber(1, 99)}`,
+        employeeID: `${generateRandomNumber(1, 99)}`,
         role: "Sales Person",
         name: PickAName(),
         mobileNo: generateRandomNumber(9000000000, 9999999999),
@@ -83,7 +84,7 @@ const EmployeesPage = () => {
         salary: `₹${generateRandomNumber(30, 35)},000`,
       },
       {
-        employeeID: `EMP-${generateRandomNumber(1, 99)}`,
+        employeeID: `${generateRandomNumber(1, 99)}`,
         role: "Sales Person",
         name: PickAName(),
         mobileNo: generateRandomNumber(9000000000, 9999999999),
@@ -147,7 +148,7 @@ const EmployeesPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:px-4 lg:py-6">
+    <div className="p-4 md:p-6 lg:px-4 lg:py-6  max-w-6xl">
       <div className="flex items-center mb-4">
         <button
           onClick={() => router.back()}
@@ -210,10 +211,10 @@ const EmployeesPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm  font-medium text-gray-700">
                   Email
                 </label>
-                <Input type="text" name="email" className="mt-1 block w-full" />
+                <Input type="text" name="email" className="mt-1  block w-full" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -289,49 +290,57 @@ const EmployeesPage = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableCell>Employee ID</TableCell>
-            <TableCell>Role</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Mobile No.</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Department</TableCell>
-            <TableCell>Designations</TableCell>
+            <TableCell className="text-center font-bold">EmpID</TableCell>
+            <TableCell className="text-center font-bold">Role</TableCell>
+            <TableCell className="text-center font-bold">Name</TableCell>
+            <TableCell className="text-center font-bold">Mobile No.</TableCell>
+            <TableCell className="text-center font-bold ">Email</TableCell>
+            {/* <TableCell className="text-center font-bold">Status</TableCell> */}
+            <TableCell className="text-center font-bold">Department</TableCell>
+            <TableCell className="text-center font-bold">Designations</TableCell>
             <TableCell onClick={() => requestSort("targets")}>
-              <span className="ml-2 flex items-center gap-2">
+              <span className="ml-2 flex text-center font-bold gap-2">
                 Targets
                 <ArrowDownUp className="size-4" />
               </span>
             </TableCell>
             <TableCell onClick={() => requestSort("achieved")}>
-              <span className="ml-2 flex items-center gap-2">
+              <span className="ml-2 flex items-center gap-2 font-bold">
                 Achieved
                 <ArrowDownUp className="size-4" />
               </span>
             </TableCell>
             <TableCell onClick={() => requestSort("salary")}>
-              <span className="ml-2 flex items-center gap-2">
-                Salary
+              <span className="ml-2 flex text-center font-bold gap-2">
+                Salary 
                 <ArrowDownUp className="size-4" />
               </span>
             </TableCell>
-            <TableCell>Actions</TableCell>
+            <TableCell className="text-center font-bold">Actions</TableCell>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sortedData.map((item, index) => (
             <TableRow key={index}>
-              <TableCell>{item.employeeID}</TableCell>
-              <TableCell>{item.role}</TableCell>
-              <TableCell>{item.name}</TableCell>
-              <TableCell>{item.mobileNo}</TableCell>
-              <TableCell>{item.email}</TableCell>
-              <TableCell>{item.status}</TableCell>
-              <TableCell>{item.department}</TableCell>
-              <TableCell>{item.designations}</TableCell>
-              <TableCell>{item.targets}</TableCell>
-              <TableCell>{item.achieved}</TableCell>
-              <TableCell>{item.salary}</TableCell>
+              <TableCell className="text-center"  >{item.employeeID}</TableCell>
+              <TableCell className="text-center">
+                <TruncatedText text={item.role} width="150px" />
+              </TableCell  >
+              <TableCell className="text-center">
+                <TruncatedText text={item.name} width="150px" />
+              </TableCell>
+              <TableCell className="text-center ">{item.mobileNo}</TableCell>
+              <TableCell className="text-center">
+                <TruncatedText text={item.email} width="190px" />
+              </TableCell>
+              {/* <TableCell>{item.status}</TableCell> */}
+              <TableCell className="text-center">{item.department}</TableCell>
+              <TableCell className="text-center">
+                <TruncatedText text={item.designations} width="150px" />
+              </TableCell>
+              <TableCell className="text-center">{item.targets}</TableCell>
+              <TableCell className="text-center">{item.achieved}</TableCell>
+              <TableCell className="text-center">{item.salary}</TableCell>
               <TableCell>
                 <Button
                   variant="outline"
@@ -361,7 +370,7 @@ const EmployeesPage = () => {
             </DialogHeader>
             <form className="space-y-4" onSubmit={handleEditSubmit}>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm  font-medium text-gray-700">
                   Employee ID
                 </label>
                 <Input
@@ -416,7 +425,7 @@ const EmployeesPage = () => {
                   className="mt-1 block w-full"
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Status
                 </label>
@@ -426,7 +435,7 @@ const EmployeesPage = () => {
                   defaultValue={currentEmployee.status}
                   className="mt-1 block w-full"
                 />
-              </div>
+              </div> */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Department

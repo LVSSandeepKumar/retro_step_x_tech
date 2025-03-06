@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, Edit, Trash } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import JobCardDetails from "./job-card-details/page";
+import Pagination from "../../../../../../components/ui/Pagination";
 uuidv4();
 
 const Table = ({ children, className }) => (
@@ -32,7 +33,7 @@ const TableCell = ({ children, className }) => (
   <td className={className}>{children}</td>
 );
 
-const JobCardTable = ({ jobCards, onDelete }) => {
+const JobCardTable = ({ jobCards, currentPosts,onDelete,postsPerPage,setCurrentPage,currentPage }) => {
   const tableHeaders = [
     "Sr No",
     "Job Card No",
@@ -62,7 +63,7 @@ const JobCardTable = ({ jobCards, onDelete }) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {jobCards.map((jobCard, index) => (
+          {currentPosts.map((jobCard, index) => (
             <MotionTableRow
               key={index}
               className="hover:bg-gray-100"
@@ -85,7 +86,7 @@ const JobCardTable = ({ jobCards, onDelete }) => {
                 {jobCard.servicedDate || "N/A"}
               </TableCell>
               <TableCell className="py-2 text-center px-4 border-b">
-                {jobCard.generalDetails.kmReading || "N/A"}
+                {jobCard.generalDetails?.kmReading || "N/A"}
               </TableCell>
               <TableCell className="py-2 text-center px-4 border-b">
                 {jobCard.jobCardType.name || "N/A"}
@@ -109,6 +110,7 @@ const JobCardTable = ({ jobCards, onDelete }) => {
           ))}
         </TableBody>
       </Table>
+      <Pagination totalPosts={jobCards.length} postsPerPage={postsPerPage} setCurrentPage={setCurrentPage} currentPage={currentPage} />
     </div>
   );
 };
@@ -116,7 +118,10 @@ const JobCardTable = ({ jobCards, onDelete }) => {
 const JobCardPage = () => {
   const [jobCards, setJobCards] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-  const [showInput, setShowInput] = useState(false);
+  const [showInput, setShowInput] = useState(false);  
+  const [currentPage, setCurrentPage] = useState(1)
+  const [postsPerPage, setPostsPerPage] = useState(10);
+  
   const [newJobCard, setNewJobCard] = useState({
     jobCardNumber: "",
     regNo: "",
@@ -136,10 +141,12 @@ const JobCardPage = () => {
   });
   const [searchInput, setSearchInput] = useState("");
   const router = useRouter();
+  
+  const lastPostIndex = currentPage * postsPerPage
+  const firstPostIndex = lastPostIndex - postsPerPage
+  const currentPosts = jobCards.slice(firstPostIndex, lastPostIndex)
+  
   const searchParams = useSearchParams();
-  // const someParam = searchParams.get("someParam");
-  // console.log("someParam:", someParam);
-
   const brandName = searchParams.get("brandName") || "defaultBrand";
   const locationName = searchParams.get("locationName");
 
@@ -244,7 +251,7 @@ const JobCardPage = () => {
     <div className="flex flex-col p-8 bg-gray-50 min-h-screen overflow-x-hidden">
       <div className="flex items-center gap-4 mb-4">
         <Button onClick={() => router.back()} className="bg-black text-white">
-          <ArrowLeft className="mr-2" />
+          <ArrowLeft className="" />
         </Button>
         <div className="flex items-center justify-between w-full border-black ml-10 gap-4">
           <div>
@@ -257,21 +264,22 @@ const JobCardPage = () => {
             />
             <Button
               onClick={handleSearchSubmit}
-              className="bg-blue-500 text-white w-28"
+              className = "px-6"
             >
               Enter
+              
             </Button>
           </div>
           <div>
             <Button
               onClick={handleAddCardClick}
-              className="bg-green-500 mr-2 text-white hover:bg-black hover:border-black hover:text-white"
+              className="p-4 m-2"
             >
               <Plus className="mr-2" /> Add Customer
             </Button>
             <Button
               onClick={handleAddJobCardClick}
-              className="bg-green-500 text-white hover:bg-black hover:border-black hover:text-white"
+              className="p-4 "
             >
               <Plus className="mr-2" /> Create Job Card
             </Button>
@@ -279,7 +287,7 @@ const JobCardPage = () => {
         </div>
       </div>
       <div className="content w-full overflow-x-auto">
-        <JobCardTable jobCards={displayedJobCards} onDelete={handleDelete} />
+        <JobCardTable jobCards={displayedJobCards} currentPosts={currentPosts} setCurrentPage={setCurrentPage} postsPerPage={postsPerPage} currentPage={currentPage} onDelete={handleDelete} />
       </div>
       {showInput && (
         <motion.div
