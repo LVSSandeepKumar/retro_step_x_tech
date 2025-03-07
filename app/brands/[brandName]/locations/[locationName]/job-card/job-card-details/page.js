@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState, memo } from "react";
 import axios from "axios";
 import set from "lodash.set";
@@ -6,7 +7,19 @@ import PieCharts from "../_components/PieChart";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
-
+// updateNestedData: updates the nested field using lodash.set.
+// Additionally, if the field updated is "missing" and its value is true,
+// it also clears the "scratches" and "damage" options.
+const updateNestedData = (data, path, value) => {
+  const newData = { ...data };
+  set(newData, path, value);
+  if (path.endsWith(".missing") && value === true) {
+    const parentPath = path.substring(0, path.lastIndexOf("."));
+    set(newData, `${parentPath}.scratches`, false);
+    set(newData, `${parentPath}.damage`, false);
+  }
+  return newData;
+};
 
 const OwnerDetailComponent = memo(
   ({
@@ -78,7 +91,6 @@ const OwnerDetailComponent = memo(
   )
 );
 
-
 const DealerInfo = memo(
   ({ editableData, originalData, handleInputChange, isEditing }) => (
     <div className="mt-10">
@@ -143,7 +155,6 @@ const DealerInfo = memo(
     </div>
   )
 );
-
 
 const CustomerDetails = memo(
   ({ editableData, originalData, handleInputChange }) => (
@@ -239,6 +250,7 @@ const CustomerDetails = memo(
   )
 );
 
+// Updated CheckBoxGroup: if "missing" is checked, disable "scratches" and "damage"
 const CheckBoxGroup = ({
   label,
   fieldPath,
@@ -247,6 +259,7 @@ const CheckBoxGroup = ({
 }) => {
   const groupData =
     editableData && editableData[fieldPath] ? editableData[fieldPath] : {};
+  const missingChecked = groupData.missing || false;
   return (
     <div className="mb-4">
       <p className="font-semibold">{label}</p>
@@ -257,6 +270,7 @@ const CheckBoxGroup = ({
             name={`${fieldPath}.scratches`}
             checked={groupData.scratches || false}
             onChange={handleCheckboxChange}
+            disabled={missingChecked}
           />{" "}
           Scratches
         </label>
@@ -266,6 +280,7 @@ const CheckBoxGroup = ({
             name={`${fieldPath}.damage`}
             checked={groupData.damage || false}
             onChange={handleCheckboxChange}
+            disabled={missingChecked}
           />{" "}
           Damage
         </label>

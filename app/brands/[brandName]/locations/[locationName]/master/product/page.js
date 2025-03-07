@@ -34,9 +34,7 @@ const ProductsPage = () => {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const response = await axios.get(
-          "http://192.168.0.5:5005/api/products"
-        );
+        const response = await axios.get("http://192.168.0.3:5005/api/products");
         const formattedProducts = response.data.data.map((prod) => ({
           ...prod,
           id: prod.id === null || prod.id === "" ? "N/A" : prod.id,
@@ -54,9 +52,7 @@ const ProductsPage = () => {
               : prod.locationId,
           moq: prod.moq === null || prod.moq === "" ? "N/A" : prod.moq,
           partName:
-            prod.partName === null || prod.partName === ""
-              ? "N/A"
-              : prod.partName,
+            prod.partName === null || prod.partName === "" ? "N/A" : prod.partName,
           availableInventory:
             prod.availableInventory === null || prod.availableInventory === ""
               ? "N/A"
@@ -95,10 +91,7 @@ const ProductsPage = () => {
   // Slice for pagination
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentProducts = sortedProducts.slice(
-    indexOfFirstPost,
-    indexOfLastPost
-  );
+  const currentProducts = sortedProducts.slice(indexOfFirstPost, indexOfLastPost);
 
   if (loading) {
     return (
@@ -122,9 +115,7 @@ const ProductsPage = () => {
           </Button>
           <h1 className="text-2xl font-semibold ml-2">Products</h1>
         </div>
-        <Button
-          onClick={() => router.push("./create-product")}
-          >
+        <Button onClick={() => router.push("./create-product")}>
           Create Product
         </Button>
       </div>
@@ -142,7 +133,9 @@ const ProductsPage = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableCell className="text-center font-bold">ID</TableCell>
+            {/* Add Sr. No column */}
+            <TableCell className="text-center font-bold">Sr. No</TableCell>
+            {/* <TableCell className="text-center font-bold">ID</TableCell> */}
             <TableCell className="text-center font-bold">Name</TableCell>
             <TableCell className="text-center font-bold">Code</TableCell>
             <TableCell className="text-center font-bold">HSN Code</TableCell>
@@ -159,49 +152,72 @@ const ProductsPage = () => {
         </TableHeader>
 
         <TableBody>
-          {currentProducts.map((product, index) => (
-            <TableRow key={index} className="hover:bg-gray-100">
-              <TableCell className="text-center">
-                <TruncatedText text={product.id} width="100px" />
-              </TableCell>
-              <TableCell className="text-left pl-6">
-                <TruncatedText text={product.name} width="150px" />
-              </TableCell>
-              <TableCell className="text-center">
-                <TruncatedText text={product.code} width="120px" />
-              </TableCell>
-              <TableCell className="text-center">
-                <TruncatedText text={product.hsnCode} width="120px" />
-              </TableCell>
-              <TableCell className="text-center">
-                <TruncatedText text={product.price} width="100px" />
-              </TableCell>
-              {/* <TableCell className="text-center">
-                <TruncatedText text={product.type} width="120px" />
-              </TableCell> */}
-              <TableCell className="text-center">
-                <TruncatedText text={product.brandId} width="100px" />
-              </TableCell>
-              <TableCell className="text-center">
-                <TruncatedText text={product.locationId} width="100px" />
-              </TableCell>
-              <TableCell className="text-center">
-                <TruncatedText text={product.moq} width="100px" />
-              </TableCell>
-              {/* <TableCell className="text-center">
-                <TruncatedText text={product.partName} width="150px" />
-              </TableCell> */}
-              <TableCell className="text-center">
-                <TruncatedText text={product.availableInventory} width="100px" />
-              </TableCell>
-              <TableCell className="text-center">
-                <TruncatedText text={product.sudoInventory} width="100px" />
-              </TableCell>
-              <TableCell className="text-center">
-                <TruncatedText text={product.uom} width="100px" />
-              </TableCell>
-            </TableRow>
-          ))}
+          {currentProducts.map((product, index) => {
+            // Calculate a global serial number that accounts for pagination
+            const serialNumber = indexOfFirstPost + index + 1;
+
+            // Apply striped row coloring: even vs. odd
+            // Even rows: white background, Odd rows: gray-50 background
+            const rowBg =
+              serialNumber % 2 === 0 ? "bg-gray-50" : "bg-white";
+
+            return (
+              <TableRow
+                key={product.id + "-" + index}
+                className={`${rowBg} hover:bg-gray-100`}
+              >
+                {/* Sr. No */}
+                <TableCell className="text-center">
+                  {serialNumber}
+                </TableCell>
+                {/* <TableCell className="text-center">
+                  <TruncatedText text={product.id} width="100px" />
+                </TableCell> */}
+                <TableCell className="text-left pl-6">
+                  <TruncatedText text={product.name} width="150px" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <TruncatedText text={product.code} width="120px" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <TruncatedText text={product.hsnCode} width="120px" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <TruncatedText text={product.price} width="100px" />
+                </TableCell>
+                {/* <TableCell className="text-center">
+                  <TruncatedText text={product.type} width="120px" />
+                </TableCell> */}
+                <TableCell className="text-center">
+                  <TruncatedText text={product.brandId} width="100px" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <TruncatedText text={product.locationId} width="100px" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <TruncatedText text={product.moq} width="100px" />
+                </TableCell>
+                {/* <TableCell className="text-center">
+                  <TruncatedText text={product.partName} width="150px" />
+                </TableCell> */}
+                <TableCell className="text-center">
+                  <TruncatedText
+                    text={product.availableInventory}
+                    width="100px"
+                  />
+                </TableCell>
+                <TableCell className="text-center">
+                  <TruncatedText
+                    text={product.sudoInventory}
+                    width="100px"
+                  />
+                </TableCell>
+                <TableCell className="text-center">
+                  <TruncatedText text={product.uom} width="100px" />
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
 

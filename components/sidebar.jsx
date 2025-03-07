@@ -226,7 +226,7 @@ const Sidebar = () => {
                   {filteredLocations.own.map((location) => (
                     <DropdownMenuItem key={location}>
                       <Link
-                        href={`/brands/${pickABrand()}/locations/${location}`}
+                        href={`/brands/${pickABrand()}/locations/${locationName}`}
                         className="w-full"
                       >
                         {location}
@@ -242,7 +242,7 @@ const Sidebar = () => {
                   {filteredLocations.sub.map((location) => (
                     <DropdownMenuItem key={location}>
                       <Link
-                        href={`/brands/${pickABrand()}/locations/${location}`}
+                        href={`/brands/${pickABrand()}/locations/${locationName}`}
                         className="w-full"
                       >
                         {location}

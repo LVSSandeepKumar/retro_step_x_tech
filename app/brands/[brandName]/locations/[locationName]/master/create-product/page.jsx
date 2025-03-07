@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,21 +12,23 @@ const CreateProduct = () => {
     name: "",
     code: "",
     hsnCode: "",
-    price: "",
+    price: 0,
     type: "",
     brandId: "",
     locationId: "",
-    moq: "",
+    moq: 0,
     uom: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // State for locations and toggling the dropdown for location field
+  // State for locations and toggling the dropdown for the location field
   const [locations, setLocations] = useState([]);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
-  // Define all fields with additional options if needed.
+  // Create a ref for the dropdown container
+  const dropdownRef = useRef(null);
+
   const fields = [
     { name: "name", label: "Name", required: true },
     { name: "code", label: "Code", required: true },
@@ -43,18 +45,16 @@ const CreateProduct = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Fetch locations when the location field is activated.
   const fetchLocations = async () => {
     try {
-      const response = await axios.get("http://192.168.0.5:5005/api/locations");
-      // Assume the API returns location details in response.data.data
+      const response = await axios.get("http://192.168.0.3:5002/api/locations");
       setLocations(response.data.data);
+      console.log("Locations fetched:", response.data.data);
     } catch (err) {
       console.error("Error fetching locations:", err);
     }
   };
 
-  // Basic validation for required fields and numeric values.
   const validateForm = () => {
     for (const field of fields) {
       const value = formData[field.name];
@@ -78,11 +78,11 @@ const CreateProduct = () => {
     setError(null);
     try {
       const response = await axios.post(
-        "http://192.168.0.5:5005/api/product",
+        "http://192.168.0.3:5005/api/product",
         formData
       );
       console.log("Product created:", response.data);
-      router.push("/products"); // Navigate back to the products list
+      // Optionally, redirect or reset form here if needed.
     } catch (err) {
       console.error("Error creating product:", err);
       setError("Error creating product. Please try again.");
@@ -91,10 +91,24 @@ const CreateProduct = () => {
     }
   };
 
-  // Find the selected location details to display its name.
+  // Find the selected location based on formData.locationId.
+  // We convert the location id from API to string for comparison.
   const selectedLocation = locations.find(
-    (loc) => loc.id === formData.locationId
+    (loc) => String(loc.id) === formData.locationId
   );
+
+  // Click outside handler for dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowLocationDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className="p-4 md:p-6 lg:px-4 lg:py-6 max-w-5xl mx-auto">
@@ -107,27 +121,7 @@ const CreateProduct = () => {
               {field.label}
             </label>
             {field.name === "locationId" ? (
-              showLocationDropdown ? (
-                <select
-                  name="locationId"
-                  value={formData.locationId}
-                  onChange={(e) => {
-                    handleChange(e);
-                    setShowLocationDropdown(false);
-                  }}
-                  onBlur={() => setShowLocationDropdown(false)}
-                  required={field.required}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                  size="5"
-                >
-                  <option value="">Select a location</option>
-                  {locations.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
+              <div className="relative" ref={dropdownRef}>
                 <Input
                   type="text"
                   name="locationId"
@@ -141,7 +135,28 @@ const CreateProduct = () => {
                   required={field.required}
                   className="mt-1 block w-full cursor-pointer"
                 />
-              )
+                {showLocationDropdown && (
+                  <select
+                    name="locationId"
+                    value={formData.locationId}
+                    onChange={(e) => {
+                      handleChange(e);
+                      setShowLocationDropdown(false);
+                    }}
+                    onBlur={() => setShowLocationDropdown(false)}
+                    required={field.required}
+                    className="absolute top-full left-0 mt-1 block w-full border border-gray-300 rounded-md p-2 bg-white z-10"
+                    size="5"
+                  >
+                    <option value="">Select a location</option>
+                    {locations.map((loc) => (
+                      <option key={loc.id} value={loc.id}>
+                        {loc.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
             ) : (
               <Input
                 type={field.type || "text"}
@@ -155,11 +170,7 @@ const CreateProduct = () => {
           </div>
         ))}
         <div className="col-span-3 flex justify-center">
-          <Button
-            type="submit"
-            disabled={loading}
-            className="mt-20"
-          >
+          <Button type="submit" disabled={loading} className="mt-4">
             {loading ? "Submitting..." : "Submit"}
           </Button>
         </div>

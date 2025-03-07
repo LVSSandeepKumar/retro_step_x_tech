@@ -120,7 +120,7 @@ const JobCardPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [showInput, setShowInput] = useState(false);  
   const [currentPage, setCurrentPage] = useState(1)
-  const [postsPerPage, setPostsPerPage] = useState(10);
+  const [postsPerPage, setPostsPerPage] = useState(25);
   
   const [newJobCard, setNewJobCard] = useState({
     jobCardNumber: "",
