@@ -158,7 +158,7 @@ const CreateProduct = () => {
           <Button
             type="submit"
             disabled={loading}
-            className="text-white items-center px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700"
+            className="mt-20"
           >
             {loading ? "Submitting..." : "Submit"}
           </Button>

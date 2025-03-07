@@ -39,11 +39,12 @@ const Sidebar = () => {
   const [isAddJobCardVisible, setIsAddJobCardVisible] = useState(false); // Add this state
 
   const { showLocationDetails, setShowLocationDetails } = useSidebarContext();
-  
+
   // Check if we're in a location route or deeper
   useEffect(() => {
-    const pathParts = pathname.split('/');
-    const isLocationRoute = pathParts.length >= 4 && pathParts[3] === 'locations';
+    const pathParts = pathname.split("/");
+    const isLocationRoute =
+      pathParts.length >= 4 && pathParts[3] === "locations";
     setShowLocationDetails(isLocationRoute);
   }, [pathname, setShowLocationDetails]);
 
@@ -113,7 +114,7 @@ const Sidebar = () => {
     if (sidebar === "expenses") {
       setIsExpensesOpen(!isExpensesOpen);
       setIsMasterOpen(false);
-    } 
+    }
     if (sidebar === "master") {
       setIsMasterOpen(!isMasterOpen);
       setIsExpensesOpen(false);
@@ -258,9 +259,7 @@ const Sidebar = () => {
       {/* sidebar content only from brand level and below */}
       {showLocationDetails && (
         <div className="flex flex-col gap-4 mt-6 border-t pt-6">
-          <h1 className="text-lg font-semibold">
-            {locationName} Details
-          </h1>
+          <h1 className="text-lg font-semibold">{locationName} Details</h1>
 
           <ul className="space-y-2">
             <li>
@@ -269,27 +268,51 @@ const Sidebar = () => {
                 onClick={() => toggleSubSidebar("expenses")}
               >
                 <span className="flex items-center justify-between gap-2">
-                  Expenses {isExpensesOpen ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                  Expenses{" "}
+                  {isExpensesOpen ? (
+                    <ArrowUp className="h-4 w-4" />
+                  ) : (
+                    <ArrowDown className="h-4 w-4" />
+                  )}
                 </span>
               </button>
               {isExpensesOpen && (
                 <ul className="pl-4 space-y-2">
-                  <li className={`block p-2 rounded ${currentPage === "vouchers" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
-                    <Link href={`/brands/${currentBrand}/locations/${locationName}/expenses/vouchers`}>
+                  <li
+                    className={`block p-2 rounded ${
+                      currentPage === "vouchers"
+                        ? "bg-gray-600"
+                        : "hover:bg-gray-700"
+                    }`}
+                  >
+                    <Link
+                      href={`/brands/${currentBrand}/locations/${locationName}/expenses/vouchers`}
+                    >
                       Vouchers
                     </Link>
                   </li>
-                  <li className={`block p-2 rounded ${currentPage === "marketing" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
-                    <Link href={`/brands/${currentBrand}/locations/${locationName}/expenses/marketing`}>
+                  <li
+                    className={`block p-2 rounded ${
+                      currentPage === "marketing"
+                        ? "bg-gray-600"
+                        : "hover:bg-gray-700"
+                    }`}
+                  >
+                    <Link
+                      href={`/brands/${currentBrand}/locations/${locationName}/expenses/marketing`}
+                    >
                       Marketing
                     </Link>
                   </li>
                 </ul>
               )}
             </li>
+
             <li
               className={`block p-2 rounded ${
-                currentPage === "employees" ? "bg-gray-600" : "hover:bg-gray-700"
+                currentPage === "employees"
+                  ? "bg-gray-600"
+                  : "hover:bg-gray-700"
               }`}
             >
               <Link
@@ -315,7 +338,7 @@ const Sidebar = () => {
               }`}
             >
               <Link
-                href={`/brands/${currentBrand}/locations/${locationName}/create-sale`}
+                href={`/brands/${currentBrand}/locations/${locationName}/create_sale`}
               >
                 Create Sale
               </Link>
@@ -331,43 +354,65 @@ const Sidebar = () => {
                 Job Card
               </Link>
             </li>
+
             <li
               className={`block p-2 rounded ${
                 currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
               }`}
             >
-              
-              <button
-                className="block w-full text-left rounded hover:bg-gray-700"
-                onClick={() => toggleSubSidebar("master")}
-              >
-                <span className="flex items-center justify-between ">
-                  Master {isMasterOpen ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-                </span>
-              </button>
-              {isMasterOpen && (
-                <ul className="pl-4 space-y-2">
-                  <li className={`block p-2 rounded ${currentPage === "product" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
-                    <Link href={`/brands/${currentBrand}/locations/${locationName}/master/product`}>
-                      Products
-                    </Link>
-                  </li>
-                  <li className={`block p-2 rounded ${currentPage === "customer" ? "bg-gray-600" : "hover:bg-gray-700"}`}>
-                    <Link href={`/brands/${currentBrand}/locations/${locationName}/master/customer`}>
-                      Customer
-                    </Link>
-                  </li>
-                </ul>
-              )}
+              <ul className="space-y-2">
+                <button
+                  className="block w-full text-left  rounded hover:bg-gray-700"
+                  onClick={() => toggleSubSidebar("master")}
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    Master{" "}
+                    {isMasterOpen ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )}
+                  </span>
+                </button>
+                {isMasterOpen && (
+                  <ul className="pl-4 space-y-2">
+                    <li
+                      className={`block p-2 rounded ${
+                        currentPage === "product"
+                          ? "bg-gray-600"
+                          : "hover:bg-gray-700"
+                      }`}
+                    >
+                      <Link
+                        href={`/brands/${currentBrand}/locations/${locationName}/master/product`}
+                      >
+                        Products
+                      </Link>
+                    </li>
+                    <li
+                      className={`block p-2 rounded ${
+                        currentPage === "customer"
+                          ? "bg-gray-600"
+                          : "hover:bg-gray-700"
+                      }`}
+                    >
+                      <Link
+                        href={`/brands/${currentBrand}/locations/${locationName}/master/customer`}
+                      >
+                        Customer
+                      </Link>
+                    </li>
+                  </ul>
+                )}
+              </ul>
             </li>
+
             <li
               className={`block p-2 rounded ${
                 currentPage === "visits" ? "bg-gray-600" : "hover:bg-gray-700"
               }`}
             >
-              <Link href="/OSJ">
-                OSJ
-              </Link>
+              <Link href="/OSJ">OSJ</Link>
             </li>
           </ul>
         </div>
@@ -375,7 +420,10 @@ const Sidebar = () => {
 
       {isAddJobCardVisible && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-          <AddJobCardPage onSave={handleSaveJobCard} onCancel={handleCancelJobCard} />
+          <AddJobCardPage
+            onSave={handleSaveJobCard}
+            onCancel={handleCancelJobCard}
+          />
         </div>
       )}
     </div>

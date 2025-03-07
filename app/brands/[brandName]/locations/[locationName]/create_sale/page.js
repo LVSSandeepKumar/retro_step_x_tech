@@ -802,7 +802,7 @@ const CreateSalePage = () => {
   const [selectedProvider, setSelectedProvider] = useState("");
 
   return (
-    <div className="p-4 md:p-6 lg:px-4 lg:py-6">
+    <div className="p-4 md:p-6 lg:px-4 lg:py-6 lg:max-w-5xl">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-4">
           <button
