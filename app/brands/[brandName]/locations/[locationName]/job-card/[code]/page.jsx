@@ -21,10 +21,11 @@ function SingleJobCardDetails({ initialJobCard }) {
 
   const fetchJobCard = async (code) => {
     try {
-      const response = await axios.get(`http://3.7.2.124:5000/api/job-card`, {
+      const response = await axios.get(`http://192.168.0.5:5000/api/job-card/code`, {
         headers: { "Content-Type": "application/json" },
       });
       setJobCard(response.data);
+      console.log("Job card details data:- ",response.data);
     } catch (error) {
       console.error("Error:", error);
     }

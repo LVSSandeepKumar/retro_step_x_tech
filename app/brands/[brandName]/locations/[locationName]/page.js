@@ -2,9 +2,7 @@
 
 import BestSellingProductsTable from "@/app/brands/[brandName]/locations/[locationName]/_components/BestSellingProductsTable";
 import InventoryOverviewCard from "@/app/brands/[brandName]/locations/[locationName]/_components/InventoryOverviewCard";
-import {
-  Dialog
-} from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -29,7 +27,11 @@ import { ExpensesDivisionChart } from "@/app/_components/ExpensesDivisionChart";
 import ExpensesVsCollectionsChart from "@/app/_components/ExpensesVsCollectionsChart";
 import FinanceSummary from "@/app/_components/FinanceSummaryCard";
 import VerifiedUnverifiedChart from "@/app/_components/VerifiedUnverifiedChart";
-import { BRANDS, OTHER_TYPES, SERVICE_TYPES } from '@/app/_constants/chartConstants';
+import {
+  BRANDS,
+  OTHER_TYPES,
+  SERVICE_TYPES,
+} from "@/app/_constants/chartConstants";
 import DeliveryCard from "./_components/DeliveryBikes";
 
 const PERIODS = {
@@ -43,14 +45,14 @@ const AMOUNT_RANGES = {
   YESTERDAY: { min: 10000, max: 100000 },
   WEEKLY: { min: 100001, max: 1000000 },
   MONTHLY: { min: 1000001, max: 10000000 },
-  YTD: { min: 10000001, max: 100000000 }
+  YTD: { min: 10000001, max: 100000000 },
 };
 
 const COUNT_RANGES = {
   YESTERDAY: { min: 1, max: 10 },
   WEEKLY: { min: 11, max: 100 },
   MONTHLY: { min: 101, max: 1000 },
-  YTD: { min: 1001, max: 2000 }
+  YTD: { min: 1001, max: 2000 },
 };
 
 const generateRandomLocationData = () => {
@@ -117,10 +119,14 @@ const generateRandomLocationData = () => {
 const generatePeriodData = (period) => {
   const amountRange = AMOUNT_RANGES[period];
   const countRange = COUNT_RANGES[period];
-  
-  const baseSales = Math.floor(Math.random() * (amountRange.max - amountRange.min)) + amountRange.min;
-  const baseCount = Math.floor(Math.random() * (countRange.max - countRange.min)) + countRange.min;
-  
+
+  const baseSales =
+    Math.floor(Math.random() * (amountRange.max - amountRange.min)) +
+    amountRange.min;
+  const baseCount =
+    Math.floor(Math.random() * (countRange.max - countRange.min)) +
+    countRange.min;
+
   return {
     period,
     sales: baseSales,
@@ -129,8 +135,8 @@ const generatePeriodData = (period) => {
     counts: {
       sales: baseCount,
       services: Math.round(baseCount * 1.1),
-      others: Math.round(baseCount * 2.2)
-    }
+      others: Math.round(baseCount * 2.2),
+    },
   };
 };
 
@@ -143,25 +149,25 @@ const INITIAL_PERIOD_VALUES = {
     counts: {
       sales: 5,
       services: 6,
-      others: 11
-    }
-  }
+      others: 11,
+    },
+  },
 };
 
 const INITIAL_FINANCE_VALUES = {
   period: "YESTERDAY",
   cash: 200000,
   upi: 160000,
-  expenses: 288000
+  expenses: 288000,
 };
 
 const INITIAL_EXPENSES_DATA = {
-  'Salaries': 60000,
-  'OSJ': 48000,
-  'Electricity Charges': 36000,
-  'Other Expenses': 24000,
-  'Branch Maintenance': 18000,
-  'Transportation Charges': 12000
+  Salaries: 60000,
+  OSJ: 48000,
+  "Electricity Charges": 36000,
+  "Other Expenses": 24000,
+  "Branch Maintenance": 18000,
+  "Transportation Charges": 12000,
 };
 
 const LocationPage = () => {
@@ -179,7 +185,9 @@ const LocationPage = () => {
   const [expensesData, setExpensesData] = useState(INITIAL_EXPENSES_DATA);
 
   // Add new state
-  const [revenueValues, setRevenueValues] = useState(INITIAL_PERIOD_VALUES.YESTERDAY);
+  const [revenueValues, setRevenueValues] = useState(
+    INITIAL_PERIOD_VALUES.YESTERDAY
+  );
 
   const inputFields = [
     { label: "Product Type", type: "text", name: "productType" },
@@ -201,13 +209,16 @@ const LocationPage = () => {
     const distributions = {
       sales: [0.4, 0.3, 0.2, 0.1],
       services: [0.4, 0.3, 0.2, 0.1],
-      others: [0.35, 0.3, 0.2, 0.15]
+      others: [0.35, 0.3, 0.2, 0.15],
     };
 
-    const items = type === "sales" ? BRANDS 
-                : type === "services" ? SERVICE_TYPES 
-                : OTHER_TYPES;
-    
+    const items =
+      type === "sales"
+        ? BRANDS
+        : type === "services"
+        ? SERVICE_TYPES
+        : OTHER_TYPES;
+
     const colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300"];
     const distribution = distributions[type];
 
@@ -216,13 +227,15 @@ const LocationPage = () => {
 
     return items.map((item, index) => {
       const ratio = distribution[index];
-      const value = index === items.length - 1 
-        ? remainingValue 
-        : Math.round(remainingValue * ratio);
-      
-      const count = index === items.length - 1
-        ? remainingCount
-        : Math.round(remainingCount * ratio);
+      const value =
+        index === items.length - 1
+          ? remainingValue
+          : Math.round(remainingValue * ratio);
+
+      const count =
+        index === items.length - 1
+          ? remainingCount
+          : Math.round(remainingCount * ratio);
 
       remainingValue -= value;
       remainingCount -= count;
@@ -239,12 +252,12 @@ const LocationPage = () => {
   const generateExpensesData = (totalExpenses) => {
     const baseAmount = totalExpenses * 0.3;
     return {
-      'Salaries': baseAmount,
-      'OSJ': baseAmount * 0.8,
-      'Electricity Charges': baseAmount * 0.6,
-      'Other Expenses': baseAmount * 0.4,
-      'Branch Maintenance': baseAmount * 0.3,
-      'Transportation Charges': baseAmount * 0.2
+      Salaries: baseAmount,
+      OSJ: baseAmount * 0.8,
+      "Electricity Charges": baseAmount * 0.6,
+      "Other Expenses": baseAmount * 0.4,
+      "Branch Maintenance": baseAmount * 0.3,
+      "Transportation Charges": baseAmount * 0.2,
     };
   };
 
@@ -252,12 +265,15 @@ const LocationPage = () => {
   const generateRevenueValues = (period) => {
     // Only generate new values if not using initial values
     if (period === "YESTERDAY" && !revenueValues.hasRandomized) {
-      setRevenueValues({ ...INITIAL_PERIOD_VALUES.YESTERDAY, hasRandomized: true });
+      setRevenueValues({
+        ...INITIAL_PERIOD_VALUES.YESTERDAY,
+        hasRandomized: true,
+      });
     } else {
       const newRevenueValues = generatePeriodData(period);
       setRevenueValues(newRevenueValues);
     }
-    
+
     // If there's a selected overview, update the details data
     if (selectedOverview) {
       const newDetailsData = generateDetailsData(
@@ -278,17 +294,17 @@ const LocationPage = () => {
       YESTERDAY: 1,
       WEEKLY: 10,
       MONTHLY: 100,
-      YTD: 1000
+      YTD: 1000,
     };
-    
+
     const baseValue = 200000 * multipliers[period];
     const newPeriodValues = {
       period,
       cash: baseValue,
       upi: Math.round(baseValue * 0.8),
-      expenses: Math.round(baseValue * 1.6 * 0.8)
+      expenses: Math.round(baseValue * 1.6 * 0.8),
     };
-    
+
     setPeriodValues(newPeriodValues);
     setExpensesData(generateExpensesData(newPeriodValues.expenses));
   };
@@ -299,12 +315,14 @@ const LocationPage = () => {
       const initialRevenue = generatePeriodData("YESTERDAY");
       setRevenueValues(initialRevenue);
       generateValuesForPeriod("YESTERDAY");
-      setDetailsData(generateDetailsData(
-        "YESTERDAY",
-        "sales",
-        initialRevenue.sales,
-        initialRevenue.counts.sales
-      ));
+      setDetailsData(
+        generateDetailsData(
+          "YESTERDAY",
+          "sales",
+          initialRevenue.sales,
+          initialRevenue.counts.sales
+        )
+      );
     }
   }, []);
 
@@ -398,10 +416,12 @@ const LocationPage = () => {
               <SelectionGrid
                 onCardSelect={handleCardSelect}
                 selectedCard="sales"
-                periodValues={revenueValues}  // Update this prop
+                periodValues={revenueValues} // Update this prop
               />
               <p className="text-sm text-red-500 font-semibold flex gap-2">
-                <span><Star className="text-black fill-yellow-500 border-black"/></span>
+                <span>
+                  <Star className="text-black fill-yellow-500 border-black" />
+                </span>
                 Click on the card to see more sales insights.
               </p>
             </div>
@@ -409,10 +429,12 @@ const LocationPage = () => {
               <SelectionGrid
                 onCardSelect={handleCardSelect}
                 selectedCard="services"
-                periodValues={revenueValues}  // Update this prop
+                periodValues={revenueValues} // Update this prop
               />
               <p className="text-sm text-red-500 font-semibold flex gap-2">
-                <span><Star className="text-black fill-yellow-500 border-black"/></span>
+                <span>
+                  <Star className="text-black fill-yellow-500 border-black" />
+                </span>
                 Click on the card to see more services insights.
               </p>
             </div>
@@ -421,19 +443,21 @@ const LocationPage = () => {
               <SelectionGrid
                 onCardSelect={handleCardSelect}
                 selectedCard="others"
-                periodValues={revenueValues}  // Update this prop
+                periodValues={revenueValues} // Update this prop
                 showLocationAnalysis={false}
               />
               <p className="text-sm text-red-500 font-semibold flex gap-2">
-                <span><Star className="text-black fill-yellow-500 border-black"/></span>
+                <span>
+                  <Star className="text-black fill-yellow-500 border-black" />
+                </span>
                 Click on the card to see more other insights.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            {/* <BestSalesPersonCard data={randomData?.bestSalesPerson} /> */}
-            <DeliveryCard  data={randomData?.serviceDivisions} />
+          {/* Replace your existing container with something like this: */}
+          <div className="grid grid-cols-1 md:grid-cols-[70%_30%] gap-6 mt-6 p-6 border border-gray-300 rounded-lg shadow-sm bg-white">
+            <DeliveryCard />
             <BestSellingProductsTable />
           </div>
         </TabsContent>
@@ -446,10 +470,11 @@ const LocationPage = () => {
           </div>
 
           <div className="bg-white p-4 rounded-lg mt-4 shadow-lg">
-            <h3 className="text-lg font-semibold mb-2">Expenses Distribution</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Expenses Distribution
+            </h3>
             <ExpensesDivisionChart expensesData={expensesData} />
           </div>
-
         </TabsContent>
 
         <TabsContent value="inventory" className="mt-4">
