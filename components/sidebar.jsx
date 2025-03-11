@@ -26,6 +26,7 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const currentBrand = pathname.split("/")[2];
   const locationName = pathname.split("/")[4];
+  const decodedLocationName = decodeURIComponent(locationName);
   const subLocationName = pathname.split("/")[6];
   const decodedSubLocationName = decodeURIComponent(subLocationName);
   const currentPage = pathname.split("/")[7];
@@ -226,7 +227,7 @@ const Sidebar = () => {
                   {filteredLocations.own.map((location) => (
                     <DropdownMenuItem key={location}>
                       <Link
-                        href={`/brands/${pickABrand()}/locations/${locationName}`}
+                        href={`/brands/${pickABrand()}/locations/${location}`}
                         className="w-full"
                       >
                         {location}
@@ -242,7 +243,7 @@ const Sidebar = () => {
                   {filteredLocations.sub.map((location) => (
                     <DropdownMenuItem key={location}>
                       <Link
-                        href={`/brands/${pickABrand()}/locations/${locationName}`}
+                        href={`/brands/${pickABrand()}/locations/${location}`}
                         className="w-full"
                       >
                         {location}

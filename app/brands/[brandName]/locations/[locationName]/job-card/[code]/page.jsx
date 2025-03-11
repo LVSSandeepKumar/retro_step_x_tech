@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import axios from "axios";
+import { Badge } from "@/components/ui/badge"; // Your Badge component
 import {
   FaInfoCircle,
   FaCar,
@@ -11,21 +12,25 @@ import {
   FaWrench,
   FaCogs,
 } from "react-icons/fa";
+import { PieChart, Pie, Tooltip, Legend, Cell } from "recharts";
 
-function SingleJobCardDetails({ initialJobCard }) {
-  // Default active section is "Vehicle Info"
+const SAMPLE_CAR_IMAGE = "/groups/car.jpg";
+
+export default function SingleJobCardDetails({ initialJobCard }) {
   const [jobCard, setJobCard] = useState(initialJobCard || null);
-  const [activeSection, setActiveSection] = useState("Vehicle Info");
   const pathname = usePathname();
   const code = pathname.split("/")[6];
 
   const fetchJobCard = async (code) => {
     try {
-      const response = await axios.get(`http://192.168.0.5:5000/api/job-card/code`, {
-        headers: { "Content-Type": "application/json" },
-      });
-      setJobCard(response.data);
-      console.log("Job card details data:- ",response.data);
+      const response = await axios.get(
+        `http://192.168.0.6:5001/api/job-card/${code}`,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      setJobCard(response.data.data);
+      console.log("Job card details data:", response.data.data);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -39,256 +44,378 @@ function SingleJobCardDetails({ initialJobCard }) {
 
   if (!jobCard) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-        <p className="text-lg text-gray-600">Loading...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
+        <p className="text-lg text-gray-300 animate-pulse">Loading...</p>
       </div>
     );
   }
 
-  // Define sections with names, icons, and a default icon size.
-  const sections = [
-    { name: "General Info", icon: FaInfoCircle, defaultSize: 32 },
-    { name: "Vehicle Info", icon: FaCar, defaultSize: 48 },
-    { name: "Customer Info", icon: FaUser, defaultSize: 36 },
-    { name: "Location Info", icon: FaMapMarkerAlt, defaultSize: 44 },
-    { name: "Service Advisor", icon: FaUserTie, defaultSize: 40 },
-    { name: "Technician", icon: FaWrench, defaultSize: 34 },
-    { name: "Parts", icon: FaCogs, defaultSize: 38 },
-  ];
-
-  const renderSectionContent = () => {
-    switch (activeSection) {
-      case "General Info":
-        return <GeneralInfoContent jobCard={jobCard} />;
-      case "Vehicle Info":
-        return <VehicleInfoContent jobCard={jobCard} />;
-      case "Customer Info":
-        return <CustomerInfoContent jobCard={jobCard} />;
-      case "Location Info":
-        return <LocationInfoContent jobCard={jobCard} />;
-      case "Service Advisor":
-        return <ServiceAdvisorContent jobCard={jobCard} />;
-      case "Technician":
-        return <TechnicianContent jobCard={jobCard} />;
-      case "Parts":
-        return <PartsContent jobCard={jobCard} />;
-      default:
-        return null;
-    }
+  // Handler to update fields in jobCard state (for inline editing)
+  const handleFieldChange = (fieldPath, newValue) => {
+    setJobCard((prev) => {
+      const updated = structuredClone(prev);
+      const pathParts = fieldPath.split(".");
+      let obj = updated;
+      for (let i = 0; i < pathParts.length - 1; i++) {
+        obj = obj[pathParts[i]];
+      }
+      obj[pathParts[pathParts.length - 1]] = newValue;
+      return updated;
+    });
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      {/* Page Title */}
-      <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
-        Job Card Details
-      </h1>
+  // For demonstration, assume jobCard has partsData and laborData arrays.
+  const partsData = jobCard.partsData || [
+    { name: "Part A", value: 400 },
+    { name: "Part B", value: 300 },
+    { name: "Part C", value: 300 },
+    { name: "Part D", value: 200 },
+  ];
+  const laborData = jobCard.laborData || [
+    { name: "Labor A", value: 500 },
+    { name: "Labor B", value: 200 },
+    { name: "Labor C", value: 100 },
+  ];
 
-      {/* Grid Layout: Left Column for Content, Right Column for Icons */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div className="md:col-span-4 pr-4">{renderSectionContent()}</div>
-        <div className="md:col-span-1 flex flex-col items-center space-y-6 p-4 m-4">
-          {sections.map((section) => {
-            const IconComponent = section.icon;
-            const isActive = activeSection === section.name;
-            const iconSize = isActive ? section.defaultSize + 16 : section.defaultSize;
-            return (
-              <button
-                key={section.name}
-                onClick={() => setActiveSection(section.name)}
-                className="focus:outline-none transition-transform duration-300 transform hover:scale-110 m-2"
-              >
-                <IconComponent
-                  size={iconSize}
-                  className={isActive ? "text-black" : "text-gray-500 hover:text-blue-600"}
-                />
-              </button>
-            );
-          })}
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 p-4 sm:p-6 text-gray-200 font-sans relative">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        {/* Left Side: Title and Status Badge */}
+        <div className="flex items-center space-x-4">
+          <h1 className="text-4xl font-extrabold text-orange-300 tracking-widest drop-shadow-lg">
+            JOB CARD
+          </h1>
+          <Badge variant="outline" className="text-white">
+            {jobCard.jobCardStatus || "No Status"}
+          </Badge>
+        </div>
+        {/* Right Side: Editable Job Card Code and Edit Button */}
+        <div className="flex items-center space-x-2">
+          <div className="border border-white rounded-lg text-lg px-4 py-1">
+            <EditableField
+              label="Job Card Code"
+              value={jobCard.code}
+              onChange={(val) => handleFieldChange("code", val)}
+            />
+          </div>
+          <button
+            onClick={() => console.log("Edit action triggered")}
+            className="px-3 py-1 border border-white rounded hover:bg-white hover:text-black transition"
+          >
+            Edit
+          </button>
+        </div>
+      </div>
+
+      {/* Outer Container */}
+      <div className="max-w-5xl mx-auto bg-gray-800/60 rounded-xl p-6 md:p-8 shadow-2xl border border-gray-700">
+        {/* Top Row: Car Image and General Info */}
+        <div className="flex flex-row w-full gap-6">
+  <div className="w-1/2">
+    <Panel title="Customer Info">
+      <InfoList
+        rows={[
+          {
+            label: "Name",
+            value: jobCard.customer?.name || "",
+            fieldPath: "customer.name",
+          },
+          {
+            label: "Phone",
+            value: jobCard.customer?.phone || "",
+            fieldPath: "customer.phone",
+          },
+          {
+            label: "Email",
+            value: jobCard.customer?.email || "",
+            fieldPath: "customer.email",
+          },
+          {
+            label: "Address",
+            value: jobCard.customer?.address || "",
+            fieldPath: "customer.address",
+          },
+          {
+            label: "Chassis No",
+            value: jobCard.vehicle?.chassisNo || "",
+            fieldPath: "vehicle.chassisNo",
+          },
+          {
+            label: "Registration No",
+            value: jobCard.vehicle?.registrationNo || "",
+            fieldPath: "vehicle.registrationNo",
+          },
+          {
+            label: "Engine No",
+            value: jobCard.vehicle?.engineNo || "",
+            fieldPath: "vehicle.engineNo",
+          },
+        ]}
+        onFieldChange={handleFieldChange}
+      />
+    </Panel>
+  </div>
+  <div className="w-1/2">
+    <Panel title="General Info">
+      <InfoList
+        rows={[
+          {
+            label: "Repair Type",
+            value: jobCard.jobCardType?.name || "N/A",
+            fieldPath: "jobCardType.name",
+          },
+          {
+            label: "KM Reading",
+            value: jobCard.kmReading || "",
+            fieldPath: "kmReading",
+          },
+          {
+            label: "Preferred Language",
+            value: jobCard.preferredLanguage || "",
+            fieldPath: "preferredLanguage",
+          },
+          {
+            label: "Delivery Time",
+            value: jobCard.generalDetails?.deliveryTime || "",
+            fieldPath: "generalDetails.deliveryTime",
+          },
+          {
+            label: "Complaint",
+            value: jobCard.generalDetails?.customerVoice || "",
+            fieldPath: "generalDetails.customerVoice",
+          },
+        ]}
+        onFieldChange={handleFieldChange}
+      />
+    </Panel>
+  </div>
+</div>
+
+
+        {/* Vehicle Info: Full Width Panel */}
+        {/* <div className="mt-6">
+          <Panel title="Vehicle Info">
+            <InfoList
+              rows={[
+                {
+                  label: "Vehicle ID",
+                  value: jobCard.vehicle?.id,
+                  fieldPath: "vehicle.id",
+                },
+                {
+                  label: "Chassis No",
+                  value: jobCard.vehicle?.chassisNo || "",
+                  fieldPath: "vehicle.chassisNo",
+                },
+                {
+                  label: "Registration No",
+                  value: jobCard.vehicle?.registrationNo || "",
+                  fieldPath: "vehicle.registrationNo",
+                },
+                {
+                  label: "Engine No",
+                  value: jobCard.vehicle?.engineNo || "",
+                  fieldPath: "vehicle.engineNo",
+                },
+              ]}
+              onFieldChange={handleFieldChange}
+            />
+          </Panel>
+        </div> */}
+
+        {/* Middle Row: Editable Pie Charts for Parts and Labor */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <EditablePieChart
+            data={partsData}
+            title="Parts Distribution"
+            onDataChange={(newData) => handleFieldChange("partsData", newData)}
+          />
+          <EditablePieChart
+            data={laborData}
+            title="Labor Distribution"
+            onDataChange={(newData) => handleFieldChange("laborData", newData)}
+          />
+        </div>
+
+        {/* Bottom Row: Location Info and Staff Info */}
+        <div className="mt-6  w-full border-white grid-cols-1 md:grid-cols-2 gap-6">
+          <Panel title="Location Info">
+            <InfoList
+              rows={[
+                {
+                  label: "Name",
+                  value: jobCard.location?.name || "",
+                  fieldPath: "location.name",
+                },
+                {
+                  label: "Address",
+                  value: jobCard.location?.address || "",
+                  fieldPath: "location.address",
+                },
+                {
+                  label: "Code",
+                  value: jobCard.location?.code || "",
+                  fieldPath: "location.code",
+                },
+              ]}
+              onFieldChange={handleFieldChange}
+            />
+          </Panel>
         </div>
       </div>
     </div>
   );
 }
 
-// -------------------
-// Reusable Components
-// -------------------
-
-function InfoTable({ rows }) {
+/* --------------------------------------------------
+   Panel Component: A futuristic box with a heading.
+-------------------------------------------------- */
+function Panel({ title, children, className = "" }) {
   return (
-    <div className="overflow-x-auto my-4">
-      <table className="w-full">
-        <tbody>
-          {rows.map((row, idx) => (
-            <tr
-              key={idx}
-              className={`${
-                idx % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
-              } hover:bg-gray-300 transition-colors duration-300`}
-            >
-              <td className="px-4 py-2 font-medium text-gray-700 w-1/3">
-                {row.label}
-              </td>
-              <td className="px-4 py-2 text-gray-700">{row.value}</td>
-            </tr>
+    <div
+      className={`bg-gray-900/70 rounded-lg p-4 border border-gray-700 shadow-inner ${className}`}
+    >
+      <h3 className="text-lg font-bold text-orange-300 mb-3 tracking-wide">
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
+/* --------------------------------------------------
+   InfoList Component: Displays a vertical list of editable label-value pairs.
+-------------------------------------------------- */
+function InfoList({ rows, onFieldChange }) {
+  return (
+    <div className="flex flex-col space-y-2 text-sm">
+      {rows.map((row, idx) => (
+        <EditableField
+          key={idx}
+          label={row.label}
+          value={row.value}
+          onChange={(val) => onFieldChange(row.fieldPath, val)}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* --------------------------------------------------
+   EditableField Component: Renders a label with an editable input.
+-------------------------------------------------- */
+function EditableField({ label, value, onChange }) {
+  return (
+    <div className="flex justify-between items-center bg-gray-800/60 px-2 py-1 rounded">
+      <span className="text-gray-400">{label}</span>
+      <input
+        type="text"
+        className="font-semibold text-gray-200 bg-transparent border-b border-gray-600 focus:outline-none w-32 text-right"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  );
+}
+
+/* --------------------------------------------------
+   PartsList Component: Renders a vertical list of part codes and names as editable fields.
+-------------------------------------------------- */
+function PartsList({ parts, onFieldChange }) {
+  return (
+    <div className="flex flex-col space-y-2 text-sm">
+      {parts.map((item, idx) => (
+        <div
+          key={idx}
+          className="flex justify-between items-center bg-gray-800/60 px-2 py-1 rounded"
+        >
+          <input
+            type="text"
+            className="text-gray-200 bg-transparent border-b border-gray-600 focus:outline-none w-20 text-right"
+            value={item.code || ""}
+            onChange={(e) =>
+              onFieldChange && onFieldChange(`part.${idx}.code`, e.target.value)
+            }
+          />
+          <input
+            type="text"
+            className="text-gray-200 bg-transparent border-b border-gray-600 focus:outline-none w-24 text-right"
+            value={item.name || ""}
+            onChange={(e) =>
+              onFieldChange && onFieldChange(`part.${idx}.name`, e.target.value)
+            }
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* --------------------------------------------------
+   EditablePieChart Component
+   - Displays a pie chart using Recharts.
+   - Provides editable input fields for each data item.
+-------------------------------------------------- */
+function EditablePieChart({ data: initialData, title, onDataChange }) {
+  const [data, setData] = useState(initialData);
+
+  React.useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
+
+  const handleChange = (index, newValue) => {
+    const updatedData = data.map((item, idx) =>
+      idx === index ? { ...item, value: Number(newValue) } : item
+    );
+    setData(updatedData);
+    if (onDataChange) onDataChange(updatedData);
+  };
+
+  const COLORS = [
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#A28DFF",
+    "#FF6B6B",
+  ];
+
+  return (
+    <div className="p-4 bg-gray-800 rounded-lg shadow-md">
+      <h3 className="text-lg font-bold text-orange-300 mb-4 tracking-wide">
+        {title}
+      </h3>
+      <PieChart width={450} height={300}>
+        <Pie
+          dataKey="value"
+          data={data}
+          cx="50%"
+          cy="50%"
+          outerRadius={80}
+          fill="#8884d8"
+          label
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
-        </tbody>
-      </table>
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+      <div className="mt-4 space-y-2">
+        {data.map((item, index) => (
+          <div key={index} className="flex items-center space-x-2">
+            <span className="text-sm text-gray-300">{item.name}</span>
+            <input
+              type="number"
+              value={item.value}
+              onChange={(e) => handleChange(index, e.target.value)}
+              className="p-1 border border-gray-600 rounded bg-gray-700 text-gray-200 text-sm w-20"
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
-
-function PartsTable({ parts }) {
-  return (
-    <div className="overflow-x-auto my-4">
-      <table className="w-full">
-        <thead>
-          <tr className="bg-gray-300">
-            <th className="px-4 py-2 text-left font-semibold">Part Code</th>
-            <th className="px-4 py-2 text-left font-semibold">Part Name</th>
-          </tr>
-        </thead>
-        <tbody>
-          {parts.map((item, idx) => (
-            <tr
-              key={idx}
-              className={`${
-                idx % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
-              } hover:bg-gray-300 transition-colors duration-300`}
-            >
-              <td className="px-4 py-2 text-gray-700">{item.code || "N/A"}</td>
-              <td className="px-4 py-2 text-gray-700">{item.name || "N/A"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// -------------------
-// Section Content Components
-// -------------------
-
-function GeneralInfoContent({ jobCard }) {
-  const rows = [
-    { label: "Code", value: jobCard.code },
-    { label: "Status", value: jobCard.jobCardStatus },
-    { label: "Repair Type", value: jobCard.jobCardType?.name || "N/A" },
-    { label: "UCN", value: jobCard.ucn || "N/A" },
-    { label: "Preferred Language", value: jobCard.preferredLanguage || "N/A" },
-    { label: "KM Reading", value: jobCard.kmReading || "N/A" },
-    { label: "Expected Start Time", value: jobCard.generalDetails?.expectedStartTime || "N/A" },
-    { label: "Delivery Time", value: jobCard.generalDetails?.deliveryTime || "N/A" },
-    { label: "Customer Voice", value: jobCard.generalDetails?.customerVoice || "N/A" },
-  ];
-  return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">General Info</h2>
-      <InfoTable rows={rows} />
-    </div>
-  );
-}
-
-function VehicleInfoContent({ jobCard }) {
-  const rows = [
-    { label: "Vehicle ID", value: jobCard.vehicle?.id },
-    { label: "Chassis No", value: jobCard.vehicle?.chassisNo || "N/A" },
-    { label: "Registration No", value: jobCard.vehicle?.registrationNo || "N/A" },
-    { label: "Engine No", value: jobCard.vehicle?.engineNo || "N/A" },
-    { label: "Ownership ID", value: jobCard.vehicle?.ownershipId || "N/A" },
-    { label: "Transfer Date", value: jobCard.vehicle?.transferDate || "N/A" },
-  ];
-  const modelRows = [
-    { label: "Model ID", value: jobCard.vehicle?.vehicleModel?.id },
-    { label: "Code", value: jobCard.vehicle?.vehicleModel?.code || "N/A" },
-    { label: "Name", value: jobCard.vehicle?.vehicleModel?.name || "N/A" },
-    { label: "Price", value: jobCard.vehicle?.vehicleModel?.price || "N/A" },
-  ];
-  return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Vehicle Info</h2>
-      <InfoTable rows={rows} />
-      <h3 className="mt-6 text-xl font-semibold text-gray-800 mb-4">Vehicle Model</h3>
-      <InfoTable rows={modelRows} />
-    </div>
-  );
-}
-
-function CustomerInfoContent({ jobCard }) {
-  const rows = [
-    { label: "ID", value: jobCard.customer?.id },
-    { label: "Name", value: jobCard.customer?.name || "N/A" },
-    { label: "Phone", value: jobCard.customer?.phone || "N/A" },
-    { label: "Email", value: jobCard.customer?.email || "N/A" },
-    { label: "Address", value: jobCard.customer?.address || "N/A" },
-  ];
-  return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Customer Info</h2>
-      <InfoTable rows={rows} />
-    </div>
-  );
-}
-
-function LocationInfoContent({ jobCard }) {
-  const rows = [
-    { label: "ID", value: jobCard.location?.id },
-    { label: "Name", value: jobCard.location?.name || "N/A" },
-    { label: "Address", value: jobCard.location?.address || "N/A" },
-    { label: "Code", value: jobCard.location?.code || "N/A" },
-  ];
-  return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Location Info</h2>
-      <InfoTable rows={rows} />
-    </div>
-  );
-}
-
-function ServiceAdvisorContent({ jobCard }) {
-  const rows = [
-    { label: "ID", value: jobCard.serviceAdvisor?.id },
-    { label: "Name", value: jobCard.serviceAdvisor?.name || "N/A" },
-    { label: "Role", value: jobCard.serviceAdvisor?.role || "N/A" },
-    { label: "Email", value: jobCard.serviceAdvisor?.email || "N/A" },
-  ];
-  return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Service Advisor</h2>
-      <InfoTable rows={rows} />
-    </div>
-  );
-}
-
-function TechnicianContent({ jobCard }) {
-  const rows = [
-    { label: "ID", value: jobCard.technician?.id },
-    { label: "Name", value: jobCard.technician?.name || "N/A" },
-    { label: "Role", value: jobCard.technician?.role || "N/A" },
-    { label: "Email", value: jobCard.technician?.email || "N/A" },
-  ];
-  return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Technician</h2>
-      <InfoTable rows={rows} />
-    </div>
-  );
-}
-
-function PartsContent({ jobCard }) {
-  const parts = jobCard.part || [];
-  return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Parts</h2>
-      {parts.length > 0 ? (
-        <PartsTable parts={parts} />
-      ) : (
-        <p className="text-gray-700">No parts available.</p>
-      )}
-    </div>
-  );
-}
-
-export default SingleJobCardDetails;

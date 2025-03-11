@@ -36,7 +36,7 @@ const TYPES_CONFIG = {
   },
   services: {
     title: "Location-wise Service Analysis",
-    categories: ["Part Sales", "Service Sales", "Bajaj Claims Warranty", "Bajaj Claims Free Service"],
+    categories: ["Part Revenue", "Labour Revenue", "Bajaj Claims Warranty", "Bajaj Claims Free Service"],
     colors: {
       own: [
         'rgba(16, 185, 129, 0.8)',  // Green - Part Sales
