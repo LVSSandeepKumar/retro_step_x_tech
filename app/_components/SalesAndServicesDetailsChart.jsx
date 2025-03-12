@@ -6,7 +6,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo,useEffect } from "react";
+import axios from "axios";
 import { Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
 import { BRANDS, SERVICE_TYPES, OTHER_TYPES } from '../_constants/chartConstants';
 
@@ -50,6 +51,8 @@ const renderActiveShape =
       percent,
       value,
     } = props;
+
+   
 
     return (
       <g>
@@ -95,10 +98,25 @@ const renderActiveShape =
         />
       </g>
     );
-  };
+  }
+  
 
 const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const[chartData,setChartData] = useState([]);
+
+
+
+  
+    useEffect(() => {
+      const fetchData = async () => {
+        const response = await axios.get("http://192.168.0.12:5001/api/job-card/count");
+        setChartData(response.data.data);
+        console.log("chartdata=>",response.data.data);
+      };
+      fetchData();
+    },[])
+  
 
   // Process data based on selectedCard type
   const processedData = useMemo(() => {
@@ -182,37 +200,34 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Count</TableHead>
+                {/* <TableHead>Count</TableHead> */}
                 <TableHead className="text-right">Value</TableHead>
                 <TableHead className="text-right">%</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="text-sm">
-              {data.map((item, index) => {
-                const percentage = Math.round((item.value / totalValue) * 100) || 0;
-                return (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium py-1">{item.name}</TableCell>
-                    <TableCell className="py-1">{item.count.toLocaleString()}</TableCell>
+            <TableRow >
+                    <TableCell className="font-medium py-1">Part revenue</TableCell>
+                    {/* <TableCell className="py-1">{item.count.toLocaleString()}</TableCell> */}
                     <TableCell className="text-right py-1">
-                      {item.count > 0 || selectedCard !== 'sales' ? 
-                        `₹${item.value.toLocaleString()}` : 
-                        '-'}
+                      {chartData.partAmount} 
                     </TableCell>
                     <TableCell className="text-right py-1">
-                      {item.count > 0 || selectedCard !== 'sales' ? 
-                        `${percentage}%` : 
-                        '-'}
+                    {chartData?.partAmount / (chartData?.labourAmount + chartData?.partAmount) * 100 }                   </TableCell>
                     </TableCell>
                   </TableRow>
-                );
-              })}
+            <TableRow >
+                    <TableCell className="font-medium py-1">Labour Amount</TableCell>
+                    <TableCell className="text-right py-1">
+                      {chartData?.labourAmount} 
+                    </TableCell>
+                    <TableCell className="text-right py-1">
+                    {chartData?.labourAmount / (chartData?.labourAmount + chartData?.partAmount) * 100 } %                 
+                     </TableCell>
+                  </TableRow>
               <TableRow className="font-semibold bg-muted/50">
                 <TableCell>Total</TableCell>
-                <TableCell>{totalCount.toLocaleString()}</TableCell>
-                <TableCell className="text-right">
-                  ₹{totalValue.toLocaleString()}
-                </TableCell>
+                <TableCell>{chartData.totalAmount}</TableCell>
                 <TableCell className="text-right">100%</TableCell>
               </TableRow>
             </TableBody>

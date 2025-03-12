@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import VaryingLine from "./VaryingLine";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
@@ -48,8 +49,10 @@ const formatCurrency = (amount) => {
   return numStr;
 };
 
-const SelectionGrid = ({ onCardSelect, selectedCard, periodValues, showLocationAnalysis }) => {
+
+const SelectionGrid = ({ onCardSelect, selectedCard, periodValues,numericalData, showLocationAnalysis }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+
   
   // Defensive check for periodValues
   if (!periodValues || typeof periodValues !== 'object') {
@@ -61,22 +64,22 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues, showLocationA
     const baseValue = selectedCard === 'sales' 
       ? periodValues.sales
       : selectedCard === 'services' 
-        ? periodValues.services 
+        ?  numericalData?.totalAmount
         : periodValues.others;
     
     return Math.round(baseValue) || 0; // Ensure we always have a rounded number
-  }, [selectedCard, periodValues]);
+  }, [selectedCard, periodValues, numericalData]);
 
   const count = useMemo(() => {
     if (!periodValues.counts) return 0;
     const baseCount = selectedCard === 'sales' 
       ? periodValues.counts.sales
       : selectedCard === 'services' 
-        ? periodValues.counts.services 
+        ? numericalData?.totalAmount 
         : periodValues.counts.others;
     
     return Math.round(baseCount) || 0; // Ensure we always have a rounded number
-  }, [selectedCard, periodValues]);
+  }, [selectedCard, periodValues, numericalData]);
 
   const ownValue = Math.round(value * config.ownRatio);
   const subValue = Math.round(value * config.subRatio);
@@ -210,7 +213,7 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues, showLocationA
         </h3>
         <div className="flex items-center gap-8">
           <div>
-            <p className="text-xl font-bold mb-2">₹{formatCurrency(value)}</p>
+            <p className="text-xl font-bold mb-2">₹{numericalData?.totalAmount || "N/A"} </p>
             <p className={`text-sm flex items-center ${
               parseFloat(change) >= 0 ? "text-green-600" : "text-red-600"
             }`}>
@@ -242,7 +245,7 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues, showLocationA
                   className="text-xl font-bold hover:opacity-80"
                   style={{ color: config.colors.primary }}
                 >
-                  {totalCount}
+                  {numericalData?.totalCount || "N/A"} 
                 </div>
                 <div className="text-sm text-gray-500">Total Count</div>
               </div>

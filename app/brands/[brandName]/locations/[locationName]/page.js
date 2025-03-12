@@ -16,6 +16,7 @@ import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import axios from "axios";
 
 // Remove these imports as they're no longer needed
 // import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -183,6 +184,8 @@ const LocationPage = () => {
   const [detailsData, setDetailsData] = useState(null);
   const [periodValues, setPeriodValues] = useState(INITIAL_FINANCE_VALUES);
   const [expensesData, setExpensesData] = useState(INITIAL_EXPENSES_DATA);
+  const[numericalData, setNumericalData] = useState([]);  
+
 
   // Add new state
   const [revenueValues, setRevenueValues] = useState(
@@ -261,6 +264,17 @@ const LocationPage = () => {
     };
   };
 
+
+  useEffect(() => {
+    axios.get("http://192.168.0.12:5001/api/job-card/count")
+      .then((response) => {
+        setNumericalData(response.data.data);
+        console.log("kjhg",response.data.data);  
+      })
+      .catch((error) => {
+        console.error('Error fetching data: ', error);
+      });
+  }, []);
   // Replace generateDataForPeriod with these two functions
   const generateRevenueValues = (period) => {
     // Only generate new values if not using initial values
@@ -330,6 +344,8 @@ const LocationPage = () => {
   useEffect(() => {
     generateRevenueValues(selectedPeriod);
   }, [selectedPeriod]); // Changed dependency from initial load to selectedPeriod
+
+  
 
   // Update handleCardSelect to only update detailsData
   const handleCardSelect = (cardId) => {
@@ -417,7 +433,7 @@ const LocationPage = () => {
                 onCardSelect={handleCardSelect}
                 selectedCard="sales"
                 periodValues={revenueValues} // Update this prop
-              />
+                />
               <p className="text-sm text-red-500 font-semibold flex gap-2">
                 <span>
                   <Star className="text-black fill-yellow-500 border-black" />
@@ -430,6 +446,7 @@ const LocationPage = () => {
                 onCardSelect={handleCardSelect}
                 selectedCard="services"
                 periodValues={revenueValues} // Update this prop
+                numericalData={numericalData}
               />
               <p className="text-sm text-red-500 font-semibold flex gap-2">
                 <span>

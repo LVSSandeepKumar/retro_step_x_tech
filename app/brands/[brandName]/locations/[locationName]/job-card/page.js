@@ -297,6 +297,7 @@ export default function JobCardPage() {
           setFetchError(
             "Error fetching summary counts. Please try again later."
           );
+          console.log(response.data.data)
         } else {
           setSummaryData(response.data.data);
           console.log(response.data.data);
@@ -356,9 +357,10 @@ export default function JobCardPage() {
       let hasMore = true;
       while (hasMore) {
         const response = await axios.get(
-          `http://192.168.0.12:5001/api/job-card?page=${page}&pageSize=${pageSize}`
+          `http://3.7.2.124:5000/api/job-card?page=${page}&pageSize=${pageSize}`
         );
-        const fetchedJobCards = response.data.data.jobCards;
+        const fetchedJobCards = response.data.data;
+        console.log("Job  card fetched => ",fetchedJobCards)
         if (fetchedJobCards && fetchedJobCards.length > 0) {
           allJobCards = allJobCards.concat(fetchedJobCards);
           page++;
