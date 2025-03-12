@@ -213,9 +213,9 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
                       {chartData.partAmount} 
                     </TableCell>
                     <TableCell className="text-right py-1">
-                    {chartData?.partAmount / (chartData?.labourAmount + chartData?.partAmount) * 100 }                   </TableCell>
+                    {chartData?.partAmount / (chartData?.labourAmount + chartData?.partAmount) * 100 }  %               
                     </TableCell>
-                  </TableRow>
+              </TableRow>
             <TableRow >
                     <TableCell className="font-medium py-1">Labour Amount</TableCell>
                     <TableCell className="text-right py-1">
