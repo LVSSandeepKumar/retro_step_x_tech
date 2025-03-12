@@ -6,10 +6,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React, { useState, useMemo,useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import axios from "axios";
 import { Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
-import { BRANDS, SERVICE_TYPES, OTHER_TYPES } from '../_constants/chartConstants';
+import {
+  BRANDS,
+  SERVICE_TYPES,
+  OTHER_TYPES,
+} from "../_constants/chartConstants";
 
 const PERIODS = [
   { label: "Yesterday", value: "YESTERDAY" },
@@ -22,14 +26,14 @@ const COUNT_RANGES = {
   YESTERDAY: { min: 1, max: 10 },
   WEEKLY: { min: 11, max: 100 },
   MONTHLY: { min: 101, max: 1000 },
-  YTD: { min: 10001, max: 20000 }
+  YTD: { min: 10001, max: 20000 },
 };
 
 const AMOUNT_RANGES = {
   YESTERDAY: { min: 10000, max: 100000 },
   WEEKLY: { min: 100001, max: 1000000 },
   MONTHLY: { min: 1000001, max: 10000000 },
-  YTD: { min: 10000001, max: 100000000 }
+  YTD: { min: 10000001, max: 100000000 },
 };
 
 const generateRandomInRange = (min, max) => {
@@ -52,8 +56,6 @@ const renderActiveShape =
       value,
     } = props;
 
-   
-
     return (
       <g>
         <text x={cx} y={cy - 30} dy={8} textAnchor="middle" fill="#888">
@@ -69,12 +71,11 @@ const renderActiveShape =
         >
           ₹{Math.round(value).toLocaleString()} {/* Rounded to whole number */}
         </text>
-        <text x={cx} y={cy + 20} dy={8} textAnchor="middle" fill="#666">
+        {/* <text x={cx} y={cy + 20} dy={8} textAnchor="middle" fill="#666">
           {`${Math.round(payload.count).toLocaleString()} ${
             selectedCard === "sales" ? "vehicles" : "services"
           }`}{" "}
-          {/* Rounded count */}
-        </text>
+        </text> */}
         <text x={cx} y={cy + 40} dy={8} textAnchor="middle" fill="#666">
           {(percent * 100).toFixed(1)}%
         </text>
@@ -98,43 +99,47 @@ const renderActiveShape =
         />
       </g>
     );
-  }
-  
+  };
 
 const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const[chartData,setChartData] = useState([]);
+  const [chartData, setChartData] = useState([]);
 
-
-
-  
-    useEffect(() => {
-      const fetchData = async () => {
-        const response = await axios.get("http://192.168.0.12:5001/api/job-card/count");
-        setChartData(response.data.data);
-        console.log("chartdata=>",response.data.data);
-      };
-      fetchData();
-    },[])
-  
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await axios.get(
+        "http://192.168.0.12:5001/api/job-card/count"
+      );
+      setChartData(response.data.data);
+      console.log("chartdata=>", response.data.data);
+    };
+    fetchData();
+  }, []);
 
   // Process data based on selectedCard type
   const processedData = useMemo(() => {
-    if (!data) return [];
+    if (!chartData) return [];
 
-    if (selectedCard === 'sales') {
-      // For sales, filter out items with 0 count
-      return data.filter(item => item.count > 0);
-    } else if (selectedCard === 'others') {
-      // For others, ensure minimum count of 1
-      return data.map(item => ({
+    // Convert the chartData object into an array of objects
+    const dataArray = [
+      { name: "Labour Amount", value: chartData.labourAmount, fill: "#8884d8" },
+      { name: "Part Amount", value: chartData.partAmount, fill: "#82ca9d" },
+    ];
+
+    if (selectedCard === "sales") {
+      // For sales, filter out entries with a value of 0
+      return dataArray.filter((item) => item.value > 0);
+    } else if (selectedCard === "others") {
+      // For others, ensure each entry has a minimum value of 1
+      return dataArray.map((item) => ({
         ...item,
-        count: Math.max(1, item.count)
+        value: Math.max(1, item.value),
       }));
+    } else {
+      // For services, simply return the converted array
+      return dataArray;
     }
-    // For services, use data as is
-    return data;
-  }, [data, selectedCard]);
+  }, [chartData, selectedCard]);
 
   const onPieEnter = (_, index) => {
     setActiveIndex(index);
@@ -149,14 +154,18 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
   }
 
   // Calculate totals using filtered/processed data
-  const totalValue = Math.round(processedData.reduce((sum, item) => sum + item.value, 0));
-  const totalCount = Math.round(processedData.reduce((sum, item) => sum + item.count, 0));
+  const totalValue = Math.round(
+    processedData.reduce((sum, item) => sum + item.value, 0)
+  );
+  const totalCount = Math.round(
+    processedData.reduce((sum, item) => sum + item.count, 0)
+  );
 
   return (
     <div className="p-4">
       <div className="flex justify-end items-center mb-4">
         <span className="text-sm font-medium text-gray-600">
-          {PERIODS.find(p => p.value === period)?.label || period}
+          {PERIODS.find((p) => p.value === period)?.label || period}
         </span>
       </div>
 
@@ -184,8 +193,8 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
           <div className="flex flex-wrap justify-center gap-4 mt-2">
             {processedData.map((item, index) => (
               <div key={index} className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
+                <div
+                  className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: item.fill }}
                 />
                 <span className="text-sm">{item.name}</span>
@@ -206,28 +215,41 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
               </TableRow>
             </TableHeader>
             <TableBody className="text-sm">
-            <TableRow >
-                    <TableCell className="font-medium py-1">Part revenue</TableCell>
-                    {/* <TableCell className="py-1">{item.count.toLocaleString()}</TableCell> */}
-                    <TableCell className="text-right py-1">
-                      {chartData.partAmount} 
-                    </TableCell>
-                    <TableCell className="text-right py-1">
-                    {chartData?.partAmount / (chartData?.labourAmount + chartData?.partAmount) * 100 }  %               
-                    </TableCell>
+              <TableRow>
+                <TableCell className="font-medium py-1">Part revenue</TableCell>
+                <TableCell className="text-right py-1">
+                  {chartData.partAmount}
+                </TableCell>
+                <TableCell className="text-right py-1">
+                  {Math.ceil(
+                    (chartData?.partAmount /
+                      (chartData?.labourAmount + chartData?.partAmount)) *
+                      100
+                  )}{" "}
+                  %
+                </TableCell>
               </TableRow>
-            <TableRow >
-                    <TableCell className="font-medium py-1">Labour Amount</TableCell>
-                    <TableCell className="text-right py-1">
-                      {chartData?.labourAmount} 
-                    </TableCell>
-                    <TableCell className="text-right py-1">
-                    {chartData?.labourAmount / (chartData?.labourAmount + chartData?.partAmount) * 100 } %                 
-                     </TableCell>
-                  </TableRow>
+              <TableRow>
+                <TableCell className="font-medium py-1">
+                  Labour Amount
+                </TableCell>
+                <TableCell className="text-right py-1">
+                  {chartData?.labourAmount}
+                </TableCell>
+                <TableCell className="text-right py-1">
+                  {Math.ceil(
+                    (chartData?.labourAmount /
+                      (chartData?.labourAmount + chartData?.partAmount)) *
+                      100
+                  )}{" "}
+                  %
+                </TableCell>
+              </TableRow>
               <TableRow className="font-semibold bg-muted/50">
                 <TableCell>Total</TableCell>
-                <TableCell>{chartData.totalAmount}</TableCell>
+                <TableCell className="text-right">
+                  {chartData.totalAmount}
+                </TableCell>
                 <TableCell className="text-right">100%</TableCell>
               </TableRow>
             </TableBody>
