@@ -24,7 +24,7 @@ export default function SingleJobCardDetails({ initialJobCard }) {
   const fetchJobCard = async (code) => {
     try {
       const response = await axios.get(
-        `http://192.168.0.6:5001/api/job-card/${code}`,
+        `http://192.168.0.12:5001/api/job-card/${code}`,
         {
           headers: { "Content-Type": "application/json" },
         }
@@ -44,7 +44,7 @@ export default function SingleJobCardDetails({ initialJobCard }) {
 
   if (!jobCard) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-gray-100 to-gray-50">
         <p className="text-lg text-gray-300 animate-pulse">Loading...</p>
       </div>
     );
@@ -65,34 +65,36 @@ export default function SingleJobCardDetails({ initialJobCard }) {
   };
 
   // For demonstration, assume jobCard has partsData and laborData arrays.
-  const partsData = jobCard.partsData || [
-    { name: "Part A", value: 400 },
-    { name: "Part B", value: 300 },
-    { name: "Part C", value: 300 },
-    { name: "Part D", value: 200 },
-  ];
-  const laborData = jobCard.laborData || [
-    { name: "Labor A", value: 500 },
-    { name: "Labor B", value: 200 },
-    { name: "Labor C", value: 100 },
-  ];
+  const partsData = jobCard.part
+  //  || [
+  //   { name: "Part A", value: 400 },
+  //   { name: "Part B", value: 300 },
+  //   { name: "Part C", value: 300 },
+  //   { name: "Part D", value: 200 },
+  // ];
+  const laborData = jobCard.jobCardLabour
+  //  || [
+  //   { name: "Labor A", value: 500 },
+  //   { name: "Labor B", value: 200 },
+  //   { name: "Labor C", value: 100 },
+  // ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 p-4 sm:p-6 text-gray-200 font-sans relative">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-50 p-4 sm:p-6 text-gray-200 font-sans relative">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         {/* Left Side: Title and Status Badge */}
         <div className="flex items-center space-x-4">
-          <h1 className="text-4xl font-extrabold text-orange-300 tracking-widest drop-shadow-lg">
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-widest drop-shadow-lg">
             JOB CARD
           </h1>
-          <Badge variant="outline" className="text-white">
+          <Badge variant="outline" className="text-black border-black">
             {jobCard.jobCardStatus || "No Status"}
           </Badge>
         </div>
         {/* Right Side: Editable Job Card Code and Edit Button */}
         <div className="flex items-center space-x-2">
-          <div className="border border-white rounded-lg text-lg px-4 py-1">
+          <div className="border border-black rounded-lg text-lg px-4 py-1">
             <EditableField
               label="Job Card Code"
               value={jobCard.code}
@@ -101,7 +103,7 @@ export default function SingleJobCardDetails({ initialJobCard }) {
           </div>
           <button
             onClick={() => console.log("Edit action triggered")}
-            className="px-3 py-1 border border-white rounded hover:bg-white hover:text-black transition"
+            className="px-3 py-1 border border-balck  text-black rounded hover:bg-gray-300 hover:text-black transition"
           >
             Edit
           </button>
@@ -109,7 +111,7 @@ export default function SingleJobCardDetails({ initialJobCard }) {
       </div>
 
       {/* Outer Container */}
-      <div className="max-w-5xl mx-auto bg-gray-800/60 rounded-xl p-6 md:p-8 shadow-2xl border border-gray-700">
+      <div className="max-w-5xl mx-auto bg-gray-100/50 rounded-xl p-6 md:p-8 shadow-2xl border border-gray-100">
         {/* Top Row: Car Image and General Info */}
         <div className="flex flex-row w-full gap-6">
   <div className="w-1/2">
@@ -239,7 +241,7 @@ export default function SingleJobCardDetails({ initialJobCard }) {
         </div>
 
         {/* Bottom Row: Location Info and Staff Info */}
-        <div className="mt-6  w-full border-white grid-cols-1 md:grid-cols-2 gap-6">
+        {/* <div className="mt-6  w-full border-black grid-cols-1 md:grid-cols-2 gap-6">
           <Panel title="Location Info">
             <InfoList
               rows={[
@@ -262,7 +264,7 @@ export default function SingleJobCardDetails({ initialJobCard }) {
               onFieldChange={handleFieldChange}
             />
           </Panel>
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -274,9 +276,9 @@ export default function SingleJobCardDetails({ initialJobCard }) {
 function Panel({ title, children, className = "" }) {
   return (
     <div
-      className={`bg-gray-900/70 rounded-lg p-4 border border-gray-700 shadow-inner ${className}`}
+      className={`bg-gray-100/70 rounded-lg p-4 border border-gray-900 shadow-inner ${className}`}
     >
-      <h3 className="text-lg font-bold text-orange-300 mb-3 tracking-wide">
+      <h3 className="text-lg font-bold text-gray-800 mb-3 tracking-wide">
         {title}
       </h3>
       {children}
@@ -307,11 +309,11 @@ function InfoList({ rows, onFieldChange }) {
 -------------------------------------------------- */
 function EditableField({ label, value, onChange }) {
   return (
-    <div className="flex justify-between items-center bg-gray-800/60 px-2 py-1 rounded">
-      <span className="text-gray-400">{label}</span>
+    <div className="flex justify-between items-center  bg-gray-200/60 px-2 py-1 rounded">
+      <span className="text-gray-950 ">{label}</span>
       <input
         type="text"
-        className="font-semibold text-gray-200 bg-transparent border-b border-gray-600 focus:outline-none w-32 text-right"
+        className="font-semibold text-black bg-transparent border-b border-gray-900 focus:outline-none w-32 text-right"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
@@ -332,7 +334,7 @@ function PartsList({ parts, onFieldChange }) {
         >
           <input
             type="text"
-            className="text-gray-200 bg-transparent border-b border-gray-600 focus:outline-none w-20 text-right"
+            className="text-gray-900 bg-transparent border-b border-gray-600 focus:outline-none w-20 text-right"
             value={item.code || ""}
             onChange={(e) =>
               onFieldChange && onFieldChange(`part.${idx}.code`, e.target.value)
@@ -340,7 +342,7 @@ function PartsList({ parts, onFieldChange }) {
           />
           <input
             type="text"
-            className="text-gray-200 bg-transparent border-b border-gray-600 focus:outline-none w-24 text-right"
+            className="text-black bg-transparent border-b border-gray-600 focus:outline-none w-24 text-right"
             value={item.name || ""}
             onChange={(e) =>
               onFieldChange && onFieldChange(`part.${idx}.name`, e.target.value)
@@ -366,7 +368,7 @@ function EditablePieChart({ data: initialData, title, onDataChange }) {
 
   const handleChange = (index, newValue) => {
     const updatedData = data.map((item, idx) =>
-      idx === index ? { ...item, value: Number(newValue) } : item
+      idx === index ? { ...item, amount: Number(newValue) } : item
     );
     setData(updatedData);
     if (onDataChange) onDataChange(updatedData);
@@ -382,8 +384,8 @@ function EditablePieChart({ data: initialData, title, onDataChange }) {
   ];
 
   return (
-    <div className="p-4 bg-gray-800 rounded-lg shadow-md">
-      <h3 className="text-lg font-bold text-orange-300 mb-4 tracking-wide">
+    <div className="p-4 bg-gray-300 rounded-lg shadow-md ">
+      <h3 className="text-lg font-bold text-black mb-4 tracking-wide">
         {title}
       </h3>
       <PieChart width={450} height={300}>
@@ -405,13 +407,13 @@ function EditablePieChart({ data: initialData, title, onDataChange }) {
       </PieChart>
       <div className="mt-4 space-y-2">
         {data.map((item, index) => (
-          <div key={index} className="flex items-center space-x-2">
-            <span className="text-sm text-gray-300">{item.name}</span>
+          <div key={index} className="flex items-center  space-x-2">
+            <span className="text-sm text-black">{item.name}</span>
             <input
               type="number"
               value={item.value}
               onChange={(e) => handleChange(index, e.target.value)}
-              className="p-1 border border-gray-600 rounded bg-gray-700 text-gray-200 text-sm w-20"
+              className="p-1 border border-gray-200 rounded bg-gray-100 text-black  text-sm w-20"
             />
           </div>
         ))}

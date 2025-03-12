@@ -26,9 +26,7 @@ uuidv4();
 
 /* ----------------------------------------
    TruncatedText Component
-   - Shows ellipsis when text overflows.
-   - Expands on click and collapses when clicking outside.
------------------------------------------ */
+---------------------------------------- */
 const TruncatedText = ({ text, className }) => {
   const [expanded, setExpanded] = useState(false);
   const ref = useRef(null);
@@ -68,7 +66,7 @@ const TruncatedText = ({ text, className }) => {
 
 /* ----------------------------------------
    Reusable Table Components
------------------------------------------ */
+---------------------------------------- */
 const Table = ({ children, className }) => (
   <table className={`table-auto ${className}`}>{children}</table>
 );
@@ -88,7 +86,7 @@ const TableCell = ({ children, className }) => (
 
 /* ----------------------------------------
    JobCardTable Component
------------------------------------------ */
+---------------------------------------- */
 const JobCardTable = ({
   jobCards,
   currentPosts,
@@ -100,7 +98,6 @@ const JobCardTable = ({
   const tableHeaders = [
     "Sr No",
     "Job Card No",
-    // "Last Serviced",
     "Last KM",
     "Job Card Type",
     "Total Amount",
@@ -137,23 +134,19 @@ const JobCardTable = ({
               transition={{ duration: 0.5 }}
             >
               <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
-                {index + 1}
+                {(currentPage - 1) * postsPerPage + index + 1}
               </TableCell>
               <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
                 <Link
                   href={`/brands/${brandName}/locations/${locationName}/job-card/${jobCard.code}`}
                   passHref
                 >
-                  {/* Use TruncatedText for overflow */}
                   <TruncatedText
                     text={jobCard.code || "N/A"}
                     className="w-full"
                   />
                 </Link>
               </TableCell>
-              {/* <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
-                {jobCard.servicedDate || "N/A"}
-              </TableCell> */}
               <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
                 {jobCard.generalDetails?.kmReading || "N/A"}
               </TableCell>
@@ -163,7 +156,7 @@ const JobCardTable = ({
               <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
                 {jobCard.totalAmount || "N/A"}
               </TableCell>
-              <TableCell className="py-2 px-2 sm:px-4 border-b flex gap-1 sm:gap-2">
+              <TableCell className="py-2 px-2 sm:px-4 border-b justify-center flex gap-1 sm:gap-2">
                 <Button variant="outline" size="icon">
                   <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
@@ -191,16 +184,16 @@ const JobCardTable = ({
 
 /* ----------------------------------------
    SummaryCard Component
------------------------------------------ */
+---------------------------------------- */
 const SummaryCard = ({ title, count, amount, icon: IconComponent }) => {
   return (
     <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex flex-row items-center justify-around mb-2">
       {IconComponent && <IconComponent className="text-blue-500" size={38} />}
       <div className="ml-2 2xl:flex">
         <p className="text-xs sm:text-sm text-gray-500">{title}</p>
-        <p className="text-xl sm:text-2xl font-bold text-gray-800">{count}</p>
+        <p className="text-xl sm:text-2xl font-semibold text-gray-800">{count}</p>
         {amount !== undefined && (
-          <p className="text-xs sm:text-sm text-gray-600">₹ {amount}</p>
+          <p className="sm:text-xs  lg:text-lg justify-center  border-gray-300   text-gray-900">₹ {amount}</p>
         )}
       </div>
     </div>
@@ -209,7 +202,7 @@ const SummaryCard = ({ title, count, amount, icon: IconComponent }) => {
 
 /* ----------------------------------------
    Date Filter Helper
------------------------------------------ */
+---------------------------------------- */
 const filterJobCardsByDate = (jobCards, filter) => {
   if (filter === "All") return jobCards;
   const now = new Date();
@@ -243,9 +236,10 @@ const filterJobCardsByDate = (jobCards, filter) => {
 
 /* ----------------------------------------
    Main Page: JobCardPage Component
------------------------------------------ */
+---------------------------------------- */
 export default function JobCardPage() {
   const [jobCards, setJobCards] = useState([]);
+  const [summaryData, setSummaryData] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [showInput, setShowInput] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -269,25 +263,58 @@ export default function JobCardPage() {
   });
   const [searchInput, setSearchInput] = useState("");
   const [dateFilter, setDateFilter] = useState("All");
+  // Define fetchError state
+  const [fetchError, setFetchError] = useState(null);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const brandName = searchParams.get("brandName") || "defaultBrand";
   const locationName = searchParams.get("locationName");
 
+  // Fetch all job cards
   useEffect(() => {
     async function fetchJobCards() {
       const data = await getAllJobCards();
-      setJobCards(data);
-      setSearchResults(data);
+      if (!data) {
+        setFetchError("Error fetching job cards. Please try again later.");
+      } else {
+        setJobCards(data);
+        setSearchResults(data);
+      }
     }
     fetchJobCards();
   }, []);
 
+  // Fetch summary counts from the /count endpoint
+  useEffect(() => {
+    async function fetchSummary() {
+      try {
+        const response = await axios.get(
+          "http://192.168.0.12:5001/api/job-card/count"
+        );
+        // Assuming response.data.data contains the summary counts
+        if (!response) {
+          setFetchError(
+            "Error fetching summary counts. Please try again later."
+          );
+        } else {
+          setSummaryData(response.data.data);
+          console.log(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching summary counts:", error);
+      }
+    }
+    fetchSummary();
+  }, []);
+
+  // Filter job cards by selected date
   const filteredJobCards = filterJobCardsByDate(jobCards, dateFilter);
   const lastPostIndex = currentPage * postsPerPage;
   const firstPostIndex = lastPostIndex - postsPerPage;
   const currentPosts = filteredJobCards.slice(firstPostIndex, lastPostIndex);
 
+  // Fallback computed values from jobCards (if summaryData is not available)
   const totalJobCardsCount = jobCards.length;
   const totalJobCardsAmount = jobCards.reduce(
     (sum, card) => sum + Number(card.totalAmount || 0),
@@ -329,9 +356,8 @@ export default function JobCardPage() {
       let hasMore = true;
       while (hasMore) {
         const response = await axios.get(
-          `http://192.168.0.6:5001/api/job-card?page=${page}&pageSize=${pageSize}`
+          `http://192.168.0.12:5001/api/job-card?page=${page}&pageSize=${pageSize}`
         );
-        console.log("Job card details data:- ",response.data.data.jobCards)
         const fetchedJobCards = response.data.data.jobCards;
         if (fetchedJobCards && fetchedJobCards.length > 0) {
           allJobCards = allJobCards.concat(fetchedJobCards);
@@ -385,37 +411,34 @@ export default function JobCardPage() {
   const displayedJobCards = searchResults.length ? searchResults : jobCards;
 
   return (
-    <div className="flex flex-col sm:p-2  bg-gray-50 min-h-screen overflow-x-hidden  text-xs sm:text-sm md:text-base">
+    <div className="flex flex-col sm:p-2 lg:p-6 bg-gray-50 min-h-screen overflow-x-hidden text-xs sm:text-sm md:text-base">
       {/* Top: Search and Buttons */}
       <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mb-4">
         <div className="flex items-center justify-between w-full gap-2 sm:gap-4 lg:gap-2">
           <div className="flex gap-2">
             <Button onClick={handleAddCardClick} className="p-1 sm:p-2">
-              <Plus className="mr-1" /> Customer
+              <Plus className="mr-1 lg:m-2" /> Customer
             </Button>
             <Button onClick={handleAddJobCardClick} className="p-1 sm:p-2">
-              <Plus className="mr-1" /> Job Card
+              <Plus className="mr-1 md:m-2" /> Job Card
             </Button>
           </div>
         </div>
-
-          <div className="flex items-center">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={handleSearchChange}
-              className="border border-black p-1 rounded "
-              placeholder="Mobile No/Bike No"
-            />
-          </div>
-            <Button onClick={handleSearchSubmit} className="px-2 sm:px-4">
-              <Search className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
-
-
+        <div className="flex items-center">
+          <input
+            type="text"
+            value={searchInput}
+            onChange={handleSearchChange}
+            className="border border-black p-1 rounded"
+            placeholder="Mobile No/Bike No"
+          />
+        </div>
+        <Button onClick={handleSearchSubmit} className="px-2 sm:px-4">
+          <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+        </Button>
       </div>
-      <div className="flex justify-end items-center px-2 2xl:mx-6 mb-4 ">
-        <label className="mr-2 font-medium  justify-end text-gray-700">
+      <div className="flex justify-end items-center px-2 2xl:mx-6 mb-4">
+        <label className="mr-2 font-medium text-gray-700">
           Filter by Date:
         </label>
         <select
@@ -433,39 +456,73 @@ export default function JobCardPage() {
         </select>
       </div>
 
-      {/* Date Filter Dropdown */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:p-4 gap-4 mb-4 px-2 sm:px-4">
+        {/* Total Cards */}
+        {summaryData &&
+        summaryData.totalCount != null &&
+        summaryData.totalAmount != null ? (
+          <SummaryCard
+            title="Total Cards"
+            count={summaryData.totalCount}
+            amount={summaryData.totalAmount}
+            icon={FaList}
+          />
+        ) : (
+          <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex flex-row items-center justify-center mb-2">
+            <p className="text-red-500 text-center">
+              Error in Fetching Total Cards
+            </p>
+          </div>
+        )}
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 px-2 sm:px-4">
-        <SummaryCard
-          title="Total Cards"
-          count={totalJobCardsCount}
-          amount={totalJobCardsAmount}
-          icon={FaList}
-        />
-        <SummaryCard
-          title="Pending"
-          count={pendingCount}
-          icon={FaHourglassHalf}
-        />
-        <SummaryCard
-          title="Invoice"
-          count={invoiceCount}
-          amount={totalInvoiceValue}
-          icon={FaMoneyBill}
-        />
+        {/* Pending */}
+        {summaryData && summaryData.pending != null ? (
+          <SummaryCard
+            title="Pending"
+            count={summaryData.pending}
+            icon={FaHourglassHalf}
+          />
+        ) : (
+          <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex flex-row items-center justify-center mb-2">
+            <p className="text-red-500 text-center">
+              Error in Fetching
+            </p>
+          </div>
+        )}
+
+        {/* Invoice */}
+        {summaryData &&
+        summaryData.completed != null &&
+        summaryData.totalAmount != null ? (
+          <SummaryCard
+            title="Invoice"
+            count={summaryData.completed}
+            amount={summaryData.totalAmount}
+            icon={FaMoneyBill}
+          />
+        ) : (
+          <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex flex-row items-center justify-center mb-2">
+            <p className="text-red-500 text-center">
+              Error fetching Invoice data
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* MAIN Layout: Single Column (Full Width) */}
-      <div className="mt-4  sm:p-2 2xl:p-6 border-gray-300 border-2 rounded-lg shadow-sm bg-white">
-        <JobCardTable
-          jobCards={displayedJobCards}
-          currentPosts={currentPosts}
-          setCurrentPage={setCurrentPage}
-          postsPerPage={postsPerPage}
-          currentPage={currentPage}
-          onDelete={handleDelete}
-        />
+      {/* MAIN Layout: Table Section */}
+      <div className="mt-4 sm:p-2 2xl:p-6 border-gray-300 border-2 rounded-lg shadow-sm bg-white">
+        {fetchError ? (
+          <div className="p-4 text-red-500 text-center">{fetchError}</div>
+        ) : (
+          <JobCardTable
+            jobCards={displayedJobCards}
+            currentPosts={currentPosts}
+            setCurrentPage={setCurrentPage}
+            postsPerPage={postsPerPage}
+            currentPage={currentPage}
+            onDelete={handleDelete}
+          />
+        )}
       </div>
 
       {/* Modal: Add New Customer/Vehicle */}
