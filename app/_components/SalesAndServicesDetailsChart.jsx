@@ -108,7 +108,7 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await axios.get(
-        "http://localhost:5001/api/job-card/count"
+        "http://3.7.2.124:5000/api/job-card/count"
       );
       setChartData(response.data.data);
       console.log("chartdata=>", response.data.data);
@@ -231,7 +231,7 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium py-1">
-                  Labour Amount
+                  Labour Revenue
                 </TableCell>
                 <TableCell className="text-right py-1">
                   {chartData?.labourAmount}

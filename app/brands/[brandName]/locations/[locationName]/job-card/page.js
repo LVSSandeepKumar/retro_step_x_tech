@@ -1,653 +1,17 @@
-// "use client";
-// import React, { useEffect, useState, useRef } from "react";
-// import axios from "axios";
-// import Link from "next/link";
-// import { useRouter, useSearchParams, usePathname } from "next/navigation";
-// import { motion } from "framer-motion";
-// import { Button } from "@/components/ui/button";
-// import { Search, Plus, Edit, Trash } from "lucide-react";
-// import { v4 as uuidv4 } from "uuid";
-// import JobCardDetails from "./job-card-details/page";
-// import Pagination from "../../../../../../components/ui/Pagination";
-// import {
-//   FaInfoCircle,
-//   FaCar,
-//   FaUser,
-//   FaMapMarkerAlt,
-//   FaUserTie,
-//   FaWrench,
-//   FaCogs,
-//   FaList,
-//   FaHourglassHalf,
-//   FaMoneyBill,
-// } from "react-icons/fa";
-
-// uuidv4();
-
-// /* ----------------------------------------
-//    TruncatedText Component
-// ---------------------------------------- */
-// const TruncatedText = ({ text, className }) => {
-//   const [expanded, setExpanded] = useState(false);
-//   const ref = useRef(null);
-
-//   const handleClick = () => {
-//     setExpanded(true);
-//   };
-
-//   const handleClickOutside = (e) => {
-//     if (ref.current && !ref.current.contains(e.target)) {
-//       setExpanded(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     if (expanded) {
-//       document.addEventListener("mousedown", handleClickOutside);
-//     } else {
-//       document.removeEventListener("mousedown", handleClickOutside);
-//     }
-//     return () => {
-//       document.removeEventListener("mousedown", handleClickOutside);
-//     };
-//   }, [expanded]);
-
-//   return (
-//     <div
-//       ref={ref}
-//       onClick={handleClick}
-//       className={`cursor-pointer ${!expanded ? "truncate" : ""} ${className}`}
-//       title={text}
-//     >
-//       {text}
-//     </div>
-//   );
-// };
-
-// /* ----------------------------------------
-//    Reusable Table Components
-// ---------------------------------------- */
-// const Table = ({ children, className }) => (
-//   <table className={`table-auto ${className}`}>{children}</table>
-// );
-// const TableHeader = ({ children }) => <thead>{children}</thead>;
-// const TableBody = ({ children }) => <tbody>{children}</tbody>;
-// const TableHead = ({ children, className }) => (
-//   <th className={className}>{children}</th>
-// );
-// const TableRow = ({ children, className, ...props }) => (
-//   <tr className={className} {...props}>
-//     {children}
-//   </tr>
-// );
-// const TableCell = ({ children, className }) => (
-//   <td className={className}>{children}</td>
-// );
-
-// /* ----------------------------------------
-//    JobCardTable Component
-// ---------------------------------------- */
-// const JobCardTable = ({
-//   jobCards,
-//   currentPosts,
-//   onDelete,
-//   postsPerPage,
-//   setCurrentPage,
-//   currentPage,
-// }) => {
-//   const tableHeaders = [
-//     "Sr No",
-//     "Job Card No",
-//     "Last KM",
-//     "Job Card Type",
-//     "Total Amount",
-//     "Actions",
-//   ];
-
-//   const MotionTableRow = motion.create(TableRow);
-//   const pathname = usePathname();
-//   const brandName = pathname.split("/")[2];
-//   const locationName = pathname.split("/")[4];
-
-//   return (
-//     <div className="overflow-x-auto w-full">
-//       <Table className="bg-gray-100 shadow-lg w-full rounded-lg">
-//         <TableHeader>
-//           <TableRow className="bg-gray-200 w-full">
-//             {tableHeaders.map((header, index) => (
-//               <TableHead
-//                 key={index}
-//                 className="py-2 px-2 sm:px-4 border-b font-bold text-xs sm:text-sm"
-//               >
-//                 <TruncatedText text={header} className="w-full" />
-//               </TableHead>
-//             ))}
-//           </TableRow>
-//         </TableHeader>
-//         <TableBody>
-//           {currentPosts.map((jobCard, index) => (
-//             <MotionTableRow
-//               key={index}
-//               className="hover:bg-gray-100"
-//               initial={{ opacity: 0 }}
-//               animate={{ opacity: 1 }}
-//               transition={{ duration: 0.5 }}
-//             >
-//               <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
-//                 {(currentPage - 1) * postsPerPage + index + 1}
-//               </TableCell>
-//               <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
-//                 <Link
-//                   href={`/brands/${brandName}/locations/${locationName}/job-card/${jobCard.code}`}
-//                   passHref
-//                 >
-//                   <TruncatedText
-//                     text={jobCard.code || "N/A"}
-//                     className="w-full"
-//                   />
-//                 </Link>
-//               </TableCell>
-//               <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
-//                 {jobCard.generalDetails?.kmReading || "N/A"}
-//               </TableCell>
-//               <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
-//                 {jobCard.jobCardType.name || "N/A"}
-//               </TableCell>
-//               <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
-//                 {jobCard.totalAmount || "N/A"}
-//               </TableCell>
-//               <TableCell className="py-2 px-2 sm:px-4 border-b justify-center flex gap-1 sm:gap-2">
-//                 <Button variant="outline" size="icon">
-//                   <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
-//                 </Button>
-//                 <Button
-//                   variant="outline"
-//                   size="icon"
-//                   onClick={() => onDelete(index)}
-//                 >
-//                   <Trash className="h-4 w-4 sm:h-5 sm:w-5" />
-//                 </Button>
-//               </TableCell>
-//             </MotionTableRow>
-//           ))}
-//         </TableBody>
-//       </Table>
-//       <Pagination
-//         totalPosts={jobCards.length}
-//         postsPerPage={postsPerPage}
-//         setCurrentPage={setCurrentPage}
-//         currentPage={currentPage}
-//       />
-//     </div>
-//   );
-// };
-
-// /* ----------------------------------------
-//    SummaryCard Component
-// ---------------------------------------- */
-// const SummaryCard = ({ title, count, amount, icon: IconComponent }) => {
-//   return (
-//     <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex flex-row items-center justify-around mb-2">
-//       {IconComponent && <IconComponent className="text-blue-500" size={38} />}
-//       <div className="ml-2 2xl:flex">
-//         <p className="text-xs sm:text-sm text-gray-500">{title}</p>
-//         <p className="text-xl sm:text-2xl font-semibold text-gray-800">{count}</p>
-//         {amount !== undefined && (
-//           <p className="sm:text-xs  lg:text-lg justify-center  border-gray-300   text-gray-900">₹ {amount}</p>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// /* ----------------------------------------
-//    Date Filter Helper
-// ---------------------------------------- */
-// const filterJobCardsByDate = (jobCards, filter) => {
-//   if (filter === "All") return jobCards;
-//   const now = new Date();
-//   if (filter === "Today") {
-//     return jobCards.filter((card) => {
-//       if (!card.servicedDate) return false;
-//       const cardDate = new Date(card.servicedDate);
-//       return cardDate.toDateString() === now.toDateString();
-//     });
-//   }
-//   if (filter === "Yesterday") {
-//     const yesterday = new Date(now);
-//     yesterday.setDate(now.getDate() - 1);
-//     return jobCards.filter((card) => {
-//       if (!card.servicedDate) return false;
-//       const cardDate = new Date(card.servicedDate);
-//       return cardDate.toDateString() === yesterday.toDateString();
-//     });
-//   }
-//   if (filter === "This Week") {
-//     const weekAgo = new Date(now);
-//     weekAgo.setDate(now.getDate() - 7);
-//     return jobCards.filter((card) => {
-//       if (!card.servicedDate) return false;
-//       const cardDate = new Date(card.servicedDate);
-//       return cardDate >= weekAgo && cardDate <= now;
-//     });
-//   }
-//   return jobCards;
-// };
-
-// /* ----------------------------------------
-//    Main Page: JobCardPage Component
-// ---------------------------------------- */
-// export default function JobCardPage() {
-//   const [jobCards, setJobCards] = useState([]);
-//   const [summaryData, setSummaryData] = useState(null);
-//   const [searchResults, setSearchResults] = useState([]);
-//   const [showInput, setShowInput] = useState(false);
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const [postsPerPage, setPostsPerPage] = useState(10);
-//   const [newJobCard, setNewJobCard] = useState({
-//     jobCardNumber: "",
-//     regNo: "",
-//     jobCardDate: "",
-//     branch: "",
-//     model: "",
-//     chassisNo: "",
-//     customer: "",
-//     customerName: "",
-//     mobileNo: "",
-//     city: "",
-//     serviceAdvisor: "",
-//     readyForBill: "",
-//     source: "",
-//     status: "",
-//     totalAmount: "",
-//   });
-//   const [searchInput, setSearchInput] = useState("");
-//   const [dateFilter, setDateFilter] = useState("All");
-//   // Define fetchError state
-//   const [fetchError, setFetchError] = useState(null);
-
-//   const router = useRouter();
-//   const searchParams = useSearchParams();
-//   const brandName = searchParams.get("brandName") || "defaultBrand";
-//   const locationName = searchParams.get("locationName");
-
-//   // Fetch all job cards
-//   useEffect(() => {
-//     async function fetchJobCards() {
-//       const data = await getAllJobCards();
-//       if (!data) {
-//         setFetchError("Error fetching job cards. Please try again later.");
-//       } else {
-//         setJobCards(data);
-//         setSearchResults(data);
-//       }
-//     }
-//     fetchJobCards();
-//   }, []);
-
-//   // Fetch summary counts from the /count endpoint
-//   useEffect(() => {
-//     async function fetchSummary() {
-//       try {
-//         const response = await axios.get(
-//           "http://192.168.0.12:5001/api/job-card/count"
-//         );
-//         // Assuming response.data.data contains the summary counts
-//         if (!response) {
-//           setFetchError(
-//             "Error fetching summary counts. Please try again later."
-//           );
-//           console.log(response.data.data)
-//         } else {
-//           setSummaryData(response.data.data);
-//           console.log(response.data.data);
-//         }
-//       } catch (error) {
-//         console.error("Error fetching summary counts:", error);
-//       }
-//     }
-//     fetchSummary();
-//   }, []);
-
-//   // Filter job cards by selected date
-//   const filteredJobCards = filterJobCardsByDate(jobCards, dateFilter);
-//   const lastPostIndex = currentPage * postsPerPage;
-//   const firstPostIndex = lastPostIndex - postsPerPage;
-//   const currentPosts = filteredJobCards.slice(firstPostIndex, lastPostIndex);
-
-//   // Fallback computed values from jobCards (if summaryData is not available)
-//   const totalJobCardsCount = jobCards.length;
-//   const totalJobCardsAmount = jobCards.reduce(
-//     (sum, card) => sum + Number(card.totalAmount || 0),
-//     0
-//   );
-//   const pendingCount = jobCards.filter(
-//     (card) => card.jobCardStatus === "Pending"
-//   ).length;
-//   const invoiceCards = jobCards.filter((card) => Number(card.totalAmount) > 0);
-//   const invoiceCount = invoiceCards.length;
-//   const totalInvoiceValue = invoiceCards.reduce(
-//     (sum, card) => sum + Number(card.totalAmount || 0),
-//     0
-//   );
-
-//   const handleAddCardClick = () => {
-//     setShowInput(true);
-//   };
-
-//   const handleAddJobCardClick = () => {
-//     router.push(
-//       `/brands/${brandName}/locations/${locationName}/job-card/job-card-details`
-//     );
-//   };
-
-//   const handleInputChange = (e) => {
-//     const { name, value } = e.target;
-//     setNewJobCard((prev) => ({
-//       ...prev,
-//       [name]: value,
-//     }));
-//   };
-
-//   async function getAllJobCards() {
-//     try {
-//       let page = 1;
-//       const pageSize = 10;
-//       let allJobCards = [];
-//       let hasMore = true;
-//       while (hasMore) {
-//         const response = await axios.get(
-//           `http://3.7.2.124:5000/api/job-card?page=${page}&pageSize=${pageSize}`
-//         );
-//         const fetchedJobCards = response.data.data;
-//         console.log("Job  card fetched => ",fetchedJobCards)
-//         if (fetchedJobCards && fetchedJobCards.length > 0) {
-//           allJobCards = allJobCards.concat(fetchedJobCards);
-//           page++;
-//         } else {
-//           hasMore = false;
-//         }
-//       }
-//       return allJobCards;
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   }
-
-//   const handleInputSave = async () => {
-//     const response = await fetch("/api/job-cards", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify(newJobCard),
-//     });
-//     if (response.ok) {
-//       const newCard = await response.json();
-//       setJobCards([...jobCards, newCard]);
-//       setSearchResults([...jobCards, newCard]);
-//       setShowInput(false);
-//     } else {
-//       console.error("Failed to save job card");
-//     }
-//   };
-
-//   const handleCancel = () => {
-//     setShowInput(false);
-//   };
-
-//   const handleSearchChange = (e) => {
-//     setSearchInput(e.target.value);
-//   };
-
-//   const handleSearchSubmit = async () => {
-//     const response = await fetch(`/api/job-cards?search=${searchInput}`);
-//     const data = await response.json();
-//     setSearchResults(data);
-//   };
-
-//   const handleDelete = (index) => {
-//     setSearchResults((prev) => prev.filter((_, i) => i !== index));
-//   };
-
-//   const displayedJobCards = searchResults.length ? searchResults : jobCards;
-
-//   return (
-//     <div className="flex flex-col sm:p-2 lg:p-6 bg-gray-50 min-h-screen overflow-x-hidden text-xs sm:text-sm md:text-base">
-//       {/* Top: Search and Buttons */}
-//       <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mb-4">
-//         <div className="flex items-center justify-between w-full gap-2 sm:gap-4 lg:gap-2">
-//           <div className="flex gap-2">
-//             <Button onClick={handleAddCardClick} className="p-1 sm:p-2">
-//               <Plus className="mr-1 lg:m-2" /> Customer
-//             </Button>
-//             <Button onClick={handleAddJobCardClick} className="p-1 sm:p-2">
-//               <Plus className="mr-1 md:m-2" /> Job Card
-//             </Button>
-//           </div>
-//         </div>
-//         <div className="flex items-center">
-//           <input
-//             type="text"
-//             value={searchInput}
-//             onChange={handleSearchChange}
-//             className="border border-black p-1 rounded"
-//             placeholder="Mobile No/Bike No"
-//           />
-//         </div>
-//         <Button onClick={handleSearchSubmit} className="px-2 sm:px-4">
-//           <Search className="h-4 w-4 sm:h-5 sm:w-5" />
-//         </Button>
-//       </div>
-//       <div className="flex justify-end items-center px-2 2xl:mx-6 mb-4">
-//         <label className="mr-2 font-medium text-gray-700">
-//           Filter by Date:
-//         </label>
-//         <select
-//           value={dateFilter}
-//           onChange={(e) => {
-//             setDateFilter(e.target.value);
-//             setCurrentPage(1);
-//           }}
-//           className="border border-gray-400 p-1 sm:p-2 rounded"
-//         >
-//           <option value="All">All</option>
-//           <option value="Today">Today</option>
-//           <option value="Yesterday">Yesterday</option>
-//           <option value="This Week">This Week</option>
-//         </select>
-//       </div>
-
-//       <div className="grid grid-cols-1 sm:grid-cols-3 lg:p-4 gap-4 mb-4 px-2 sm:px-4">
-//         {/* Total Cards */}
-//         {summaryData &&
-//         summaryData.totalCount != null &&
-//         summaryData.totalAmount != null ? (
-//           <SummaryCard
-//             title="Total Cards"
-//             count={summaryData.totalCount}
-//             amount={summaryData.totalAmount}
-//             icon={FaList}
-//           />
-//         ) : (
-//           <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex flex-row items-center justify-center mb-2">
-//             <p className="text-red-500 text-center">
-//               Error in Fetching Total Cards
-//             </p>
-//           </div>
-//         )}
-
-//         {/* Pending */}
-//         {summaryData && summaryData.pending != null ? (
-//           <SummaryCard
-//             title="Pending"
-//             count={summaryData.pending}
-//             icon={FaHourglassHalf}
-//           />
-//         ) : (
-//           <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex flex-row items-center justify-center mb-2">
-//             <p className="text-red-500 text-center">
-//               Error in Fetching
-//             </p>
-//           </div>
-//         )}
-
-//         {/* Invoice */}
-//         {summaryData &&
-//         summaryData.completed != null &&
-//         summaryData.totalAmount != null ? (
-//           <SummaryCard
-//             title="Invoice"
-//             count={summaryData.completed}
-//             amount={summaryData.totalAmount}
-//             icon={FaMoneyBill}
-//           />
-//         ) : (
-//           <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex flex-row items-center justify-center mb-2">
-//             <p className="text-red-500 text-center">
-//               Error fetching Invoice data
-//             </p>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* MAIN Layout: Table Section */}
-//       <div className="mt-4 sm:p-2 2xl:p-6 border-gray-300 border-2 rounded-lg shadow-sm bg-white">
-//         {fetchError ? (
-//           <div className="p-4 text-red-500 text-center">{fetchError}</div>
-//         ) : (
-//           <JobCardTable
-//             jobCards={displayedJobCards}
-//             currentPosts={currentPosts}
-//             setCurrentPage={setCurrentPage}
-//             postsPerPage={postsPerPage}
-//             currentPage={currentPage}
-//             onDelete={handleDelete}
-//           />
-//         )}
-//       </div>
-
-//       {/* Modal: Add New Customer/Vehicle */}
-//       {showInput && (
-//         <motion.div
-//           className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
-//           initial={{ opacity: 0, transform: "scale(0.9)" }}
-//           animate={{ opacity: 1, transform: "scale(1)" }}
-//           transition={{ duration: 0.3, ease: "easeIn" }}
-//         >
-//           <div className="bg-white p-4 sm:p-8 rounded-lg shadow-lg w-4/5 max-w-4xl">
-//             <div className="grid grid-cols-2 gap-4 sm:gap-5">
-//               <h3 className="col-span-2 text-sm sm:text-lg font-semibold text-center">
-//                 Add Customer Details
-//               </h3>
-//               <input
-//                 type="text"
-//                 name="name"
-//                 value={newJobCard.name}
-//                 onChange={handleInputChange}
-//                 className="border border-gray-300 p-1 sm:p-2 rounded"
-//                 placeholder="Name"
-//               />
-//               <input
-//                 type="text"
-//                 name="mobileNo"
-//                 value={newJobCard.mobileNo}
-//                 onChange={handleInputChange}
-//                 className="border border-gray-300 p-1 sm:p-2 rounded"
-//                 placeholder="Mobile No"
-//               />
-//               <input
-//                 type="text"
-//                 name="address"
-//                 value={newJobCard.address}
-//                 onChange={handleInputChange}
-//                 className="border border-gray-300 p-1 sm:p-2 rounded"
-//                 placeholder="Address"
-//               />
-//               <input
-//                 type="email"
-//                 name="email"
-//                 value={newJobCard.email}
-//                 onChange={handleInputChange}
-//                 className="border border-gray-300 p-1 sm:p-2 rounded"
-//                 placeholder="Email"
-//               />
-//               <h3 className="col-span-2 text-sm sm:text-lg font-semibold text-center mt-2">
-//                 Add Vehicle Details
-//               </h3>
-//               <input
-//                 type="text"
-//                 name="brand"
-//                 value={newJobCard.brand}
-//                 onChange={handleInputChange}
-//                 className="border border-gray-300 p-1 sm:p-2 rounded"
-//                 placeholder="Brand"
-//               />
-//               <input
-//                 type="text"
-//                 name="modelNo"
-//                 value={newJobCard.modelNo}
-//                 onChange={handleInputChange}
-//                 className="border border-gray-300 p-1 sm:p-2 rounded"
-//                 placeholder="Model No"
-//               />
-//               <input
-//                 type="text"
-//                 name="yearOfManufacture"
-//                 value={newJobCard.yearOfManufacture}
-//                 onChange={handleInputChange}
-//                 className="border border-gray-300 p-1 sm:p-2 rounded"
-//                 placeholder="Year of Manufacture"
-//               />
-//               <input
-//                 type="text"
-//                 name="engineNo"
-//                 value={newJobCard.engineNo}
-//                 onChange={handleInputChange}
-//                 className="border border-gray-300 p-1 sm:p-2 rounded"
-//                 placeholder="Engine No"
-//               />
-//               <input
-//                 type="text"
-//                 name="chassisNo"
-//                 value={newJobCard.chassisNo}
-//                 onChange={handleInputChange}
-//                 className="border border-gray-300 p-1 sm:p-2 rounded"
-//                 placeholder="Chassis No"
-//               />
-//             </div>
-//             <div className="flex justify-end mt-4 gap-2">
-//               <Button
-//                 onClick={handleCancel}
-//                 className="bg-red-500 text-white px-2 py-1"
-//               >
-//                 Cancel
-//               </Button>
-//               <Button
-//                 onClick={handleInputSave}
-//                 className="bg-blue-500 text-white px-2 py-1"
-//               >
-//                 Save
-//               </Button>
-//             </div>
-//           </div>
-//         </motion.div>
-//       )}
-//     </div>
-//   );
-// }
-
 "use client";
-import React, { useEffect, useState, useRef, useMemo } from "react";
-import axios from "axios";
-import Link from "next/link";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Edit, Trash } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { formatDate } from "@/lib/utils";
+import axios from "axios";
+import { motion } from "framer-motion";
+import { Search } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Pagination from "../../../../../../components/ui/Pagination";
-import { FaList, FaHourglassHalf, FaMoneyBill } from "react-icons/fa";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 uuidv4();
 
@@ -692,24 +56,21 @@ const TruncatedText = ({ text, className }) => {
 };
 
 /* ----------------------------------------
-   Reusable Table Components
----------------------------------------- */
-const Table = ({ children, className }) => <table className={`table-auto ${className}`}>{children}</table>;
-const TableHeader = ({ children }) => <thead>{children}</thead>;
-const TableBody = ({ children }) => <tbody>{children}</tbody>;
-const TableHead = ({ children, className }) => <th className={className}>{children}</th>;
-const TableRow = ({ children, className, ...props }) => (
-  <tr className={className} {...props}>
-    {children}
-  </tr>
-);
-const TableCell = ({ children, className }) => <td className={className}>{children}</td>;
-
-/* ----------------------------------------
    JobCardTable Component
 ---------------------------------------- */
 const JobCardTable = ({ jobCards, currentPosts, onDelete, postsPerPage, setCurrentPage, currentPage }) => {
-  const tableHeaders = ["Sl No", "Job Card No", "Job Card Type", "Total Amount"];
+  const tableHeaders = [
+    "Sl No",
+    "Job Card No",
+    "Customer",
+    "Mobile No",
+    "Chassis No",
+    "Job Card Type",
+    "Opened On",
+    "OSJ",
+    "Status",
+    "Amount",
+  ];
 
   const MotionTableRow = motion.create(TableRow);
   const pathname = usePathname();
@@ -718,11 +79,11 @@ const JobCardTable = ({ jobCards, currentPosts, onDelete, postsPerPage, setCurre
 
   return (
     <div className="overflow-x-auto w-full">
-      <Table className="bg-gray-100 shadow-lg w-full rounded-lg">
+      <Table className="shadow-lg w-full rounded-lg">
         <TableHeader>
           <TableRow className="bg-gray-200 w-full m-0 text-left">
             {tableHeaders.map((header, index) => (
-              <TableHead key={index} className="py-2 px-2 border-b font-bold text-xs sm:text-sm">
+              <TableHead key={index} className="py-2 border-b font-bold text-xs sm:text-sm pl-1">
                 <TruncatedText text={header} className="w-full" />
               </TableHead>
             ))}
@@ -737,19 +98,37 @@ const JobCardTable = ({ jobCards, currentPosts, onDelete, postsPerPage, setCurre
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <TableCell className="py-2 text-left px-2 sm:px-4 border-b text-xs sm:text-sm">
+              <TableCell className="py-2 text-left border-b text-xs sm:text-sm pl-2">
                 {(currentPage - 1) * postsPerPage + index + 1}
               </TableCell>
-              <TableCell className="py-2 text-left px-2 sm:px-4 border-b text-xs sm:text-sm">
+              <TableCell className="py-2 text-left border-b text-xs sm:text-sm pl-1">
                 <Link href={`/brands/${brandName}/locations/${locationName}/job-card/${jobCard.code}`} passHref>
                   <TruncatedText text={jobCard.code || "N/A"} className="w-full" />
                 </Link>
               </TableCell>
-              <TableCell className="py-2 text-left px-2 sm:px-4 border-b text-xs sm:text-sm">
+              <TableCell className="py-2 text-left border-b text-xs sm:text-sm pl-1">
+                {jobCard.customer.name || "N/A"}
+              </TableCell>
+              <TableCell className="py-2 text-left border-b text-xs sm:text-sm pl-1">
+                {jobCard.customer.phone || "N/A"}
+              </TableCell>
+              <TableCell className="py-2 text-left border-b text-xs sm:text-sm pl-1">
+                {jobCard.vehicle.chassisNo || "N/A"}
+              </TableCell>
+              <TableCell className="py-2 text-left border-b text-xs sm:text-sm pl-1">
                 {jobCard.jobCardType.name || "N/A"}
               </TableCell>
-              <TableCell className="py-2 text-left px-2 sm:px-4 border-b text-xs sm:text-sm">
-                {jobCard.totalAmount || "N/A"}
+              <TableCell className="py-2 text-left border-b text-xs sm:text-sm pl-1">
+                {formatDate(jobCard.createdAt) || "N/A"}
+              </TableCell>
+              <TableCell className="py-2 text-left border-b text-xs sm:text-sm pl-1">
+                {jobCard.osj?.amount || "N/A"}
+              </TableCell>
+              <TableCell className="py-2 text-left border-b text-xs sm:text-sm pl-1">
+                {jobCard.jobCardStatus || "N/A"}
+              </TableCell>
+              <TableCell className="py-2 text-left border-b text-xs sm:text-sm pl-1">
+                {`₹${jobCard.amount}` || "N/A"}
               </TableCell>
             </MotionTableRow>
           ))}
@@ -768,14 +147,18 @@ const JobCardTable = ({ jobCards, currentPosts, onDelete, postsPerPage, setCurre
 /* ----------------------------------------
    SummaryCard Component
 ---------------------------------------- */
-const SummaryCard = ({ title, count, amount, icon: IconComponent }) => {
+const SummaryCard = ({ title, count, amount, color }) => {
   return (
-    <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex flex-row items-center justify-around mb-2">
-      {IconComponent && <IconComponent className="text-blue-500" size={38} />}
-      <div className="ml-2 2xl:flex">
-        <p className="text-xs sm:text-sm text-gray-500">{title}</p>
-        <p className="text-xl sm:text-2xl font-semibold text-gray-800">{count}</p>
-        {amount !== undefined && <p className="sm:text-xs lg:text-lg text-gray-900">₹ {amount}</p>}
+    <div className="bg-white rounded-lg shadow sm:p-2 md:p-4 mb-2">
+      <div className="flex justify-between items-center ">
+        <div className={`flex flex-col gap-y-1 text-${color}`}>
+          <h1 className="font-bold text-xl">{title}</h1>
+        </div>
+        <div
+          className={`border-4 border-${color} rounded-full relative flex items-center justify-center sm:size-10 md:size-20 lg:size-30`}
+        >
+          <p className="absolute text-center text-lg font-bold">{count ? count : `₹${amount}`}</p>
+        </div>
       </div>
     </div>
   );
@@ -784,35 +167,41 @@ const SummaryCard = ({ title, count, amount, icon: IconComponent }) => {
 /* ----------------------------------------
    Date Filter Helper
 ---------------------------------------- */
-const filterJobCardsByDate = (jobCards, filter) => {
-  if (filter === "All") return jobCards;
+const getDateRange = (filter) => {
   const now = new Date();
-  if (filter === "Today") {
-    return jobCards.filter((card) => {
-      if (!card.servicedDate) return false;
-      const cardDate = new Date(card.servicedDate);
-      return cardDate.toDateString() === now.toDateString();
-    });
+  switch (filter) {
+    case "Today":
+      return {
+        from: new Date(now.setHours(0, 0, 0, 0)).toISOString(),
+        to: new Date(now.setHours(23, 59, 59, 999)).toISOString(),
+      };
+    case "This Week":
+      const weekAgo = new Date(now);
+      weekAgo.setDate(now.getDate() - 7);
+      return {
+        from: new Date(weekAgo.setHours(0, 0, 0, 0)).toISOString(),
+        to: new Date(now.setHours(23, 59, 59, 999)).toISOString(),
+      };
+    case "This Month":
+      const monthAgo = new Date(now);
+      monthAgo.setDate(now.getDate() - 30);
+      return {
+        from: new Date(monthAgo.setHours(0, 0, 0, 0)).toISOString(),
+        to: new Date(now.setHours(23, 59, 59, 999)).toISOString(),
+      };
+    case "This Year":
+      const yearAgo = new Date(now);
+      yearAgo.setFullYear(now.getFullYear() - 1);
+      return {
+        from: new Date(yearAgo.setHours(0, 0, 0, 0)).toISOString(),
+        to: new Date(now.setHours(23, 59, 59, 999)).toISOString(),
+      };
+    default:
+      return {
+        from: "",
+        to: "",
+      };
   }
-  if (filter === "Yesterday") {
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-    return jobCards.filter((card) => {
-      if (!card.servicedDate) return false;
-      const cardDate = new Date(card.servicedDate);
-      return cardDate.toDateString() === yesterday.toDateString();
-    });
-  }
-  if (filter === "This Week") {
-    const weekAgo = new Date(now);
-    weekAgo.setDate(now.getDate() - 7);
-    return jobCards.filter((card) => {
-      if (!card.servicedDate) return false;
-      const cardDate = new Date(card.servicedDate);
-      return cardDate >= weekAgo && cardDate <= now;
-    });
-  }
-  return jobCards;
 };
 
 /* ----------------------------------------
@@ -825,10 +214,8 @@ export default function JobCardPage() {
   const [summaryData, setSummaryData] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [summaryError, setSummaryError] = useState(null);
-  const [searchResults, setSearchResults] = useState([]);
-  const [showInput, setShowInput] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [postsPerPage, setPostsPerPage] = useState(10);
+  const [postsPerPage, setPostsPerPage] = useState(25);
   const [newJobCard, setNewJobCard] = useState({
     jobCardNumber: "",
     regNo: "",
@@ -848,23 +235,42 @@ export default function JobCardPage() {
   });
   const [searchInput, setSearchInput] = useState("");
   const [dateFilter, setDateFilter] = useState("All");
+  const [showInput, setShowInput] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const brandName = searchParams.get("brandName") || "defaultBrand";
   const locationName = searchParams.get("locationName");
 
-  // Fetch all job cards
+  // Fetch all job cards or filtered job cards based on search or date filter
   useEffect(() => {
     async function fetchJobCards() {
       try {
         setJobCardsLoading(true);
-        const data = await getAllJobCards();
+        
+        // Handle different API calls based on filter state
+        let data;
+        
+        if (searchInput && searchInput.trim() !== "") {
+          // Search by query
+          const response = await axios.get(`http://3.7.2.124:5000/api/job-card?query=${searchInput}&pageSize=100000`);
+          data = response.data.data.jobCards;
+        } else if (dateFilter !== "All") {
+          // Filter by date
+          const { from, to } = getDateRange(dateFilter);
+          const response = await axios.get(`http://3.7.2.124:5000/api/job-card?from=${from}&to=${to}&pageSize=100000`);
+          data = response.data.data.jobCards;
+        } else {
+          // Get all job cards (paginated fetch)
+          data = await getAllJobCards();
+        }
+        
         if (!data) {
           setJobCardsError("Error fetching job cards. Please try again later.");
         } else {
           setJobCards(data);
-          setSearchResults(data);
+          // Reset to page 1 whenever filter changes
+          setCurrentPage(1);
         }
       } catch (error) {
         setJobCardsError("Error fetching job cards. Please try again later.");
@@ -873,15 +279,17 @@ export default function JobCardPage() {
         setJobCardsLoading(false);
       }
     }
+    
     fetchJobCards();
-  }, []);
+  }, [searchInput, dateFilter]);
 
   // Fetch summary counts from the /count endpoint
   useEffect(() => {
     async function fetchSummary() {
       try {
         setSummaryLoading(true);
-        const response = await axios.get("http://localhost:5001/api/job-card/count");
+        const response = await axios.get("http://3.7.2.124:5000/api/job-card/count");
+        console.info(`Counts fetched: ${JSON.stringify(response.data.data)}`);
         if (!response.data.data) {
           setSummaryError("Error fetching summary counts. Please try again later.");
         } else {
@@ -897,19 +305,35 @@ export default function JobCardPage() {
     fetchSummary();
   }, []);
 
-  // Filter job cards by selected date
-  const filteredJobCards = filterJobCardsByDate(jobCards, dateFilter);
+  // Get all job cards with pagination from API
+  async function getAllJobCards() {
+    try {
+      let page = 1;
+      const pageSize = 25;
+      let allJobCards = [];
+      let hasMore = true;
+      while (hasMore) {
+        const response = await axios.get(`http://3.7.2.124:5000/api/job-card?page=${page}&pageSize=${pageSize}`);
+        const fetchedJobCards = response.data.data.jobCards;
+        console.log("Job card fetched => ", fetchedJobCards);
+        if (fetchedJobCards && fetchedJobCards.length > 0) {
+          allJobCards = allJobCards.concat(fetchedJobCards);
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+      return allJobCards;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  }
+
+  // Calculate current page data for the table
   const lastPostIndex = currentPage * postsPerPage;
   const firstPostIndex = lastPostIndex - postsPerPage;
-  const currentPosts = filteredJobCards.slice(firstPostIndex, lastPostIndex);
-
-  // Fallback computed values from jobCards (if summaryData is not available)
-  const totalJobCardsCount = jobCards.length;
-  const totalJobCardsAmount = jobCards.reduce((sum, card) => sum + Number(card.totalAmount || 0), 0);
-  const pendingCount = jobCards.filter((card) => card.jobCardStatus === "Pending").length;
-  const invoiceCards = jobCards.filter((card) => Number(card.totalAmount) > 0);
-  const invoiceCount = invoiceCards.length;
-  const totalInvoiceValue = invoiceCards.reduce((sum, card) => sum + Number(card.totalAmount || 0), 0);
+  const currentPosts = jobCards.slice(firstPostIndex, lastPostIndex);
 
   const handleAddCardClick = () => {
     setShowInput(true);
@@ -927,29 +351,6 @@ export default function JobCardPage() {
     }));
   };
 
-  async function getAllJobCards() {
-    try {
-      let page = 1;
-      const pageSize = 10;
-      let allJobCards = [];
-      let hasMore = true;
-      while (hasMore) {
-        const response = await axios.get(`http://localhost:5001/api/job-card?page=${page}&pageSize=${pageSize}`);
-        const fetchedJobCards = response.data.data.jobCards;
-        console.log("Job card fetched => ", fetchedJobCards);
-        if (fetchedJobCards && fetchedJobCards.length > 0) {
-          allJobCards = allJobCards.concat(fetchedJobCards);
-          page++;
-        } else {
-          hasMore = false;
-        }
-      }
-      return allJobCards;
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   const handleInputSave = async () => {
     const response = await fetch("/api/job-cards", {
       method: "POST",
@@ -961,7 +362,6 @@ export default function JobCardPage() {
     if (response.ok) {
       const newCard = await response.json();
       setJobCards([...jobCards, newCard]);
-      setSearchResults([...jobCards, newCard]);
       setShowInput(false);
     } else {
       console.error("Failed to save job card");
@@ -973,34 +373,44 @@ export default function JobCardPage() {
   };
 
   const handleSearchChange = (e) => {
-    setSearchInput(e.target.value);
+    const value = e.target.value;
+    setSearchInput(value);
   };
 
   const handleSearchSubmit = async () => {
-    const response = await fetch(`/api/job-cards?search=${searchInput}`);
-    const data = await response.json();
-    setSearchResults(data);
+    if (searchInput.trim() === "") {
+      // If search is empty, reset to all job cards
+      const data = await getAllJobCards();
+      setJobCards(data);
+      setCurrentPage(1);
+    } else {
+      try {
+        const response = await axios.get(`http://3.7.2.124:5000/api/job-card?query=${searchInput}`);
+        setJobCards(response.data.data.jobCards);
+        setCurrentPage(1);
+      } catch (error) {
+        console.error("Error searching job cards:", error);
+      }
+    }
   };
 
   const handleDelete = (index) => {
-    setSearchResults((prev) => prev.filter((_, i) => i !== index));
+    setJobCards((prev) => prev.filter((_, i) => i !== index));
   };
-
-  const displayedJobCards = searchResults.length ? searchResults : jobCards;
 
   return (
     <div className="flex flex-col sm:p-2 lg:p-6 bg-gray-50 min-h-screen overflow-x-hidden text-xs sm:text-sm md:text-base">
       {/* Top: Search and Buttons */}
       <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mb-4">
-        <div className="flex items-center justify-between w-full gap-2 sm:gap-4 lg:gap-2">
-          <div className="flex gap-4 items-center">
-            <div className="flex items-center">
-              <input
+        <div className="flex items-center w-full gap-2 sm:gap-4 lg:gap-2">
+          <div className="flex gap-4 items-center w-full max-w-4xl">
+            <div className="flex items-center w-full">
+              <Input
                 type="text"
                 value={searchInput}
                 onChange={handleSearchChange}
-                className="border border-black p-1 rounded"
-                placeholder="Mobile No/Bike No"
+                className="border border-black p-1 rounded w-full"
+                placeholder="Customer Name, Mobile No, Chassis No, Job Card No"
               />
             </div>
             <Button onClick={handleSearchSubmit} className="px-2 sm:px-4">
@@ -1008,25 +418,29 @@ export default function JobCardPage() {
             </Button>
           </div>
         </div>
-        <div className="flex items-center px-2 2xl:mx-6 mb-4">
-          <select
+        <div className="flex items-center px-2 2xl:mx-6">
+          <Select
             value={dateFilter}
-            onChange={(e) => {
-              setDateFilter(e.target.value);
-              setCurrentPage(1);
+            onValueChange={(value) => {
+              setDateFilter(value);
             }}
-            className="border border-gray-400 p-1 sm:p-2 rounded"
           >
-            <option value="All">All</option>
-            <option value="Today">Today</option>
-            <option value="Yesterday">Yesterday</option>
-            <option value="This Week">This Week</option>
-          </select>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by Date" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All</SelectItem>
+              <SelectItem value="Today">Today</SelectItem>
+              <SelectItem value="This Week">This Week</SelectItem>
+              <SelectItem value="This Month">This Month</SelectItem>
+              <SelectItem value="This Year">This Year</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {/* Summary Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:p-4 gap-4 mb-4 px-2 sm:px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {summaryLoading ? (
           <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex items-center justify-center mb-2">
             <p className="text-blue-500 text-center">Loading summary...</p>
@@ -1038,13 +452,8 @@ export default function JobCardPage() {
         ) : (
           <>
             {/* Total Cards */}
-            {summaryData && summaryData.totalCount != null && summaryData.totalAmount != null ? (
-              <SummaryCard
-                title="Total Cards"
-                count={summaryData.totalCount}
-                amount={summaryData.totalAmount}
-                icon={FaList}
-              />
+            {summaryData && summaryData.totalCount != null ? (
+              <SummaryCard title="Total Job Cards" count={summaryData.totalCount} color="black" />
             ) : (
               <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex items-center justify-center mb-2">
                 <p className="text-red-500 text-center">Error in Fetching Total Cards</p>
@@ -1053,7 +462,7 @@ export default function JobCardPage() {
 
             {/* Pending */}
             {summaryData && summaryData.pending != null ? (
-              <SummaryCard title="Pending" count={summaryData.pending} icon={FaHourglassHalf} />
+              <SummaryCard title="Pending Job Cards" count={summaryData.pending} color="red-500" />
             ) : (
               <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex items-center justify-center mb-2">
                 <p className="text-red-500 text-center">Error in Fetching Pending Count</p>
@@ -1061,16 +470,20 @@ export default function JobCardPage() {
             )}
 
             {/* Invoice */}
-            {summaryData && summaryData.completed != null && summaryData.totalAmount != null ? (
-              <SummaryCard
-                title="Invoice"
-                count={summaryData.completed}
-                amount={summaryData.totalAmount}
-                icon={FaMoneyBill}
-              />
+            {summaryData && summaryData.completed != null ? (
+              <SummaryCard title="Invoiced Job Cards" count={summaryData.completed || "0"} color="green-500" />
             ) : (
               <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex items-center justify-center mb-2">
                 <p className="text-red-500 text-center">Error fetching Invoice data</p>
+              </div>
+            )}
+
+            {/* Total Value */}
+            {summaryData && summaryData.totalAmount != null ? (
+              <SummaryCard title="Total Value" amount={summaryData.totalAmount} color="black" />
+            ) : (
+              <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex items-center justify-center mb-2">
+                <p className="text-red-500 text-center">Error fetching Total Value</p>
               </div>
             )}
           </>
@@ -1083,11 +496,11 @@ export default function JobCardPage() {
           <div className="p-4 text-center">Loading job cards...</div>
         ) : jobCardsError ? (
           <div className="p-4 text-red-500 text-center">{jobCardsError}</div>
-        ) : displayedJobCards.length === 0 ? (
+        ) : jobCards.length === 0 ? (
           <div className="p-4 text-center">No job cards found.</div>
         ) : (
           <JobCardTable
-            jobCards={displayedJobCards}
+            jobCards={jobCards}
             currentPosts={currentPosts}
             setCurrentPage={setCurrentPage}
             postsPerPage={postsPerPage}
