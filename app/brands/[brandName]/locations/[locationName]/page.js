@@ -473,7 +473,7 @@ const LocationPage = () => {
           </div>
 
           {/* Replace your existing container with something like this: */}
-          <div className="grid grid-cols-1 md:grid-cols-[70%_30%] gap-6 mt-6 p-6 border border-gray-300 rounded-lg shadow-sm bg-white">
+          <div className="grid grid-cols-3 gap-6 mt-6 h-auto p-6 border border-gray-300 rounded-lg shadow-sm bg-white">
             <DeliveryCard />
             <BestSellingProductsTable />
           </div>
