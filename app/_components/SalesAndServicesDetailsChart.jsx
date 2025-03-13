@@ -108,7 +108,7 @@ const SalesAndServicesDetailsChart = ({ selectedCard, period, data }) => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await axios.get(
-        "http://192.168.0.12:5001/api/job-card/count"
+        "http://localhost:5001/api/job-card/count"
       );
       setChartData(response.data.data);
       console.log("chartdata=>", response.data.data);

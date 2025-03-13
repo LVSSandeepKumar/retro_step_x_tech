@@ -24,7 +24,7 @@ export default function SingleJobCardDetails({ initialJobCard }) {
   const fetchJobCard = async (code) => {
     try {
       const response = await axios.get(
-        `http://192.168.0.12:5001/api/job-card/${code}`,
+        `http://localhost:5001/api/job-card/${code}`,
         {
           headers: { "Content-Type": "application/json" },
         }
