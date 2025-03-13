@@ -12,11 +12,12 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { subLocationsData } from "@/lib/constants";
+import axios from "axios";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import { subDays } from "date-fns";
 
 // Remove these imports as they're no longer needed
 // import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -171,6 +172,20 @@ const INITIAL_EXPENSES_DATA = {
   "Transportation Charges": 12000,
 };
 
+const getDateRange = (period) => {
+  const now = new Date();
+  switch (period) {
+    case "WEEKLY":
+      return { from: subDays(now, 7).toISOString(), to: now.toISOString() };
+    case "MONTHLY":
+      return { from: subDays(now, 30).toISOString(), to: now.toISOString() };
+    case "YTD":
+      return { from: new Date(now.getFullYear(), 0, 1).toISOString(), to: now.toISOString() };
+    default:
+      return { from: subDays(now, 1).toISOString(), to: now.toISOString() };
+  }
+};
+
 const LocationPage = () => {
   const { brandName, locationName } = useParams();
   const router = useRouter();
@@ -186,14 +201,22 @@ const LocationPage = () => {
   const [expensesData, setExpensesData] = useState(INITIAL_EXPENSES_DATA);
   const[numericalData, setNumericalData] = useState([]);  
 
-
   // Add new state
   const [revenueValues, setRevenueValues] = useState(
     INITIAL_PERIOD_VALUES.YESTERDAY
   );
 
+  const fetchJobCardData = async (from, to) => {
+    try {
+      const response = await axios.get(`http://localhost:5001/api/job-card?from=${from}&to=${to}`);
+      setNumericalData(response.data.data);
+    } catch (error) {
+      console.error('Error fetching data: ', error);
+    }
+  };
+
   const inputFields = [
-    { label: "Product Type", type: "text", name: "productType" },
+    { label: "Product Type", type: "text", name: "product_Type" },
     { label: "Product Name", type: "text", name: "productName" },
     { label: "Customer Name", type: "text", name: "customerName" },
     { label: "Customer No.", type: "text", name: "customerNo" },
@@ -266,7 +289,7 @@ const LocationPage = () => {
 
 
   useEffect(() => {
-    axios.get("http://192.168.0.12:5001/api/job-card/count")
+    axios.get("http://localhost:5001/api/job-card/count")
       .then((response) => {
         setNumericalData(response.data.data);
         console.log("kjhg",response.data.data);  
@@ -277,6 +300,9 @@ const LocationPage = () => {
   }, []);
   // Replace generateDataForPeriod with these two functions
   const generateRevenueValues = (period) => {
+    const { from, to } = getDateRange(period);
+    fetchJobCardData(from, to);
+
     // Only generate new values if not using initial values
     if (period === "YESTERDAY" && !revenueValues.hasRandomized) {
       setRevenueValues({

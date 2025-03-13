@@ -637,34 +637,6 @@
 //   );
 // }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 "use client";
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import axios from "axios";
@@ -675,11 +647,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Plus, Edit, Trash } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import Pagination from "../../../../../../components/ui/Pagination";
-import {
-  FaList,
-  FaHourglassHalf,
-  FaMoneyBill,
-} from "react-icons/fa";
+import { FaList, FaHourglassHalf, FaMoneyBill } from "react-icons/fa";
 
 uuidv4();
 
@@ -726,42 +694,22 @@ const TruncatedText = ({ text, className }) => {
 /* ----------------------------------------
    Reusable Table Components
 ---------------------------------------- */
-const Table = ({ children, className }) => (
-  <table className={`table-auto ${className}`}>{children}</table>
-);
+const Table = ({ children, className }) => <table className={`table-auto ${className}`}>{children}</table>;
 const TableHeader = ({ children }) => <thead>{children}</thead>;
 const TableBody = ({ children }) => <tbody>{children}</tbody>;
-const TableHead = ({ children, className }) => (
-  <th className={className}>{children}</th>
-);
+const TableHead = ({ children, className }) => <th className={className}>{children}</th>;
 const TableRow = ({ children, className, ...props }) => (
   <tr className={className} {...props}>
     {children}
   </tr>
 );
-const TableCell = ({ children, className }) => (
-  <td className={className}>{children}</td>
-);
+const TableCell = ({ children, className }) => <td className={className}>{children}</td>;
 
 /* ----------------------------------------
    JobCardTable Component
 ---------------------------------------- */
-const JobCardTable = ({
-  jobCards,
-  currentPosts,
-  onDelete,
-  postsPerPage,
-  setCurrentPage,
-  currentPage,
-}) => {
-  const tableHeaders = [
-    "Sr No",
-    "Job Card No",
-    "Last KM",
-    "Job Card Type",
-    "Total Amount",
-    "Actions",
-  ];
+const JobCardTable = ({ jobCards, currentPosts, onDelete, postsPerPage, setCurrentPage, currentPage }) => {
+  const tableHeaders = ["Sl No", "Job Card No", "Job Card Type", "Total Amount"];
 
   const MotionTableRow = motion.create(TableRow);
   const pathname = usePathname();
@@ -772,12 +720,9 @@ const JobCardTable = ({
     <div className="overflow-x-auto w-full">
       <Table className="bg-gray-100 shadow-lg w-full rounded-lg">
         <TableHeader>
-          <TableRow className="bg-gray-200 w-full">
+          <TableRow className="bg-gray-200 w-full m-0 text-left">
             {tableHeaders.map((header, index) => (
-              <TableHead
-                key={index}
-                className="py-2 px-2 sm:px-4 border-b font-bold text-xs sm:text-sm"
-              >
+              <TableHead key={index} className="py-2 px-2 border-b font-bold text-xs sm:text-sm">
                 <TruncatedText text={header} className="w-full" />
               </TableHead>
             ))}
@@ -792,37 +737,19 @@ const JobCardTable = ({
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
+              <TableCell className="py-2 text-left px-2 sm:px-4 border-b text-xs sm:text-sm">
                 {(currentPage - 1) * postsPerPage + index + 1}
               </TableCell>
-              <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
-                <Link
-                  href={`/brands/${brandName}/locations/${locationName}/job-card/${jobCard.code}`}
-                  passHref
-                >
+              <TableCell className="py-2 text-left px-2 sm:px-4 border-b text-xs sm:text-sm">
+                <Link href={`/brands/${brandName}/locations/${locationName}/job-card/${jobCard.code}`} passHref>
                   <TruncatedText text={jobCard.code || "N/A"} className="w-full" />
                 </Link>
               </TableCell>
-              <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
-                {jobCard.generalDetails?.kmReading || "N/A"}
-              </TableCell>
-              <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
+              <TableCell className="py-2 text-left px-2 sm:px-4 border-b text-xs sm:text-sm">
                 {jobCard.jobCardType.name || "N/A"}
               </TableCell>
-              <TableCell className="py-2 text-center px-2 sm:px-4 border-b text-xs sm:text-sm">
+              <TableCell className="py-2 text-left px-2 sm:px-4 border-b text-xs sm:text-sm">
                 {jobCard.totalAmount || "N/A"}
-              </TableCell>
-              <TableCell className="py-2 px-2 sm:px-4 border-b justify-center flex gap-1 sm:gap-2">
-                <Button variant="outline" size="icon">
-                  <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onDelete(index)}
-                >
-                  <Trash className="h-4 w-4 sm:h-5 sm:w-5" />
-                </Button>
               </TableCell>
             </MotionTableRow>
           ))}
@@ -848,11 +775,7 @@ const SummaryCard = ({ title, count, amount, icon: IconComponent }) => {
       <div className="ml-2 2xl:flex">
         <p className="text-xs sm:text-sm text-gray-500">{title}</p>
         <p className="text-xl sm:text-2xl font-semibold text-gray-800">{count}</p>
-        {amount !== undefined && (
-          <p className="sm:text-xs lg:text-lg text-gray-900">
-            ₹ {amount}
-          </p>
-        )}
+        {amount !== undefined && <p className="sm:text-xs lg:text-lg text-gray-900">₹ {amount}</p>}
       </div>
     </div>
   );
@@ -958,9 +881,7 @@ export default function JobCardPage() {
     async function fetchSummary() {
       try {
         setSummaryLoading(true);
-        const response = await axios.get(
-          "http://192.168.0.12:5001/api/job-card/count"
-        );
+        const response = await axios.get("http://localhost:5001/api/job-card/count");
         if (!response.data.data) {
           setSummaryError("Error fetching summary counts. Please try again later.");
         } else {
@@ -984,28 +905,18 @@ export default function JobCardPage() {
 
   // Fallback computed values from jobCards (if summaryData is not available)
   const totalJobCardsCount = jobCards.length;
-  const totalJobCardsAmount = jobCards.reduce(
-    (sum, card) => sum + Number(card.totalAmount || 0),
-    0
-  );
-  const pendingCount = jobCards.filter(
-    (card) => card.jobCardStatus === "Pending"
-  ).length;
+  const totalJobCardsAmount = jobCards.reduce((sum, card) => sum + Number(card.totalAmount || 0), 0);
+  const pendingCount = jobCards.filter((card) => card.jobCardStatus === "Pending").length;
   const invoiceCards = jobCards.filter((card) => Number(card.totalAmount) > 0);
   const invoiceCount = invoiceCards.length;
-  const totalInvoiceValue = invoiceCards.reduce(
-    (sum, card) => sum + Number(card.totalAmount || 0),
-    0
-  );
+  const totalInvoiceValue = invoiceCards.reduce((sum, card) => sum + Number(card.totalAmount || 0), 0);
 
   const handleAddCardClick = () => {
     setShowInput(true);
   };
 
   const handleAddJobCardClick = () => {
-    router.push(
-      `/brands/${brandName}/locations/${locationName}/job-card/job-card-details`
-    );
+    router.push(`/brands/${brandName}/locations/${locationName}/job-card/job-card-details`);
   };
 
   const handleInputChange = (e) => {
@@ -1023,10 +934,8 @@ export default function JobCardPage() {
       let allJobCards = [];
       let hasMore = true;
       while (hasMore) {
-        const response = await axios.get(
-          `http://3.7.2.124:5000/api/job-card?page=${page}&pageSize=${pageSize}`
-        );
-        const fetchedJobCards = response.data.data;
+        const response = await axios.get(`http://localhost:5001/api/job-card?page=${page}&pageSize=${pageSize}`);
+        const fetchedJobCards = response.data.data.jobCards;
         console.log("Job card fetched => ", fetchedJobCards);
         if (fetchedJobCards && fetchedJobCards.length > 0) {
           allJobCards = allJobCards.concat(fetchedJobCards);
@@ -1084,45 +993,36 @@ export default function JobCardPage() {
       {/* Top: Search and Buttons */}
       <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mb-4">
         <div className="flex items-center justify-between w-full gap-2 sm:gap-4 lg:gap-2">
-          <div className="flex gap-2">
-            <Button onClick={handleAddCardClick} className="p-1 sm:p-2">
-              <Plus className="mr-1 lg:m-2" /> Customer
-            </Button>
-            <Button onClick={handleAddJobCardClick} className="p-1 sm:p-2">
-              <Plus className="mr-1 md:m-2" /> Job Card
+          <div className="flex gap-4 items-center">
+            <div className="flex items-center">
+              <input
+                type="text"
+                value={searchInput}
+                onChange={handleSearchChange}
+                className="border border-black p-1 rounded"
+                placeholder="Mobile No/Bike No"
+              />
+            </div>
+            <Button onClick={handleSearchSubmit} className="px-2 sm:px-4">
+              <Search className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
         </div>
-        <div className="flex items-center">
-          <input
-            type="text"
-            value={searchInput}
-            onChange={handleSearchChange}
-            className="border border-black p-1 rounded"
-            placeholder="Mobile No/Bike No"
-          />
+        <div className="flex items-center px-2 2xl:mx-6 mb-4">
+          <select
+            value={dateFilter}
+            onChange={(e) => {
+              setDateFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="border border-gray-400 p-1 sm:p-2 rounded"
+          >
+            <option value="All">All</option>
+            <option value="Today">Today</option>
+            <option value="Yesterday">Yesterday</option>
+            <option value="This Week">This Week</option>
+          </select>
         </div>
-        <Button onClick={handleSearchSubmit} className="px-2 sm:px-4">
-          <Search className="h-4 w-4 sm:h-5 sm:w-5" />
-        </Button>
-      </div>
-      <div className="flex justify-end items-center px-2 2xl:mx-6 mb-4">
-        <label className="mr-2 font-medium text-gray-700">
-          Filter by Date:
-        </label>
-        <select
-          value={dateFilter}
-          onChange={(e) => {
-            setDateFilter(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="border border-gray-400 p-1 sm:p-2 rounded"
-        >
-          <option value="All">All</option>
-          <option value="Today">Today</option>
-          <option value="Yesterday">Yesterday</option>
-          <option value="This Week">This Week</option>
-        </select>
       </div>
 
       {/* Summary Section */}
@@ -1138,9 +1038,7 @@ export default function JobCardPage() {
         ) : (
           <>
             {/* Total Cards */}
-            {summaryData &&
-            summaryData.totalCount != null &&
-            summaryData.totalAmount != null ? (
+            {summaryData && summaryData.totalCount != null && summaryData.totalAmount != null ? (
               <SummaryCard
                 title="Total Cards"
                 count={summaryData.totalCount}
@@ -1149,31 +1047,21 @@ export default function JobCardPage() {
               />
             ) : (
               <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex items-center justify-center mb-2">
-                <p className="text-red-500 text-center">
-                  Error in Fetching Total Cards
-                </p>
+                <p className="text-red-500 text-center">Error in Fetching Total Cards</p>
               </div>
             )}
 
             {/* Pending */}
             {summaryData && summaryData.pending != null ? (
-              <SummaryCard
-                title="Pending"
-                count={summaryData.pending}
-                icon={FaHourglassHalf}
-              />
+              <SummaryCard title="Pending" count={summaryData.pending} icon={FaHourglassHalf} />
             ) : (
               <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex items-center justify-center mb-2">
-                <p className="text-red-500 text-center">
-                  Error in Fetching Pending Count
-                </p>
+                <p className="text-red-500 text-center">Error in Fetching Pending Count</p>
               </div>
             )}
 
             {/* Invoice */}
-            {summaryData &&
-            summaryData.completed != null &&
-            summaryData.totalAmount != null ? (
+            {summaryData && summaryData.completed != null && summaryData.totalAmount != null ? (
               <SummaryCard
                 title="Invoice"
                 count={summaryData.completed}
@@ -1182,9 +1070,7 @@ export default function JobCardPage() {
               />
             ) : (
               <div className="bg-white rounded-lg shadow 2xl:p-10 sm:p-2 flex items-center justify-center mb-2">
-                <p className="text-red-500 text-center">
-                  Error fetching Invoice data
-                </p>
+                <p className="text-red-500 text-center">Error fetching Invoice data</p>
               </div>
             )}
           </>
@@ -1221,9 +1107,7 @@ export default function JobCardPage() {
         >
           <div className="bg-white p-4 sm:p-8 rounded-lg shadow-lg w-4/5 max-w-4xl">
             <div className="grid grid-cols-2 gap-4 sm:gap-5">
-              <h3 className="col-span-2 text-sm sm:text-lg font-semibold text-center">
-                Add Customer Details
-              </h3>
+              <h3 className="col-span-2 text-sm sm:text-lg font-semibold text-center">Add Customer Details</h3>
               <input
                 type="text"
                 name="name"
@@ -1256,9 +1140,7 @@ export default function JobCardPage() {
                 className="border border-gray-300 p-1 sm:p-2 rounded"
                 placeholder="Email"
               />
-              <h3 className="col-span-2 text-sm sm:text-lg font-semibold text-center mt-2">
-                Add Vehicle Details
-              </h3>
+              <h3 className="col-span-2 text-sm sm:text-lg font-semibold text-center mt-2">Add Vehicle Details</h3>
               <input
                 type="text"
                 name="brand"
@@ -1301,16 +1183,10 @@ export default function JobCardPage() {
               />
             </div>
             <div className="flex justify-end mt-4 gap-2">
-              <Button
-                onClick={handleCancel}
-                className="bg-red-500 text-white px-2 py-1"
-              >
+              <Button onClick={handleCancel} className="bg-red-500 text-white px-2 py-1">
                 Cancel
               </Button>
-              <Button
-                onClick={handleInputSave}
-                className="bg-blue-500 text-white px-2 py-1"
-              >
+              <Button onClick={handleInputSave} className="bg-blue-500 text-white px-2 py-1">
                 Save
               </Button>
             </div>

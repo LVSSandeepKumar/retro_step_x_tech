@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
   try {
     const { code } = req.body; // Get code from frontend's POST body
-    const backendResponse = await axios.get('http://3.7.2.124:5000/api/job-card/code', {
+    const backendResponse = await axios.get('http://localhost:5001/api/job-card/code', {
       data: { code }, // Send GET request with body to your backend
     });
 
