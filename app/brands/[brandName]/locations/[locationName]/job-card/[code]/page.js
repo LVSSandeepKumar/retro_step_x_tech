@@ -6,6 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { FaCar, FaUser } from "react-icons/fa";
 import { PieChart, Pie, Tooltip, Legend, Cell } from "recharts";
 import { BsClockHistory } from "react-icons/bs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { toast } from "react-hot-toast";
+import { FaPen } from "react-icons/fa";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function SingleJobCardDetails({ initialJobCard }) {
   const [jobCard, setJobCard] = useState(initialJobCard || null);
@@ -15,6 +20,11 @@ export default function SingleJobCardDetails({ initialJobCard }) {
   const pathname = usePathname();
   // Adjust the index if your route structure differs.
   const code = pathname.split("/")[6];
+
+  // Add these arrays for table headers
+  const partsTableHeaders = ["Sl.No", "Part Code", "Req. Qty", "Alloc. Qty", "Inv. Qty", "Rate", "Amount"];
+
+  const labourTableHeaders = ["Sl.No", "Labour Code", "HSN/SAC", "Units", "Rate", "Amount"];
 
   // Helper: if error is true or value is falsy, returns "N/A".
   const safeValue = (val) => (error ? "N/A" : val || "N/A");
@@ -27,24 +37,22 @@ export default function SingleJobCardDetails({ initialJobCard }) {
     const diffTime = now - createdDate; // Difference in milliseconds
     return Math.floor(diffTime / (1000 * 60 * 60 * 24)); // Convert to days
   };
-  
 
   // Fetch job card details.
   const fetchJobCard = async (code) => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://3.7.2.124:5000/api/job-card/${code}`,
-<<<<<<< HEAD
-        { headers: { "Content-Type": "application/json" } }
-=======
-        {
-          headers: { "Content-Type": "application/json" },
-        }
->>>>>>> 4c42cce905c89e5b0f938bb5480653276afdbf17
-      );
+      const response = await axios.get(`http://localhost:5001/api/job-card/${code}`, {
+        headers: { "Content-Type": "application/json" },
+      });
       setJobCard(response.data.data);
-      console.log("Job card details data:", response.data.data);
+      console.log("Job card details data:", response.data);
+      console.log(response.data.data.jobCard?.generalDetails?.wasteOil);
+      setOilValues({
+        wasteOil: response.data.data?.generalDetails?.wasteOil || 0,
+        newOil: response.data.data?.generalDetails?.newOil || 0,
+      });
+
       setLoading(false);
     } catch (err) {
       console.error("Error:", err);
@@ -60,6 +68,31 @@ export default function SingleJobCardDetails({ initialJobCard }) {
     }
   }, [code]);
 
+  // Modify states for oil editing
+  const [editingOil, setEditingOil] = useState(false);
+  const [oilValues, setOilValues] = useState({
+    wasteOil: jobCard?.generalDetails?.wasteOil || 0,
+    newOil: jobCard?.generalDetails?.newOil || 0,
+  });
+
+  // Modified update handler
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:5001/api/job-card/general-details/${jobCard?.generalDetails?.id}`,
+        oilValues
+      );
+      if (response.status === 200) {
+        setEditingOil(false);
+        fetchJobCard(code);
+      }
+      toast.success("Update successful.");
+    } catch (error) {
+      console.error("Update failed:", error);
+      toast.error("Update failed. Please try again.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -69,8 +102,8 @@ export default function SingleJobCardDetails({ initialJobCard }) {
   }
 
   // Destructure parts and labor arrays.
-  const partsData = jobCard.part || [];
-  const laborData = jobCard.jobCardLabour || [];
+  const partsData = jobCard?.part || [];
+  const laborData = jobCard?.jobCardLabour || [];
 
   // Toggle the history modal.
   const toggleHistoryModal = () => {
@@ -107,29 +140,19 @@ export default function SingleJobCardDetails({ initialJobCard }) {
               <InfoList rows={[{ value: safeValue(jobCard.customer?.name) }]} />
             </div>
             <div className="border-l-2 pl-2">
-              <InfoList
-                rows={[{ value: safeValue(jobCard.customer?.phone) }]}
-              />
+              <InfoList rows={[{ value: safeValue(jobCard.customer?.phone) }]} />
             </div>
           </div>
           <div className="flex items-center space-x-2 mt-4">
             <FaCar className="text-gray-700 w-6 h-6" />
             <div className="pl-2">
-              <InfoList
-                rows={[
-                  { value: safeValue(jobCard.vehicle?.vehicleModel?.name) },
-                ]}
-              />
+              <InfoList rows={[{ value: safeValue(jobCard.vehicle?.vehicleModel?.name) }]} />
             </div>
             <div className="border-l-2 pl-2">
-              <InfoList
-                rows={[{ value: safeValue(jobCard.vehicle?.chassisNo) }]}
-              />
+              <InfoList rows={[{ value: safeValue(jobCard.vehicle?.chassisNo) }]} />
             </div>
             <div className="border-l-2 pl-2">
-              <InfoList
-                rows={[{ value: safeValue(jobCard.vehicle?.registrationNo) }]}
-              />
+              <InfoList rows={[{ value: safeValue(jobCard.vehicle?.registrationNo) }]} />
             </div>
           </div>
         </div>
@@ -138,11 +161,7 @@ export default function SingleJobCardDetails({ initialJobCard }) {
       {/* Date Info and History Toggle Components Side by Side */}
       <div className="flex flex-row items-start justify-start">
         <div className="">
-          <HistoryInfo
-            jobCard={jobCard}
-            toggleHistoryModal={toggleHistoryModal}
-            showHistoryModal={showHistoryModal}
-          />
+          <HistoryInfo jobCard={jobCard} toggleHistoryModal={toggleHistoryModal} showHistoryModal={showHistoryModal} />
         </div>
         <div className="">
           <DateInfo jobCard={jobCard} calculateDateDifference={calculateDateDifference} />
@@ -151,131 +170,122 @@ export default function SingleJobCardDetails({ initialJobCard }) {
 
       {/* OSI / Waste Oil / New Oil Section */}
       <div className="flex flex-wrap justify-between items-center my-4 p-4 bg-white rounded-lg shadow">
-        <div className="font-semibold text-gray-700">
-          OSI: {safeValue(jobCard.osiAmount)}
+        <div className="font-semibold text-gray-700">OSJ: {safeValue(jobCard.osj[0]?.amount)}</div>
+
+        <div className="flex items-center space-x-2">
+          <div className="relative flex items-center gap-4">
+            <h1 className="font-semibold text-gray-700">Waste Oil</h1>
+            <Input
+              type="number"
+              value={oilValues.wasteOil}
+              onChange={(e) => setOilValues((prev) => ({ ...prev, wasteOil: e.target.value }))}
+              disabled={!editingOil}
+              className="w-32 pr-8"
+            />
+            <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">L</span>
+          </div>
         </div>
-        <div className="font-semibold text-gray-700">
-          Waste Oil: {safeValue(jobCard.wasteOilCollected)} ML collected
+
+        <div className="flex items-center space-x-2">
+          <div className="relative flex items-center gap-4">
+            <h1 className="font-semibold text-gray-700">New Oil</h1>
+            <Input
+              type="number"
+              value={oilValues.newOil}
+              onChange={(e) => setOilValues((prev) => ({ ...prev, newOil: e.target.value }))}
+              disabled={!editingOil}
+              className="w-32 pr-8"
+            />
+            <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">L</span>
+          </div>
         </div>
-        <div className="font-semibold text-gray-700">
-          New Oil: {safeValue(jobCard.newOilGranted)}
-        </div>
+
+        <Button
+          onClick={() => (editingOil ? handleSubmit() : setEditingOil(true))}
+          className={`p-2 rounded-md ${editingOil ? "bg-black text-white hover:bg-gray-800" : "hover:bg-gray-100"}`}
+        >
+          {editingOil ? (
+            "Save"
+          ) : (
+            <>
+              <span className="mr-2">Edit</span>
+              <FaPen className="w-4 h-4" />
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Parts Table */}
       <div className="mt-6 bg-white rounded-xl p-4 shadow-md">
-        <h3 className="text-lg font-bold text-gray-800 mb-3 tracking-wide">
-          Parts Table
-        </h3>
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-200">
-            <tr>
-              <th scope="col" className="px-4 py-2">
-                Sl.No
-              </th>
-              <th scope="col" className="px-4 py-2">
-                Part Code
-              </th>
-              <th scope="col" className="px-4 py-2">
-                HSN Code
-              </th>
-              <th scope="col" className="px-4 py-2">
-                Req. Qty
-              </th>
-              <th scope="col" className="px-4 py-2">
-                Alloc. Qty
-              </th>
-              <th scope="col" className="px-4 py-2">
-                Inv. Qty
-              </th>
-              <th scope="col" className="px-4 py-2">
-                Rate
-              </th>
-              <th scope="col" className="px-4 py-2">
-                Amount
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+        <h3 className="text-lg font-bold text-gray-800 mb-3 tracking-wide">Parts Table</h3>
+        <Table>
+          <TableHeader className="bg-black rounded-md">
+            <TableRow>
+              {partsTableHeaders.map((header, index) => (
+                <TableHead key={index} className="text-white font-semibold">
+                  {header}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {partsData.length > 0 ? (
               partsData.map((partItem, index) => (
-                <tr key={index} className="bg-white border-b hover:bg-gray-50">
-                  <td className="px-4 py-2">{index + 1}</td>
-                  <td className="px-4 py-2">
-                    {safeValue(partItem.productCode)}
-                  </td>
-                  <td className="px-4 py-2">{safeValue(partItem.hsnCode)}</td>
-                  <td className="px-4 py-2">
-                    {safeValue(partItem.requestedQuantity)}
-                  </td>
-                  <td className="px-4 py-2">{safeValue(partItem.allocQty)}</td>
-                  <td className="px-4 py-2">
-                    {safeValue(partItem.invoicedQuantity)}
-                  </td>
-                  <td className="px-4 py-2">{safeValue(partItem.rate)}</td>
-                  <td className="px-4 py-2">{safeValue(partItem.amount)}</td>
-                </tr>
+                <TableRow key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-100"}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{safeValue(partItem.productCode)}</TableCell>
+                  <TableCell>{safeValue(partItem.issuedQuantity)}</TableCell>
+                  <TableCell>{safeValue(partItem.issuedQuantity)}</TableCell>
+                  <TableCell>{safeValue(partItem.invoicedQuantity)}</TableCell>
+                  <TableCell>{safeValue(partItem.rate)}</TableCell>
+                  <TableCell>{safeValue(partItem.amount)}</TableCell>
+                </TableRow>
               ))
             ) : (
-              <tr>
-                <td colSpan="8" className="px-4 py-2 text-center">
+              <TableRow>
+                <TableCell colSpan={8} className="text-center">
                   N/A
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* Labour Table */}
       <div className="mt-6 bg-white rounded-xl p-4 shadow-md">
-        <h3 className="text-lg font-bold text-gray-800 mb-3 tracking-wide">
-          Labour Table
-        </h3>
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-200">
-            <tr>
-              <th scope="col" className="px-4 py-2">
-                Sl.No
-              </th>
-              <th scope="col" className="px-4 py-2">
-                Labour Code
-              </th>
-              <th scope="col" className="px-4 py-2">
-                HSN/SAC
-              </th>
-              <th scope="col" className="px-4 py-2">
-                Units
-              </th>
-              <th scope="col" className="px-4 py-2">
-                Rate
-              </th>
-              <th scope="col" className="px-4 py-2">
-                Amount
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+        <h3 className="text-lg font-bold text-gray-800 mb-3 tracking-wide">Labour Table</h3>
+        <Table>
+          <TableHeader className="bg-black">
+            <TableRow>
+              {labourTableHeaders.map((header, index) => (
+                <TableHead key={index} className="text-white font-semibold">
+                  {header}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {laborData.length > 0 ? (
               laborData.map((labItem, index) => (
-                <tr key={index} className="bg-white border-b hover:bg-gray-50">
-                  <td className="px-4 py-2">{index + 1}</td>
-                  <td className="px-4 py-2">{safeValue(labItem.labourCode)}</td>
-                  <td className="px-4 py-2">{safeValue(labItem.hsnSac)}</td>
-                  <td className="px-4 py-2">{safeValue(labItem.units)}</td>
-                  <td className="px-4 py-2">{safeValue(labItem.rate)}</td>
-                  <td className="px-4 py-2">{safeValue(labItem.amount)}</td>
-                </tr>
+                <TableRow key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-100"}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{safeValue(labItem.labourCode)}</TableCell>
+                  <TableCell>{safeValue(labItem.labour.sac)}</TableCell>
+                  <TableCell>{safeValue(labItem.units)}</TableCell>
+                  <TableCell>{safeValue(labItem.rate)}</TableCell>
+                  <TableCell>{safeValue(labItem.amount)}</TableCell>
+                </TableRow>
               ))
             ) : (
-              <tr>
-                <td colSpan="6" className="px-4 py-2 text-center">
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
                   N/A
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
@@ -292,9 +302,7 @@ function DateInfo({ jobCard, calculateDateDifference }) {
     );
   } else if (status === "pending") {
     return (
-      <div className="text-sm bg-gray-50 text-gray-900 p-4">
-        {new Date(jobCard.createdAt).toLocaleDateString()}
-      </div>
+      <div className="text-sm bg-gray-50 text-gray-900 p-4">{new Date(jobCard.createdAt).toLocaleDateString()}</div>
     );
   } else if (status === "in-progress") {
     return (
@@ -310,9 +318,7 @@ function DateInfo({ jobCard, calculateDateDifference }) {
     );
   } else {
     return (
-      <div className="text-sm bg-gray-50 text-gray-900 p-4">
-        {new Date(jobCard.createdAt).toLocaleDateString()}
-      </div>
+      <div className="text-sm bg-gray-50 text-gray-900 p-4">{new Date(jobCard.createdAt).toLocaleDateString()}</div>
     );
   }
 }
@@ -321,30 +327,21 @@ function DateInfo({ jobCard, calculateDateDifference }) {
 function HistoryInfo({ jobCard, toggleHistoryModal, showHistoryModal }) {
   return (
     <div className="p-4">
-      <button
-        onClick={toggleHistoryModal}
-        className="flex items-center focus:outline-none"
-      >
+      <button onClick={toggleHistoryModal} className="flex items-center focus:outline-none">
         <BsClockHistory className="w-10 h-6 text-gray-500 hover:text-black mr-2" />
         <span className="text-blue-600 underline"></span>
       </button>
 
       {showHistoryModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div
-            className="absolute inset-0 bg-black opacity-50"
-            onClick={toggleHistoryModal}
-          ></div>
+          <div className="absolute inset-0 bg-black opacity-50" onClick={toggleHistoryModal}></div>
           <div className="bg-white rounded-xl p-6 relative z-10 max-w-md w-full">
-            <h3 className="text-lg font-bold text-gray-800 mb-3">
-              Job Card History
-            </h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-3">Job Card History</h3>
             {jobCard.history && jobCard.history.length > 0 ? (
               <ul className="list-disc pl-5">
                 {jobCard.history.map((event, idx) => (
                   <li key={idx} className="text-sm text-gray-700">
-                    {new Date(event.date).toLocaleString()} -{" "}
-                    {event.description || "No description"}
+                    {new Date(event.date).toLocaleString()} - {event.description || "No description"}
                   </li>
                 ))}
               </ul>
@@ -387,30 +384,13 @@ function DisplayField({ label, value }) {
 }
 
 function PieChartDisplay({ data, title }) {
-  const COLORS = [
-    "#0088FE",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-    "#A28DFF",
-    "#FF6B6B",
-  ];
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A28DFF", "#FF6B6B"];
 
   return (
     <div className="p-4 bg-gray-300 rounded-lg shadow-md">
-      <h3 className="text-lg font-bold text-black mb-4 tracking-wide">
-        {title}
-      </h3>
+      <h3 className="text-lg font-bold text-black mb-4 tracking-wide">{title}</h3>
       <PieChart width={450} height={300}>
-        <Pie
-          dataKey="value"
-          data={data}
-          cx="50%"
-          cy="50%"
-          outerRadius={80}
-          fill="#8884d8"
-          label
-        >
+        <Pie dataKey="value" data={data} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" label>
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}

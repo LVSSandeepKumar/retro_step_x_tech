@@ -314,11 +314,7 @@ const JobCardDetails = () => {
   const fetchingData = async () => {
     try {
       const response = await axios.get(
-<<<<<<< HEAD
-        `http://192.168.0.9:5001/api/job-card?page=${page}&pageSize=${pageSize}`
-=======
-        "http://3.7.2.124:5000/api/job-card?page=1&pageSize=25"
->>>>>>> 4c42cce905c89e5b0f938bb5480653276afdbf17
+        "http://localhost:5001/api/job-card?page=1&pageSize=25"
       );
       const data = response.data.data.jobCards;
       setJobCardData(data);

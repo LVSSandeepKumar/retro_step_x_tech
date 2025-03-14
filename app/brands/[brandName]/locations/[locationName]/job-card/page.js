@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> 4c42cce905c89e5b0f938bb5480653276afdbf17
 "use client";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -257,12 +253,12 @@ export default function JobCardPage() {
         
         if (searchInput && searchInput.trim() !== "") {
           // Search by query
-          const response = await axios.get(`http://3.7.2.124:5000/api/job-card?query=${searchInput}&pageSize=100000`);
+          const response = await axios.get(`http://localhost:5001/api/job-card?query=${searchInput}&pageSize=100000`);
           data = response.data.data.jobCards;
         } else if (dateFilter !== "All") {
           // Filter by date
           const { from, to } = getDateRange(dateFilter);
-          const response = await axios.get(`http://3.7.2.124:5000/api/job-card?from=${from}&to=${to}&pageSize=100000`);
+          const response = await axios.get(`http://localhost:5001/api/job-card?from=${from}&to=${to}&pageSize=100000`);
           data = response.data.data.jobCards;
         } else {
           // Get all job cards (paginated fetch)
@@ -292,12 +288,8 @@ export default function JobCardPage() {
     async function fetchSummary() {
       try {
         setSummaryLoading(true);
-<<<<<<< HEAD
-        const response = await axios.get("http://192.168.0.9:5001/api/job-card/count");
-=======
-        const response = await axios.get("http://3.7.2.124:5000/api/job-card/count");
+        const response = await axios.get("http://localhost:5001/api/job-card/count");
         console.info(`Counts fetched: ${JSON.stringify(response.data.data)}`);
->>>>>>> 4c42cce905c89e5b0f938bb5480653276afdbf17
         if (!response.data.data) {
           setSummaryError("Error fetching summary counts. Please try again later.");
         } else {
@@ -321,7 +313,7 @@ export default function JobCardPage() {
       let allJobCards = [];
       let hasMore = true;
       while (hasMore) {
-        const response = await axios.get(`http://3.7.2.124:5000/api/job-card?page=${page}&pageSize=${pageSize}`);
+        const response = await axios.get(`http://localhost:5001/api/job-card?page=${page}&pageSize=${pageSize}`);
         const fetchedJobCards = response.data.data.jobCards;
         console.log("Job card fetched => ", fetchedJobCards);
         if (fetchedJobCards && fetchedJobCards.length > 0) {
@@ -359,7 +351,6 @@ export default function JobCardPage() {
     }));
   };
 
-<<<<<<< HEAD
   async function getAllJobCards() {
     try {
       let page = 1;
@@ -368,7 +359,7 @@ export default function JobCardPage() {
       let hasMore = true;
       while (hasMore) {
         const response = await axios.get(
-          `http://3.7.2.124:5000/api/job-card?page=${page}&pageSize=${pageSize}`
+          `http://localhost:5001/api/job-card?page=${page}&pageSize=${pageSize}`
         );
         const fetchedJobCards = response.data.data.jobCards;
         console.log("Job card fetched => ", fetchedJobCards);
@@ -385,8 +376,6 @@ export default function JobCardPage() {
     }
   }
 
-=======
->>>>>>> 4c42cce905c89e5b0f938bb5480653276afdbf17
   const handleInputSave = async () => {
     const response = await fetch("/api/job-cards", {
       method: "POST",
@@ -421,7 +410,7 @@ export default function JobCardPage() {
       setCurrentPage(1);
     } else {
       try {
-        const response = await axios.get(`http://3.7.2.124:5000/api/job-card?query=${searchInput}`);
+        const response = await axios.get(`http://localhost:5001/api/job-card?query=${searchInput}`);
         setJobCards(response.data.data.jobCards);
         setCurrentPage(1);
       } catch (error) {

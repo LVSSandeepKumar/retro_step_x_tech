@@ -208,7 +208,7 @@ const LocationPage = () => {
 
   const fetchJobCardData = async (from, to) => {
     try {
-      const response = await axios.get(`http://3.7.2.124:5000/api/job-card/count?from=${from}&to=${to}`);
+      const response = await axios.get(`http://localhost:5001/api/job-card/count?from=${from}&to=${to}`);
       setNumericalData(response.data.data);
     } catch (error) {
       console.error('Error fetching data: ', error);
@@ -289,11 +289,7 @@ const LocationPage = () => {
 
 
   useEffect(() => {
-<<<<<<< HEAD
-    axios.get("http://192.168.0.9:5001/api/job-card/count")
-=======
-    axios.get("http://3.7.2.124:5000/api/job-card/count")
->>>>>>> 4c42cce905c89e5b0f938bb5480653276afdbf17
+    axios.get("http://localhost:5001/api/job-card/count")
       .then((response) => {
         setNumericalData(response.data.data);
         console.log("kjhg",response.data.data);  
