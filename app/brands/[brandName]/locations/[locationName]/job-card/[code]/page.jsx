@@ -35,7 +35,13 @@ export default function SingleJobCardDetails({ initialJobCard }) {
     try {
       const response = await axios.get(
         `http://3.7.2.124:5000/api/job-card/${code}`,
+<<<<<<< HEAD
         { headers: { "Content-Type": "application/json" } }
+=======
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+>>>>>>> 4c42cce905c89e5b0f938bb5480653276afdbf17
       );
       setJobCard(response.data.data);
       console.log("Job card details data:", response.data.data);

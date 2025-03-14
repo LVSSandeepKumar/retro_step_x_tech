@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
-import VaryingLine from "./VaryingLine";
+import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
+import React, { useMemo, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { BRANDS, OTHER_TYPES, SERVICE_TYPES } from '../_constants/chartConstants'; // Add this import
 import { DetailDialog } from "./DetailDialog";
-import { BRANDS, SERVICE_TYPES, OTHER_TYPES } from '../_constants/chartConstants'; // Add this import
+import VaryingLine from "./VaryingLine";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -113,7 +112,7 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues,numericalData,
     return {
       labels,
       datasets: [{
-        data,
+        data: [100],
         backgroundColor,
         borderColor,
         borderWidth: 1,
@@ -213,7 +212,7 @@ const SelectionGrid = ({ onCardSelect, selectedCard, periodValues,numericalData,
         </h3>
         <div className="flex items-center gap-8">
           <div>
-            <p className="text-xl font-bold mb-2">₹{numericalData?.totalAmount || "N/A"} </p>
+            <p className="text-xl font-bold mb-2">₹{numericalData?.totalAmount || "0"} </p>
             <p className={`text-sm flex items-center ${
               parseFloat(change) >= 0 ? "text-green-600" : "text-red-600"
             }`}>
