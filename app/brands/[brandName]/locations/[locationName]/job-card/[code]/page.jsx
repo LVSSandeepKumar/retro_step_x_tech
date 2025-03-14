@@ -2,37 +2,49 @@
 import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import axios from "axios";
-import { Badge } from "@/components/ui/badge"; // Your Badge component
-import {
-  FaInfoCircle,
-  FaCar,
-  FaUser,
-  FaMapMarkerAlt,
-  FaUserTie,
-  FaWrench,
-  FaCogs,
-} from "react-icons/fa";
+import { Badge } from "@/components/ui/badge";
+import { FaCar, FaUser } from "react-icons/fa";
 import { PieChart, Pie, Tooltip, Legend, Cell } from "recharts";
-
-const SAMPLE_CAR_IMAGE = "/groups/car.jpg";
+import { BsClockHistory } from "react-icons/bs";
 
 export default function SingleJobCardDetails({ initialJobCard }) {
   const [jobCard, setJobCard] = useState(initialJobCard || null);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const pathname = usePathname();
+  // Adjust the index if your route structure differs.
   const code = pathname.split("/")[6];
 
+  // Helper: if error is true or value is falsy, returns "N/A".
+  const safeValue = (val) => (error ? "N/A" : val || "N/A");
+
+  // Calculate the difference in days from createdAt until now.
+  const calculateDateDifference = (createdAt) => {
+    console.log("create data => ", createdAt);
+    const createdDate = new Date(createdAt);
+    const now = new Date();
+    const diffTime = now - createdDate; // Difference in milliseconds
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24)); // Convert to days
+  };
+  
+
+  // Fetch job card details.
   const fetchJobCard = async (code) => {
+    setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:5001/api/job-card/${code}`,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        `http://3.7.2.124:5000/api/job-card/${code}`,
+        { headers: { "Content-Type": "application/json" } }
       );
       setJobCard(response.data.data);
       console.log("Job card details data:", response.data.data);
-    } catch (error) {
-      console.error("Error:", error);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error:", err);
+      setError(true);
+      setJobCard({});
+      setLoading(false);
     }
   };
 
@@ -42,338 +54,333 @@ export default function SingleJobCardDetails({ initialJobCard }) {
     }
   }, [code]);
 
-  if (!jobCard) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-gray-100 to-gray-50">
-        <p className="text-lg text-gray-300 animate-pulse">Loading...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <p className="text-lg text-gray-500 animate-pulse">Loading...</p>
       </div>
     );
   }
 
-  // Handler to update fields in jobCard state (for inline editing)
-  const handleFieldChange = (fieldPath, newValue) => {
-    setJobCard((prev) => {
-      const updated = structuredClone(prev);
-      const pathParts = fieldPath.split(".");
-      let obj = updated;
-      for (let i = 0; i < pathParts.length - 1; i++) {
-        obj = obj[pathParts[i]];
-      }
-      obj[pathParts[pathParts.length - 1]] = newValue;
-      return updated;
-    });
+  // Destructure parts and labor arrays.
+  const partsData = jobCard.part || [];
+  const laborData = jobCard.jobCardLabour || [];
+
+  // Toggle the history modal.
+  const toggleHistoryModal = () => {
+    setShowHistoryModal(!showHistoryModal);
   };
 
-  // For demonstration, assume jobCard has partsData and laborData arrays.
-  const partsData = jobCard.part
-  //  || [
-  //   { name: "Part A", value: 400 },
-  //   { name: "Part B", value: 300 },
-  //   { name: "Part C", value: 300 },
-  //   { name: "Part D", value: 200 },
-  // ];
-  const laborData = jobCard.jobCardLabour
-  //  || [
-  //   { name: "Labor A", value: 500 },
-  //   { name: "Labor B", value: 200 },
-  //   { name: "Labor C", value: 100 },
-  // ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-50 p-4 sm:p-6 text-gray-200 font-sans relative">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        {/* Left Side: Title and Status Badge */}
-        <div className="flex items-center space-x-4">
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-widest drop-shadow-lg">
-            JOB CARD
-          </h1>
-          <Badge variant="outline" className="text-black border-black">
-            {jobCard.jobCardStatus || "No Status"}
-          </Badge>
-        </div>
-        {/* Right Side: Editable Job Card Code and Edit Button */}
-        <div className="flex items-center space-x-2">
-          <div className="border border-black rounded-lg text-lg px-4 py-1">
-            <EditableField
-              label="Job Card Code"
-              value={jobCard.code}
-              onChange={(val) => handleFieldChange("code", val)}
-            />
+    <div className="mt-2 p-4 bg-gray-50">
+      {/* Header Section */}
+      <div className="flex rounded-lg p-2 py-4">
+        {/* Code & Status */}
+        <div className="flex flex-row items-center space-x-4 mx-4">
+          <div className="bg-gray-50 font-extrabold tracking-widest rounded-lg py-1 px-2 drop-shadow-lg">
+            <DisplayField value={safeValue(jobCard.code)} />
+            <Badge
+              className={`p-1 bg-gray-50 hover:bg-gray-50 ${
+                jobCard.jobCardStatus?.toLowerCase() === "pending"
+                  ? "text-orange-500"
+                  : jobCard.jobCardStatus?.toLowerCase() === "completed"
+                  ? "text-green-500"
+                  : "text-black"
+              }`}
+            >
+              {safeValue(jobCard.jobCardStatus)}
+            </Badge>
           </div>
-          <button
-            onClick={() => console.log("Edit action triggered")}
-            className="px-3 py-1 border border-balck  text-black rounded hover:bg-gray-300 hover:text-black transition"
-          >
-            Edit
-          </button>
+        </div>
+
+        {/* Customer & Vehicle Info */}
+        <div className="flex flex-col">
+          <div className="flex items-center space-x-2">
+            <FaUser className="text-gray-700 w-6 h-6" />
+            <div className="pl-2">
+              <InfoList rows={[{ value: safeValue(jobCard.customer?.name) }]} />
+            </div>
+            <div className="border-l-2 pl-2">
+              <InfoList
+                rows={[{ value: safeValue(jobCard.customer?.phone) }]}
+              />
+            </div>
+          </div>
+          <div className="flex items-center space-x-2 mt-4">
+            <FaCar className="text-gray-700 w-6 h-6" />
+            <div className="pl-2">
+              <InfoList
+                rows={[
+                  { value: safeValue(jobCard.vehicle?.vehicleModel?.name) },
+                ]}
+              />
+            </div>
+            <div className="border-l-2 pl-2">
+              <InfoList
+                rows={[{ value: safeValue(jobCard.vehicle?.chassisNo) }]}
+              />
+            </div>
+            <div className="border-l-2 pl-2">
+              <InfoList
+                rows={[{ value: safeValue(jobCard.vehicle?.registrationNo) }]}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Outer Container */}
-      <div className="max-w-5xl mx-auto bg-gray-100/50 rounded-xl p-6 md:p-8 shadow-2xl border border-gray-100">
-        {/* Top Row: Car Image and General Info */}
-        <div className="flex flex-row w-full gap-6">
-  <div className="w-1/2">
-    <Panel title="Customer Info">
-      <InfoList
-        rows={[
-          {
-            label: "Name",
-            value: jobCard.customer?.name || "",
-            fieldPath: "customer.name",
-          },
-          {
-            label: "Phone",
-            value: jobCard.customer?.phone || "",
-            fieldPath: "customer.phone",
-          },
-          {
-            label: "Email",
-            value: jobCard.customer?.email || "",
-            fieldPath: "customer.email",
-          },
-          {
-            label: "Address",
-            value: jobCard.customer?.address || "",
-            fieldPath: "customer.address",
-          },
-          {
-            label: "Chassis No",
-            value: jobCard.vehicle?.chassisNo || "",
-            fieldPath: "vehicle.chassisNo",
-          },
-          {
-            label: "Registration No",
-            value: jobCard.vehicle?.registrationNo || "",
-            fieldPath: "vehicle.registrationNo",
-          },
-          {
-            label: "Engine No",
-            value: jobCard.vehicle?.engineNo || "",
-            fieldPath: "vehicle.engineNo",
-          },
-        ]}
-        onFieldChange={handleFieldChange}
-      />
-    </Panel>
-  </div>
-  <div className="w-1/2">
-    <Panel title="General Info">
-      <InfoList
-        rows={[
-          {
-            label: "Repair Type",
-            value: jobCard.jobCardType?.name || "N/A",
-            fieldPath: "jobCardType.name",
-          },
-          {
-            label: "KM Reading",
-            value: jobCard.kmReading || "",
-            fieldPath: "kmReading",
-          },
-          {
-            label: "Preferred Language",
-            value: jobCard.preferredLanguage || "",
-            fieldPath: "preferredLanguage",
-          },
-          {
-            label: "Delivery Time",
-            value: jobCard.generalDetails?.deliveryTime || "",
-            fieldPath: "generalDetails.deliveryTime",
-          },
-          {
-            label: "Complaint",
-            value: jobCard.generalDetails?.customerVoice || "",
-            fieldPath: "generalDetails.customerVoice",
-          },
-        ]}
-        onFieldChange={handleFieldChange}
-      />
-    </Panel>
-  </div>
-</div>
-
-
-        {/* Vehicle Info: Full Width Panel */}
-        {/* <div className="mt-6">
-          <Panel title="Vehicle Info">
-            <InfoList
-              rows={[
-                {
-                  label: "Vehicle ID",
-                  value: jobCard.vehicle?.id,
-                  fieldPath: "vehicle.id",
-                },
-                {
-                  label: "Chassis No",
-                  value: jobCard.vehicle?.chassisNo || "",
-                  fieldPath: "vehicle.chassisNo",
-                },
-                {
-                  label: "Registration No",
-                  value: jobCard.vehicle?.registrationNo || "",
-                  fieldPath: "vehicle.registrationNo",
-                },
-                {
-                  label: "Engine No",
-                  value: jobCard.vehicle?.engineNo || "",
-                  fieldPath: "vehicle.engineNo",
-                },
-              ]}
-              onFieldChange={handleFieldChange}
-            />
-          </Panel>
-        </div> */}
-
-        {/* Middle Row: Editable Pie Charts for Parts and Labor */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <EditablePieChart
-            data={partsData}
-            title="Parts Distribution"
-            onDataChange={(newData) => handleFieldChange("partsData", newData)}
-          />
-          <EditablePieChart
-            data={laborData}
-            title="Labor Distribution"
-            onDataChange={(newData) => handleFieldChange("laborData", newData)}
+      {/* Date Info and History Toggle Components Side by Side */}
+      <div className="flex flex-row items-start justify-start">
+        <div className="">
+          <HistoryInfo
+            jobCard={jobCard}
+            toggleHistoryModal={toggleHistoryModal}
+            showHistoryModal={showHistoryModal}
           />
         </div>
+        <div className="">
+          <DateInfo jobCard={jobCard} calculateDateDifference={calculateDateDifference} />
+        </div>
+      </div>
 
-        {/* Bottom Row: Location Info and Staff Info */}
-        {/* <div className="mt-6  w-full border-black grid-cols-1 md:grid-cols-2 gap-6">
-          <Panel title="Location Info">
-            <InfoList
-              rows={[
-                {
-                  label: "Name",
-                  value: jobCard.location?.name || "",
-                  fieldPath: "location.name",
-                },
-                {
-                  label: "Address",
-                  value: jobCard.location?.address || "",
-                  fieldPath: "location.address",
-                },
-                {
-                  label: "Code",
-                  value: jobCard.location?.code || "",
-                  fieldPath: "location.code",
-                },
-              ]}
-              onFieldChange={handleFieldChange}
-            />
-          </Panel>
-        </div> */}
+      {/* OSI / Waste Oil / New Oil Section */}
+      <div className="flex flex-wrap justify-between items-center my-4 p-4 bg-white rounded-lg shadow">
+        <div className="font-semibold text-gray-700">
+          OSI: {safeValue(jobCard.osiAmount)}
+        </div>
+        <div className="font-semibold text-gray-700">
+          Waste Oil: {safeValue(jobCard.wasteOilCollected)} ML collected
+        </div>
+        <div className="font-semibold text-gray-700">
+          New Oil: {safeValue(jobCard.newOilGranted)}
+        </div>
+      </div>
+
+      {/* Parts Table */}
+      <div className="mt-6 bg-white rounded-xl p-4 shadow-md">
+        <h3 className="text-lg font-bold text-gray-800 mb-3 tracking-wide">
+          Parts Table
+        </h3>
+        <table className="w-full text-sm text-left text-gray-500">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-200">
+            <tr>
+              <th scope="col" className="px-4 py-2">
+                Sl.No
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Part Code
+              </th>
+              <th scope="col" className="px-4 py-2">
+                HSN Code
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Req. Qty
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Alloc. Qty
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Inv. Qty
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Rate
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Amount
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {partsData.length > 0 ? (
+              partsData.map((partItem, index) => (
+                <tr key={index} className="bg-white border-b hover:bg-gray-50">
+                  <td className="px-4 py-2">{index + 1}</td>
+                  <td className="px-4 py-2">
+                    {safeValue(partItem.productCode)}
+                  </td>
+                  <td className="px-4 py-2">{safeValue(partItem.hsnCode)}</td>
+                  <td className="px-4 py-2">
+                    {safeValue(partItem.requestedQuantity)}
+                  </td>
+                  <td className="px-4 py-2">{safeValue(partItem.allocQty)}</td>
+                  <td className="px-4 py-2">
+                    {safeValue(partItem.invoicedQuantity)}
+                  </td>
+                  <td className="px-4 py-2">{safeValue(partItem.rate)}</td>
+                  <td className="px-4 py-2">{safeValue(partItem.amount)}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8" className="px-4 py-2 text-center">
+                  N/A
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Labour Table */}
+      <div className="mt-6 bg-white rounded-xl p-4 shadow-md">
+        <h3 className="text-lg font-bold text-gray-800 mb-3 tracking-wide">
+          Labour Table
+        </h3>
+        <table className="w-full text-sm text-left text-gray-500">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-200">
+            <tr>
+              <th scope="col" className="px-4 py-2">
+                Sl.No
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Labour Code
+              </th>
+              <th scope="col" className="px-4 py-2">
+                HSN/SAC
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Units
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Rate
+              </th>
+              <th scope="col" className="px-4 py-2">
+                Amount
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {laborData.length > 0 ? (
+              laborData.map((labItem, index) => (
+                <tr key={index} className="bg-white border-b hover:bg-gray-50">
+                  <td className="px-4 py-2">{index + 1}</td>
+                  <td className="px-4 py-2">{safeValue(labItem.labourCode)}</td>
+                  <td className="px-4 py-2">{safeValue(labItem.hsnSac)}</td>
+                  <td className="px-4 py-2">{safeValue(labItem.units)}</td>
+                  <td className="px-4 py-2">{safeValue(labItem.rate)}</td>
+                  <td className="px-4 py-2">{safeValue(labItem.amount)}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="px-4 py-2 text-center">
+                  N/A
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
 
-/* --------------------------------------------------
-   Panel Component: A futuristic box with a heading.
--------------------------------------------------- */
-function Panel({ title, children, className = "" }) {
+/** DateInfo Component **/
+function DateInfo({ jobCard, calculateDateDifference }) {
+  const status = jobCard.jobCardStatus?.toLowerCase();
+  if (status === "completed") {
+    return (
+      <div className="text-sm bg-gray-50 text-gray-900 p-4 ">
+        Completed {calculateDateDifference(jobCard.createdAt)} days ago
+      </div>
+    );
+  } else if (status === "pending") {
+    return (
+      <div className="text-sm bg-gray-50 text-gray-900 p-4">
+        {new Date(jobCard.createdAt).toLocaleDateString()}
+      </div>
+    );
+  } else if (status === "in-progress") {
+    return (
+      <div className="text-sm bg-gray-50 text-gray-900 p-4">
+        In Progress since {new Date(jobCard.createdAt).toLocaleDateString()}
+      </div>
+    );
+  } else if (status === "cancelled") {
+    return (
+      <div className="text-sm bg-gray-50 text-red-500 p-4">
+        Cancelled on {new Date(jobCard.createdAt).toLocaleDateString()}
+      </div>
+    );
+  } else {
+    return (
+      <div className="text-sm bg-gray-50 text-gray-900 p-4">
+        {new Date(jobCard.createdAt).toLocaleDateString()}
+      </div>
+    );
+  }
+}
+
+/** HistoryInfo Component **/
+function HistoryInfo({ jobCard, toggleHistoryModal, showHistoryModal }) {
   return (
-    <div
-      className={`bg-gray-100/70 rounded-lg p-4 border border-gray-900 shadow-inner ${className}`}
-    >
-      <h3 className="text-lg font-bold text-gray-800 mb-3 tracking-wide">
-        {title}
-      </h3>
-      {children}
+    <div className="p-4">
+      <button
+        onClick={toggleHistoryModal}
+        className="flex items-center focus:outline-none"
+      >
+        <BsClockHistory className="w-10 h-6 text-gray-500 hover:text-black mr-2" />
+        <span className="text-blue-600 underline"></span>
+      </button>
+
+      {showHistoryModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="absolute inset-0 bg-black opacity-50"
+            onClick={toggleHistoryModal}
+          ></div>
+          <div className="bg-white rounded-xl p-6 relative z-10 max-w-md w-full">
+            <h3 className="text-lg font-bold text-gray-800 mb-3">
+              Job Card History
+            </h3>
+            {jobCard.history && jobCard.history.length > 0 ? (
+              <ul className="list-disc pl-5">
+                {jobCard.history.map((event, idx) => (
+                  <li key={idx} className="text-sm text-gray-700">
+                    {new Date(event.date).toLocaleString()} -{" "}
+                    {event.description || "No description"}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">No history available</p>
+            )}
+            <button
+              onClick={toggleHistoryModal}
+              className="mt-4 bg-black text-white px-10 py-2 rounded-lg focus:outline-none"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-/* --------------------------------------------------
-   InfoList Component: Displays a vertical list of editable label-value pairs.
--------------------------------------------------- */
-function InfoList({ rows, onFieldChange }) {
+/** -----------------------
+ *  Utility Components
+ * ------------------------ */
+function InfoList({ rows }) {
   return (
     <div className="flex flex-col space-y-2 text-sm">
       {rows.map((row, idx) => (
-        <EditableField
-          key={idx}
-          label={row.label}
-          value={row.value}
-          onChange={(val) => onFieldChange(row.fieldPath, val)}
-        />
+        <DisplayField key={idx} label={row.label} value={row.value} />
       ))}
     </div>
   );
 }
 
-/* --------------------------------------------------
-   EditableField Component: Renders a label with an editable input.
--------------------------------------------------- */
-function EditableField({ label, value, onChange }) {
+function DisplayField({ label, value }) {
   return (
-    <div className="flex justify-between items-center  bg-gray-200/60 px-2 py-1 rounded">
-      <span className="text-gray-950 ">{label}</span>
-      <input
-        type="text"
-        className="font-semibold text-black bg-transparent border-b border-gray-900 focus:outline-none w-32 text-right"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
+    <div className="flex justify-between items-center px-2 py-1 rounded">
+      {label && <span className="text-gray-950">{label}</span>}
+      <span className="font-semibold text-black">{value}</span>
     </div>
   );
 }
 
-/* --------------------------------------------------
-   PartsList Component: Renders a vertical list of part codes and names as editable fields.
--------------------------------------------------- */
-function PartsList({ parts, onFieldChange }) {
-  return (
-    <div className="flex flex-col space-y-2 text-sm">
-      {parts.map((item, idx) => (
-        <div
-          key={idx}
-          className="flex justify-between items-center bg-gray-800/60 px-2 py-1 rounded"
-        >
-          <input
-            type="text"
-            className="text-gray-900 bg-transparent border-b border-gray-600 focus:outline-none w-20 text-right"
-            value={item.code || ""}
-            onChange={(e) =>
-              onFieldChange && onFieldChange(`part.${idx}.code`, e.target.value)
-            }
-          />
-          <input
-            type="text"
-            className="text-black bg-transparent border-b border-gray-600 focus:outline-none w-24 text-right"
-            value={item.name || ""}
-            onChange={(e) =>
-              onFieldChange && onFieldChange(`part.${idx}.name`, e.target.value)
-            }
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* --------------------------------------------------
-   EditablePieChart Component
-   - Displays a pie chart using Recharts.
-   - Provides editable input fields for each data item.
--------------------------------------------------- */
-function EditablePieChart({ data: initialData, title, onDataChange }) {
-  const [data, setData] = useState(initialData);
-
-  React.useEffect(() => {
-    setData(initialData);
-  }, [initialData]);
-
-  const handleChange = (index, newValue) => {
-    const updatedData = data.map((item, idx) =>
-      idx === index ? { ...item, amount: Number(newValue) } : item
-    );
-    setData(updatedData);
-    if (onDataChange) onDataChange(updatedData);
-  };
-
+function PieChartDisplay({ data, title }) {
   const COLORS = [
     "#0088FE",
     "#00C49F",
@@ -384,7 +391,7 @@ function EditablePieChart({ data: initialData, title, onDataChange }) {
   ];
 
   return (
-    <div className="p-4 bg-gray-300 rounded-lg shadow-md ">
+    <div className="p-4 bg-gray-300 rounded-lg shadow-md">
       <h3 className="text-lg font-bold text-black mb-4 tracking-wide">
         {title}
       </h3>
@@ -407,14 +414,9 @@ function EditablePieChart({ data: initialData, title, onDataChange }) {
       </PieChart>
       <div className="mt-4 space-y-2">
         {data.map((item, index) => (
-          <div key={index} className="flex items-center  space-x-2">
+          <div key={index} className="flex items-center space-x-2">
             <span className="text-sm text-black">{item.name}</span>
-            <input
-              type="number"
-              value={item.value}
-              onChange={(e) => handleChange(index, e.target.value)}
-              className="p-1 border border-gray-200 rounded bg-gray-100 text-black  text-sm w-20"
-            />
+            <span className="text-sm text-black">{item.value}</span>
           </div>
         ))}
       </div>

@@ -12,7 +12,7 @@ export default function BrandLayout({ children }) {
           <Sidebar />
           <div className="flex flex-col flex-grow">
             <Header />
-            <div className="p-4">
+            <div className="">
               {children}
             </div>
           </div>

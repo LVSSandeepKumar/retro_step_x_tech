@@ -196,7 +196,8 @@ const CustomerDetails = memo(
               onChange={handleInputChange}
               readOnly={
                 originalData.customer?.address &&
-                editableData.customer?.address === originalData.customer?.address
+                editableData.customer?.address ===
+                  originalData.customer?.address
               }
             />
           </div>
@@ -211,7 +212,8 @@ const CustomerDetails = memo(
               onChange={handleInputChange}
               readOnly={
                 originalData.vehicle?.chassisNo &&
-                editableData.vehicle?.chassisNo === originalData.vehicle?.chassisNo
+                editableData.vehicle?.chassisNo ===
+                  originalData.vehicle?.chassisNo
               }
             />
           </div>
@@ -224,7 +226,8 @@ const CustomerDetails = memo(
               onChange={handleInputChange}
               readOnly={
                 originalData.vehicle?.engineNo &&
-                editableData.vehicle?.engineNo === originalData.vehicle?.engineNo
+                editableData.vehicle?.engineNo ===
+                  originalData.vehicle?.engineNo
               }
             />
           </div>
@@ -305,16 +308,19 @@ const JobCardDetails = () => {
   // For Owner/Dealer sections, isEditing is used; Customer details use originalData to determine lock status.
   const [isEditing, setIsEditing] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const page = 1;
+  const pageSize = 25;
 
   const fetchingData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5001/api/job-card?page=1&pageSize=25"
+        `http://192.168.0.9:5001/api/job-card?page=${page}&pageSize=${pageSize}`
       );
       const data = response.data.data.jobCards;
       setJobCardData(data);
       setOriginalData(data);
       setEditableData(data);
+      console.log("Fetching data of JC",data);
     } catch (error) {
       console.error(error);
     }

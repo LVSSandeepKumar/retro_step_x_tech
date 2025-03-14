@@ -289,7 +289,7 @@ const LocationPage = () => {
 
 
   useEffect(() => {
-    axios.get("http://localhost:5001/api/job-card/count")
+    axios.get("http://192.168.0.9:5001/api/job-card/count")
       .then((response) => {
         setNumericalData(response.data.data);
         console.log("kjhg",response.data.data);  
